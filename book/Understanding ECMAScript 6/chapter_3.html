@@ -1,0 +1,976 @@
+<?xml version='1.0' encoding='utf-8'?>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+  <head>
+    <title>第三章 函数</title>
+    <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+    <meta content="" name="description"/>
+    <meta content="GitBook 3.2.2" name="generator"/>
+    <meta content="sagittarius-rev" name="author"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link href="stylesheet.css" rel="stylesheet" type="text/css"/>
+<link href="page_styles.css" rel="stylesheet" type="text/css"/>
+</head>
+  <body class="calibre">
+        
+<div class="page">
+    
+        <h1 class="book-chapter" id="calibre_toc_5">第三章 函数</h1>
+        <div class="section">
+            <h2 id="第三章-函数" class="calibre12"><span id="functions" class="calibre13">第三章 函数</span></h2>
+<p class="calibre6">函数在任何编程语言中都是非常重要的一部分，而从 JS 诞生一直到 ES6 之前，函数并未有过较大的变化。这导致诸多问题以及细微行为差异被积压，由此容易诱发错误，并且经常需要用大量代码来实现非常基本的功能。</p>
+<p class="calibre6">ES6 的函数考虑了 JS 开发者多年的抱怨和要求，向前大步迈进，于是便在 ES5 函数之上实现了不少增量改进，让 JS 的编程错误更少并且更加强大。</p>
+<ul class="calibre9">
+<li class="calibre10"><a href="#functions-with-default-parameter-values" class="calibre7 pcalibre pcalibre1 pcalibre2">带参数默认值的函数</a><ul class="calibre14">
+<li class="calibre10"><a href="#simulating-default-parameter-values-in-ecmascript-5" class="calibre7 pcalibre pcalibre1 pcalibre2">在 ES5 中模拟参数默认值</a></li>
+<li class="calibre10"><a href="#default-parameter-values-in-ecmascript-6" class="calibre7 pcalibre pcalibre1 pcalibre2">ES6 中的参数默认值</a></li>
+<li class="calibre10"><a href="#how-default-parameter-values-affect-the-arguments-object" class="calibre7 pcalibre pcalibre1 pcalibre2">参数默认值如何影响 arguments 对象</a></li>
+<li class="calibre10"><a href="#default-parameter-expressions" class="calibre7 pcalibre pcalibre1 pcalibre2">参数默认值表达式</a></li>
+<li class="calibre10"><a href="#default-parameter-value-temporal-dead-zone" class="calibre7 pcalibre pcalibre1 pcalibre2">参数默认值的暂时性死区</a></li>
+</ul>
+</li>
+<li class="calibre10"><a href="#working-with-unnamed-parameters" class="calibre7 pcalibre pcalibre1 pcalibre2">使用不具名参数</a><ul class="calibre14">
+<li class="calibre10"><a href="#unnamed-parameters-in-ecmascript-5" class="calibre7 pcalibre pcalibre1 pcalibre2">ES5 中的不具名参数</a></li>
+<li class="calibre10"><a href="#rest-parameters" class="calibre7 pcalibre pcalibre1 pcalibre2">剩余参数</a><ul class="calibre17">
+<li class="calibre10"><a href="#rest-parameter-restrictions" class="calibre7 pcalibre pcalibre1 pcalibre2">剩余参数的限制条件</a></li>
+<li class="calibre10"><a href="#how-rest-parameters-affect-the-arguments-object" class="calibre7 pcalibre pcalibre1 pcalibre2">剩余参数如何影响 arguments 对象</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="calibre10"><a href="#increased-capabilities-of-the-function-constructor" class="calibre7 pcalibre pcalibre1 pcalibre2">函数构造器的增强能力</a></li>
+<li class="calibre10"><a href="#the-spread-operator" class="calibre7 pcalibre pcalibre1 pcalibre2">扩展运算符</a></li>
+<li class="calibre10"><a href="#ecmascript-6-s-name-property" class="calibre7 pcalibre pcalibre1 pcalibre2">ES6 的名称属性</a><ul class="calibre14">
+<li class="calibre10"><a href="#choosing-appropriate-names" class="calibre7 pcalibre pcalibre1 pcalibre2">选择合适的名称</a></li>
+<li class="calibre10"><a href="#special-cases-of-the-name-property" class="calibre7 pcalibre pcalibre1 pcalibre2">名称属性的特殊情况</a></li>
+</ul>
+</li>
+<li class="calibre10"><a href="#clarifying-the-dual-purpose-of-functions" class="calibre7 pcalibre pcalibre1 pcalibre2">明确函数的双重用途</a><ul class="calibre14">
+<li class="calibre10"><a href="#determining-how-a-function-was-called-in-ecmascript-5" class="calibre7 pcalibre pcalibre1 pcalibre2">在 ES5 中判断函数如何被调用</a></li>
+<li class="calibre10"><a href="#the-new-target-metaproperty" class="calibre7 pcalibre pcalibre1 pcalibre2">new.target 元属性</a></li>
+</ul>
+</li>
+<li class="calibre10"><a href="#block-level-functions" class="calibre7 pcalibre pcalibre1 pcalibre2">块级函数</a><ul class="calibre14">
+<li class="calibre10"><a href="#deciding-when-to-use-block-level-functions" class="calibre7 pcalibre pcalibre1 pcalibre2">决定何时使用块级函数</a></li>
+<li class="calibre10"><a href="#block-level-functions-in-nonstrict-mode" class="calibre7 pcalibre pcalibre1 pcalibre2">非严格模式的块级函数</a></li>
+</ul>
+</li>
+<li class="calibre10"><a href="#arrow-functions" class="calibre7 pcalibre pcalibre1 pcalibre2">箭头函数</a><ul class="calibre14">
+<li class="calibre10"><a href="#arrow-function-syntax" class="calibre7 pcalibre pcalibre1 pcalibre2">箭头函数语法</a></li>
+<li class="calibre10"><a href="#creating-immediately-invoked-function-expressions" class="calibre7 pcalibre pcalibre1 pcalibre2">创建立即调用函数表达式</a></li>
+<li class="calibre10"><a href="#no-this-binding" class="calibre7 pcalibre pcalibre1 pcalibre2">没有 this 绑定</a></li>
+<li class="calibre10"><a href="#arrow-functions-and-arrays" class="calibre7 pcalibre pcalibre1 pcalibre2">箭头函数与数组</a></li>
+<li class="calibre10"><a href="#no-arguments-binding" class="calibre7 pcalibre pcalibre1 pcalibre2">没有 arguments 绑定</a></li>
+<li class="calibre10"><a href="#identifying-arrow-functions" class="calibre7 pcalibre pcalibre1 pcalibre2">识别箭头函数</a></li>
+</ul>
+</li>
+<li class="calibre10"><a href="#tail-call-optimization" class="calibre7 pcalibre pcalibre1 pcalibre2">尾调用优化</a><ul class="calibre14">
+<li class="calibre10"><a href="#what-s-different-" class="calibre7 pcalibre pcalibre1 pcalibre2">有何不同？</a></li>
+<li class="calibre10"><a href="#how-to-harness-tail-call-optimization" class="calibre7 pcalibre pcalibre1 pcalibre2">如何控制尾调用优化</a></li>
+</ul>
+</li>
+<li class="calibre10"><a href="#summary" class="calibre7 pcalibre pcalibre1 pcalibre2">总结</a></li>
+</ul>
+<h3 id="带参数默认值的函数" class="calibre15"><span id="functions-with-default-parameter-values" class="calibre13">带参数默认值的函数</span></h3>
+<p class="calibre6">JS 函数的独特之处是可以接受任意数量的参数，而无视函数声明处的参数数量。这让你定义的函数可以使用不同的参数数量来调用，调用时未提供的参数经常会使用默认值来代替。本章将介绍默认的参数值在 ES6 之中以及之前是如何实现的，顺带介绍的内容还有： <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象的一些重要信息、将表达式作为参数使用，以及另一种 TDZ 。</p>
+<h4 id="在-es5-中模拟参数默认值" class="calibre15"><span id="simulating-default-parameter-values-in-ecmascript-5" class="calibre13">在 ES5 中模拟参数默认值</span></h4>
+<p class="calibre6">在 ES5 或更早的版本中，你可能会使用下述模式来创建带有参数默认值的函数：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">makeRequest</span>(<span class="hljs-params">url, timeout, callback</span>) </span>{
+
+    timeout = timeout || <span class="hljs-params">2000</span>;
+    callback = callback || <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{};
+
+    <span class="hljs-title">// 函数的剩余部分</span>
+
+}
+</code></pre>
+<p class="calibre6">在本例中， <code class="pcalibre3 calibre11 pcalibre4">timeout</code> 与 <code class="pcalibre3 calibre11 pcalibre4">callback</code> 实际上都是可选参数，因为他们都会在参数未被提供的情况下使用默认值。逻辑或运算符（ <code class="pcalibre3 calibre11 pcalibre4">||</code> ）在左侧的值为假的情况下总会返回右侧的操作数。由于函数的具名参数在未被明确提供时会是 <code class="pcalibre3 calibre11 pcalibre4">undefined</code> ，逻辑或运算符就经常被用来给缺失的参数提供默认值。不过此方法有个瑕疵，此处的 <code class="pcalibre3 calibre11 pcalibre4">timeout</code> 的有效值实际上有可能是 <code class="pcalibre3 calibre11 pcalibre4">0</code> ，但因为 <code class="pcalibre3 calibre11 pcalibre4">0</code> 是假值，就会导致 <code class="pcalibre3 calibre11 pcalibre4">timeout</code> 的值在这种情况下会被替换为 <code class="pcalibre3 calibre11 pcalibre4">2000</code> 。</p>
+<p class="calibre6">在这种情况下，更安全的替代方法是使用 <code class="pcalibre3 calibre11 pcalibre4">typeof</code> 来检测参数的类型，正如下例：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">makeRequest</span>(<span class="hljs-params">url, timeout, callback</span>) </span>{
+
+    timeout = (<span class="hljs-keyword">typeof</span> timeout !== <span class="hljs-string">"undefined"</span>) ? timeout : <span class="hljs-params">2000</span>;
+    callback = (<span class="hljs-keyword">typeof</span> callback !== <span class="hljs-string">"undefined"</span>) ? callback : <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{};
+
+    <span class="hljs-title">// 函数的剩余部分</span>
+
+}
+</code></pre>
+<p class="calibre6">虽然这种方法更安全，但依然为实现一个基本需求而书写了过多的代码。它代表了一种公共模式，而流行的 JS 库中都充斥着类似的模式。</p>
+<h4 id="es6-中的参数默认值" class="calibre15"><span id="default-parameter-values-in-ecmascript-6" class="calibre13">ES6 中的参数默认值</span></h4>
+<p class="calibre6">ES6 能更容易地为参数提供默认值，它使用了初始化形式，以便在参数未被正式传递进来时使用。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">makeRequest</span>(<span class="hljs-params">url, timeout = 2000, callback = function(</span>) </span>{}) {
+
+    <span class="hljs-title">// 函数的剩余部分</span>
+
+}
+</code></pre>
+<p class="calibre6">此函数只要求第一个参数始终要被传递。其余两个参数则都有默认值，这使得函数体更为小巧，因为不需要再添加更多代码来检查缺失的参数值。</p>
+<p class="calibre6">如果使用全部三个参数来调用 <code class="pcalibre3 calibre11 pcalibre4">makeRequest()</code> ，那么默认值将不会被使用，例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">// 使用默认的 timeout 与 callback</span>
+makeRequest(<span class="hljs-string">"/foo"</span>);
+
+<span class="hljs-title">// 使用默认的 callback</span>
+makeRequest(<span class="hljs-string">"/foo"</span>, <span class="hljs-params">500</span>);
+
+<span class="hljs-title">// 不使用默认值</span>
+makeRequest(<span class="hljs-string">"/foo"</span>, <span class="hljs-params">500</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">body</span>) </span>{
+    doSomething(body);
+});
+</code></pre>
+<p class="calibre6">ES6 会认为 <code class="pcalibre3 calibre11 pcalibre4">url</code> 参数是必须的，这就是三次调用 <code class="pcalibre3 calibre11 pcalibre4">makeRequest()</code> 都传入了 <code class="pcalibre3 calibre11 pcalibre4">"/foo"</code> 的原因。而拥有默认值的两个参数都被认为是可选的。</p>
+<p class="calibre6">在函数声明中能指定任意一个参数的默认值，即使该参数排在未指定默认值的参数之前也是可以的。例如，下面这样是可行的：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">makeRequest</span>(<span class="hljs-params">url, timeout = 2000, callback</span>) </span>{
+
+    <span class="hljs-title">// 函数的剩余部分</span>
+
+}
+</code></pre>
+<p class="calibre6">在本例中，只有在未传递第二个参数、或明确将第二个参数值指定为 <code class="pcalibre3 calibre11 pcalibre4">undefined</code> 时， <code class="pcalibre3 calibre11 pcalibre4">timeout</code> 的默认值才会被使用，例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">// 使用默认的 timeout</span>
+makeRequest(<span class="hljs-string">"/foo"</span>, <span class="hljs-params">undefined</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">body</span>) </span>{
+    doSomething(body);
+});
+
+<span class="hljs-title">// 使用默认的 timeout</span>
+makeRequest(<span class="hljs-string">"/foo"</span>);
+
+<span class="hljs-title">// 不使用默认值</span>
+makeRequest(<span class="hljs-string">"/foo"</span>, <span class="hljs-params">null</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">body</span>) </span>{
+    doSomething(body);
+});
+</code></pre>
+<p class="calibre6">在关于参数默认值的这个例子中， <code class="pcalibre3 calibre11 pcalibre4">null</code> 值被认为是有效的，意味着对于 <code class="pcalibre3 calibre11 pcalibre4">makeRequest()</code> 的第三次调用并不会使用 <code class="pcalibre3 calibre11 pcalibre4">timeout</code> 的默认值。</p>
+<h4 id="参数默认值如何影响-arguments-对象" class="calibre15"><span id="how-default-parameter-values-affect-the-arguments-object" class="calibre13">参数默认值如何影响 arguments 对象</span></h4>
+<p class="calibre6">需要记住的是， <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象会在使用参数默认值时有不同的表现。在 ES5 的非严格模式下， <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象会反映出具名参数的变化。以下代码说明了该工作机制：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">mixArgs</span>(<span class="hljs-params">first, second</span>) </span>{
+    <span class="hljs-params">console</span>.log(first === <span class="hljs-params">arguments</span>[<span class="hljs-params">0</span>]);
+    <span class="hljs-params">console</span>.log(second === <span class="hljs-params">arguments</span>[<span class="hljs-params">1</span>]);
+    first = <span class="hljs-string">"c"</span>;
+    second = <span class="hljs-string">"d"</span>;
+    <span class="hljs-params">console</span>.log(first === <span class="hljs-params">arguments</span>[<span class="hljs-params">0</span>]);
+    <span class="hljs-params">console</span>.log(second === <span class="hljs-params">arguments</span>[<span class="hljs-params">1</span>]);
+}
+
+mixArgs(<span class="hljs-string">"a"</span>, <span class="hljs-string">"b"</span>);
+</code></pre>
+<p class="calibre6">输出：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5">true
+true
+true
+true
+</code></pre><p class="calibre6">在非严格模式下， <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象总是会被更新以反映出具名参数的变化。因此当 <code class="pcalibre3 calibre11 pcalibre4">first</code> 与 <code class="pcalibre3 calibre11 pcalibre4">second</code> 变量被赋予新值时， <code class="pcalibre3 calibre11 pcalibre4">arguments[0]</code> 与 <code class="pcalibre3 calibre11 pcalibre4">arguments[1]</code> 也就相应地更新了，使得这里所有的 <code class="pcalibre3 calibre11 pcalibre4">===</code> 比较的结果都为 <code class="pcalibre3 calibre11 pcalibre4">true</code> 。</p>
+<p class="calibre6">然而在 ES5 的严格模式下，关于 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象的这种混乱情况被消除了，它不再反映出具名参数的变化。在严格模式下重新使用上例中的函数：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">mixArgs</span>(<span class="hljs-params">first, second</span>) </span>{
+<span class="calibre19">    "use strict"</span>;
+
+    <span class="hljs-params">console</span>.log(first === <span class="hljs-params">arguments</span>[<span class="hljs-params">0</span>]);
+    <span class="hljs-params">console</span>.log(second === <span class="hljs-params">arguments</span>[<span class="hljs-params">1</span>]);
+    first = <span class="hljs-string">"c"</span>;
+    second = <span class="hljs-string">"d"</span>
+    <span class="hljs-params">console</span>.log(first === <span class="hljs-params">arguments</span>[<span class="hljs-params">0</span>]);
+    <span class="hljs-params">console</span>.log(second === <span class="hljs-params">arguments</span>[<span class="hljs-params">1</span>]);
+}
+
+mixArgs(<span class="hljs-string">"a"</span>, <span class="hljs-string">"b"</span>);
+</code></pre>
+<p class="calibre6">调用 <code class="pcalibre3 calibre11 pcalibre4">mixArgs()</code> 则输出：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5">true
+true
+false
+false
+</code></pre><p class="calibre6">这一次更改 <code class="pcalibre3 calibre11 pcalibre4">first</code> 与 <code class="pcalibre3 calibre11 pcalibre4">second</code> 就不会再影响 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象，因此输出结果符合通常的期望。</p>
+<p class="calibre6">然而在使用 ES6 参数默认值的函数中， <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象的表现总是会与 ES5 的严格模式一致，无论此时函数是否明确运行在严格模式下。参数默认值的存在触发了 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象与具名参数的分离。这是个细微但重要的细节，因为 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象的使用方式发生了变化。研究如下代码：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">// 非严格模式</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">mixArgs</span>(<span class="hljs-params">first, second = "b"</span>) </span>{
+    <span class="hljs-params">console</span>.log(<span class="hljs-params">arguments</span>.length);
+    <span class="hljs-params">console</span>.log(first === <span class="hljs-params">arguments</span>[<span class="hljs-params">0</span>]);
+    <span class="hljs-params">console</span>.log(second === <span class="hljs-params">arguments</span>[<span class="hljs-params">1</span>]);
+    first = <span class="hljs-string">"c"</span>;
+    second = <span class="hljs-string">"d"</span>
+    <span class="hljs-params">console</span>.log(first === <span class="hljs-params">arguments</span>[<span class="hljs-params">0</span>]);
+    <span class="hljs-params">console</span>.log(second === <span class="hljs-params">arguments</span>[<span class="hljs-params">1</span>]);
+}
+
+mixArgs(<span class="hljs-string">"a"</span>);
+</code></pre>
+<p class="calibre6">输出：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5">1
+true
+false
+false
+false
+</code></pre><p class="calibre6">本例中 <code class="pcalibre3 calibre11 pcalibre4">arguments.length</code> 的值为 <code class="pcalibre3 calibre11 pcalibre4">1</code> ，因为只给 <code class="pcalibre3 calibre11 pcalibre4">mixArgs()</code> 传递了一个参数。这也意味着 <code class="pcalibre3 calibre11 pcalibre4">arguments[1]</code> 的值是 <code class="pcalibre3 calibre11 pcalibre4">undefined</code> ，符合将单个参数传递给函数时的预期；这同时意味着 <code class="pcalibre3 calibre11 pcalibre4">first</code> 与 <code class="pcalibre3 calibre11 pcalibre4">arguments[0]</code> 是相等的。改变 <code class="pcalibre3 calibre11 pcalibre4">first</code> 和 <code class="pcalibre3 calibre11 pcalibre4">second</code> 的值不会对 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象造成影响，无论是否在严格模式下，所以你可以始终依据 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象来反映初始调用状态。</p>
+<h4 id="参数默认值表达式" class="calibre15"><span id="default-parameter-expressions" class="calibre13">参数默认值表达式</span></h4>
+<p class="calibre6">参数默认值最有意思的特性或许就是默认值并不要求一定是基本类型的值。例如，你可以执行一个函数来产生参数的默认值，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getValue</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-params">5</span>;
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">add</span>(<span class="hljs-params">first, second = getValue(</span>)) </span>{
+    <span class="hljs-keyword">return</span> first + second;
+}
+
+<span class="hljs-params">console</span>.log(add(<span class="hljs-params">1</span>, <span class="hljs-params">1</span>));     <span class="hljs-title">// 2</span>
+<span class="hljs-params">console</span>.log(add(<span class="hljs-params">1</span>));        <span class="hljs-title">// 6</span>
+</code></pre>
+<p class="calibre6">此处若未提供第二个参数， <code class="pcalibre3 calibre11 pcalibre4">getValue()</code> 函数就会被调用以获取正确的默认值。需要注意的是，仅在调用 <code class="pcalibre3 calibre11 pcalibre4">add()</code> 函数而未提供第二个参数时， <code class="pcalibre3 calibre11 pcalibre4">getValue()</code> 函数才会被调用，而在 <code class="pcalibre3 calibre11 pcalibre4">getValue()</code> 的函数声明初次被解析时并不会进行调用。这意味着 <code class="pcalibre3 calibre11 pcalibre4">getValue()</code> 函数若被写为可变的，则它有可能会返回可变的值，例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> value = <span class="hljs-params">5</span>;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getValue</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">return</span> value++;
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">add</span>(<span class="hljs-params">first, second = getValue(</span>)) </span>{
+    <span class="hljs-keyword">return</span> first + second;
+}
+
+<span class="hljs-params">console</span>.log(add(<span class="hljs-params">1</span>, <span class="hljs-params">1</span>));     <span class="hljs-title">// 2</span>
+<span class="hljs-params">console</span>.log(add(<span class="hljs-params">1</span>));        <span class="hljs-title">// 6</span>
+<span class="hljs-params">console</span>.log(add(<span class="hljs-params">1</span>));        <span class="hljs-title">// 7</span>
+</code></pre>
+<p class="calibre6">本例中 <code class="pcalibre3 calibre11 pcalibre4">value</code> 的初始值是 5 ，并且会随着对 <code class="pcalibre3 calibre11 pcalibre4">getValue()</code> 的每次调用而递增。首次调用 <code class="pcalibre3 calibre11 pcalibre4">add(1)</code> 返回的值为 6 ，再次调用则返回 7 ，因为 <code class="pcalibre3 calibre11 pcalibre4">value</code> 的值已经被增加了。由于 <code class="pcalibre3 calibre11 pcalibre4">second</code> 参数的默认值总是在 <code class="pcalibre3 calibre11 pcalibre4">add()</code> 函数被调用的情况下才被计算，因此就能随时更改该参数的值。</p>
+<blockquote class="calibre20">
+<p class="calibre6">将函数调用作为参数的默认值时需要小心，如果你遗漏了括号，例如在上面例子中使用 <code class="pcalibre3 calibre11 pcalibre4">second = getValue</code> ，你就传递了对于该函数的一个引用，而没有传递调用该函数的结果。</p>
+</blockquote>
+<p class="calibre6">这种行为引出了另一种有趣的能力：可以将前面的参数作为后面参数的默认值，这里有个例子：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">add</span>(<span class="hljs-params">first, second = first</span>) </span>{
+    <span class="hljs-keyword">return</span> first + second;
+}
+
+<span class="hljs-params">console</span>.log(add(<span class="hljs-params">1</span>, <span class="hljs-params">1</span>));     <span class="hljs-title">// 2</span>
+<span class="hljs-params">console</span>.log(add(<span class="hljs-params">1</span>));        <span class="hljs-title">// 2</span>
+</code></pre>
+<p class="calibre6">此代码中 <code class="pcalibre3 calibre11 pcalibre4">first</code> 为 <code class="pcalibre3 calibre11 pcalibre4">second</code> 参数提供了默认值，意味着只传入一个参数会让两个参数获得相同的值，因此 <code class="pcalibre3 calibre11 pcalibre4">add(1, 1)</code> 与 <code class="pcalibre3 calibre11 pcalibre4">add(1)</code> 同样返回了 2 。进一步说，你可以将 <code class="pcalibre3 calibre11 pcalibre4">first</code> 作为参数传递给一个函数来产生 <code class="pcalibre3 calibre11 pcalibre4">second</code> 参数的值，正如下例：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getValue</span>(<span class="hljs-params">value</span>) </span>{
+    <span class="hljs-keyword">return</span> value + <span class="hljs-params">5</span>;
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">add</span>(<span class="hljs-params">first, second = getValue(first</span>)) </span>{
+    <span class="hljs-keyword">return</span> first + second;
+}
+
+<span class="hljs-params">console</span>.log(add(<span class="hljs-params">1</span>, <span class="hljs-params">1</span>));     <span class="hljs-title">// 2</span>
+<span class="hljs-params">console</span>.log(add(<span class="hljs-params">1</span>));        <span class="hljs-title">// 7</span>
+</code></pre>
+<p class="calibre6">此例将 <code class="pcalibre3 calibre11 pcalibre4">second</code> 的值设为等于 <code class="pcalibre3 calibre11 pcalibre4">getValue(first)</code> 函数的返回值，因此 <code class="pcalibre3 calibre11 pcalibre4">add(1)</code> 会返回 7 （ 1 + 6 ），而 <code class="pcalibre3 calibre11 pcalibre4">add(1, 1)</code> 仍然返回 2 。</p>
+<p class="calibre6">引用其他参数来为参数进行默认赋值时，仅允许引用前方的参数，因此前面的参数不能访问后面的参数，例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">add</span>(<span class="hljs-params">first = second, second</span>) </span>{
+    <span class="hljs-keyword">return</span> first + second;
+}
+
+<span class="hljs-params">console</span>.log(add(<span class="hljs-params">1</span>, <span class="hljs-params">1</span>));         <span class="hljs-title">// 2</span>
+<span class="hljs-params">console</span>.log(add(<span class="hljs-params">undefined</span>, <span class="hljs-params">1</span>)); <span class="hljs-title">// 抛出错误</span>
+</code></pre>
+<p class="calibre6">调用 <code class="pcalibre3 calibre11 pcalibre4">add(undefined, 1)</code> 发生了错误，是因为 <code class="pcalibre3 calibre11 pcalibre4">second</code> 在 <code class="pcalibre3 calibre11 pcalibre4">first</code> 之后定义，因此不能将其作为后者的默认值。要理解为何会发生这种情况，需要着重回顾“暂时性死区”。</p>
+<h4 id="参数默认值的暂时性死区" class="calibre15"><span id="default-parameter-value-temporal-dead-zone" class="calibre13">参数默认值的暂时性死区</span></h4>
+<p class="calibre6">第一章介绍了 <code class="pcalibre3 calibre11 pcalibre4">let</code> 与 <code class="pcalibre3 calibre11 pcalibre4">const</code> 的暂时性死区（ TDZ ），而参数默认值同样有着无法访问特定参数的暂时性死区。与 <code class="pcalibre3 calibre11 pcalibre4">let</code> 声明相似，函数每个参数都会创建一个新的标识符绑定，它在初始化之前不允许被访问，否则会抛出错误。参数初始化会在函数被调用时进行，无论是给参数传递了一个值、还是使用了参数的默认值。</p>
+<p class="calibre6">为了探寻参数默认值中的暂时性死区，可再次研究“参数默认值表达式”中的例子：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getValue</span>(<span class="hljs-params">value</span>) </span>{
+    <span class="hljs-keyword">return</span> value + <span class="hljs-params">5</span>;
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">add</span>(<span class="hljs-params">first, second = getValue(first</span>)) </span>{
+    <span class="hljs-keyword">return</span> first + second;
+}
+
+<span class="hljs-params">console</span>.log(add(<span class="hljs-params">1</span>, <span class="hljs-params">1</span>));     <span class="hljs-title">// 2</span>
+<span class="hljs-params">console</span>.log(add(<span class="hljs-params">1</span>));        <span class="hljs-title">// 7</span>
+</code></pre>
+<p class="calibre6">调用 <code class="pcalibre3 calibre11 pcalibre4">add(1, 1)</code> 和 <code class="pcalibre3 calibre11 pcalibre4">add(1)</code> 事实上执行了以下代码来创建 <code class="pcalibre3 calibre11 pcalibre4">first</code> 与 <code class="pcalibre3 calibre11 pcalibre4">second</code> 的参数值：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">// JS 调用 add(1, 1) 可表示为</span>
+<span class="hljs-keyword">let</span> first = <span class="hljs-params">1</span>;
+<span class="hljs-keyword">let</span> second = <span class="hljs-params">1</span>;
+
+<span class="hljs-title">// JS 调用 add(1) 可表示为</span>
+<span class="hljs-keyword">let</span> first = <span class="hljs-params">1</span>;
+<span class="hljs-keyword">let</span> second = getValue(first);
+</code></pre>
+<p class="calibre6">当函数 <code class="pcalibre3 calibre11 pcalibre4">add()</code> 第一次执行时， <code class="pcalibre3 calibre11 pcalibre4">first</code> 与 <code class="pcalibre3 calibre11 pcalibre4">second</code> 的绑定被加入了特定参数的暂时性死区（类似于 <code class="pcalibre3 calibre11 pcalibre4">let</code> 声明的行为）。因此 <code class="pcalibre3 calibre11 pcalibre4">second</code> 可以使用 <code class="pcalibre3 calibre11 pcalibre4">first</code> 来初始化，因为此处 <code class="pcalibre3 calibre11 pcalibre4">first</code> 总是已经完成了初始化，但反之则不行。现在再研究以下重写过的 <code class="pcalibre3 calibre11 pcalibre4">add()</code> 函数：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">add</span>(<span class="hljs-params">first = second, second</span>) </span>{
+    <span class="hljs-keyword">return</span> first + second;
+}
+
+<span class="hljs-params">console</span>.log(add(<span class="hljs-params">1</span>, <span class="hljs-params">1</span>));         <span class="hljs-title">// 2</span>
+<span class="hljs-params">console</span>.log(add(<span class="hljs-params">undefined</span>, <span class="hljs-params">1</span>)); <span class="hljs-title">// 抛出错误</span>
+</code></pre>
+<p class="calibre6">本例中调用 <code class="pcalibre3 calibre11 pcalibre4">add(1, 1)</code> 与 <code class="pcalibre3 calibre11 pcalibre4">add(undefined, 1)</code> 对应着以下的后台代码：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">// JS 调用 add(1, 1) 可表示为</span>
+<span class="hljs-keyword">let</span> first = <span class="hljs-params">1</span>;
+<span class="hljs-keyword">let</span> second = <span class="hljs-params">1</span>;
+
+<span class="hljs-title">// JS 调用 add(1) 可表示为</span>
+<span class="hljs-keyword">let</span> first = second;
+<span class="hljs-keyword">let</span> second = <span class="hljs-params">1</span>;
+</code></pre>
+<p class="calibre6">本例中调用 <code class="pcalibre3 calibre11 pcalibre4">add(undefined, 1)</code> 抛出了错误，是因为在 <code class="pcalibre3 calibre11 pcalibre4">first</code> 被初始化时 <code class="pcalibre3 calibre11 pcalibre4">second</code> 尚未被初始化。此处的 <code class="pcalibre3 calibre11 pcalibre4">second</code> 存在于暂时性死区内，对于 <code class="pcalibre3 calibre11 pcalibre4">second</code> 的引用就抛出了错误。这反映出第一章讨论过的 <code class="pcalibre3 calibre11 pcalibre4">let</code> 绑定的行为。</p>
+<blockquote class="calibre20">
+<p class="calibre6">函数参数拥有各自的作用域和暂时性死区，与函数体的作用域相分离，这意味着参数的默认值不允许访问在函数体内部声明的任意变量。</p>
+</blockquote>
+<h3 id="使用不具名参数" class="calibre15"><span id="working-with-unnamed-parameters" class="calibre13">使用不具名参数</span></h3>
+<p class="calibre6">到目前为止，本章的例子只涵盖了在函数定义中的已被命名的参数。然而 JS 的函数并不强求参数的数量要等于已定义具名参数的数量，你所传递的参数总是允许少于或多于正式指定的参数。参数的默认值让函数在接收更少参数时的行为更清晰，而 ES6 试图让相反情况的问题也被更好地解决。</p>
+<h4 id="es5-中的不具名参数" class="calibre15"><span id="unnamed-parameters-in-ecmascript-5" class="calibre13">ES5 中的不具名参数</span></h4>
+<p class="calibre6">JS 早就提供了 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象用于查看传递给函数的所有参数，这样就不必分别指定每个参数。虽然查看 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象在大多数情况下都工作正常，但操作它有时仍然比较麻烦。例如，参考以下查看 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象的代码：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">pick</span>(<span class="hljs-params">object</span>) </span>{
+    <span class="hljs-keyword">let</span> result = <span class="hljs-params">Object</span>.create(<span class="hljs-params">null</span>);
+
+    <span class="hljs-title">// 从第二个参数开始处理</span>
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-params">1</span>, len = <span class="hljs-params">arguments</span>.length; i &lt; len; i++) {
+        result[<span class="hljs-params">arguments</span>[i]] = object[<span class="hljs-params">arguments</span>[i]];
+    }
+
+    <span class="hljs-keyword">return</span> result;
+}
+
+<span class="hljs-keyword">let</span> book = {
+    title: <span class="hljs-string">"Understanding ES6"</span>,
+    author: <span class="hljs-string">"Nicholas C. Zakas"</span>,
+    year: <span class="hljs-params">2015</span>
+};
+
+<span class="hljs-keyword">let</span> bookData = pick(book, <span class="hljs-string">"author"</span>, <span class="hljs-string">"year"</span>);
+
+<span class="hljs-params">console</span>.log(bookData.author);   <span class="hljs-title">// "Nicholas C. Zakas"</span>
+<span class="hljs-params">console</span>.log(bookData.year);     <span class="hljs-title">// 2015</span>
+</code></pre>
+<p class="calibre6">此函数模拟了 <strong class="calibre8">Underscore.js</strong> 代码库的 <code class="pcalibre3 calibre11 pcalibre4">pick()</code> 方法，能够返回包含原有对象特定属性的子集副本。本例中只为函数定义了一个参数，期望该参数就是需要从中拷贝属性的来源对象，除此之外传递的所有参数则都是需要拷贝的属性的名称。</p>
+<p class="calibre6">这个 <code class="pcalibre3 calibre11 pcalibre4">pick()</code> 函数有两点需要注意。首先，完全看不出该函数能够处理多个参数，你能为其再多定义几个参数，但依然不足以标明该函数能处理任意数量的参数。其次，由于第一个参数被命名并被直接使用，当你寻找需要复制的属性时，就必须从 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象索引位置 1 开始处理而不是从位置 0 。要记住使用 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 的适当索引值并不一定困难，但毕竟多了一件需要留意的事。</p>
+<p class="calibre6">ES6 引入了剩余参数以便解决这个问题。</p>
+<h4 id="剩余参数" class="calibre15"><span id="rest-parameters" class="calibre13">剩余参数</span></h4>
+<p class="calibre6"><strong class="calibre8">剩余参数</strong>（ <strong class="calibre8">rest parameter</strong> ）由三个点（ <code class="pcalibre3 calibre11 pcalibre4">...</code> ）与一个紧跟着的具名参数指定，它会是包含传递给函数的其余参数的一个数组，名称中的“剩余”也由此而来。例如， <code class="pcalibre3 calibre11 pcalibre4">pick()</code> 函数可以像下面这样用剩余参数来重写：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">pick</span>(<span class="hljs-params">object, ...keys</span>) </span>{
+    <span class="hljs-keyword">let</span> result = <span class="hljs-params">Object</span>.create(<span class="hljs-params">null</span>);
+
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-params">0</span>, len = keys.length; i &lt; len; i++) {
+        result[keys[i]] = object[keys[i]];
+    }
+
+    <span class="hljs-keyword">return</span> result;
+}
+</code></pre>
+<p class="calibre6">在此版本的函数中， <code class="pcalibre3 calibre11 pcalibre4">keys</code> 是一个包含所有在 <code class="pcalibre3 calibre11 pcalibre4">object</code> 之后的参数的剩余参数（这与包含所有参数的 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 不同，后者会连第一个参数都包含在内）。这意味着你可以对 <code class="pcalibre3 calibre11 pcalibre4">keys</code> 从头到尾进行迭代，而不需要有所顾虑。作为一个额外的收益，通过观察该函数便能判明它具有处理任意数量参数的能力。</p>
+<blockquote class="calibre20">
+<p class="calibre6">函数的 <code class="pcalibre3 calibre11 pcalibre4">length</code> 属性用于指示具名参数的数量，而剩余参数对其毫无影响。此例中 <code class="pcalibre3 calibre11 pcalibre4">pick()</code> 函数的 <code class="pcalibre3 calibre11 pcalibre4">length</code> 属性值是 1 ，因为只有 <code class="pcalibre3 calibre11 pcalibre4">object</code> 参数被用于计算该值。</p>
+</blockquote>
+<h5 id="剩余参数的限制条件" class="calibre18"><span id="rest-parameter-restrictions" class="calibre19">剩余参数的限制条件</span></h5>
+<p class="calibre6">剩余参数受到两点限制。一是函数只能有一个剩余参数，并且它必须被放在最后。例如，如下代码是无法工作的：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">// 语法错误：不能在剩余参数后使用具名参数</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">pick</span>(<span class="hljs-params">object, ...keys, last</span>) </span>{
+    <span class="hljs-keyword">let</span> result = <span class="hljs-params">Object</span>.create(<span class="hljs-params">null</span>);
+
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-params">0</span>, len = keys.length; i &lt; len; i++) {
+        result[keys[i]] = object[keys[i]];
+    }
+
+    <span class="hljs-keyword">return</span> result;
+}
+</code></pre>
+<p class="calibre6">此处的 <code class="pcalibre3 calibre11 pcalibre4">last</code> 跟在了剩余参数 <code class="pcalibre3 calibre11 pcalibre4">keys</code> 后面，这会导致一个语法错误。</p>
+<p class="calibre6">第二个限制是剩余参数不能在对象字面量的 setter 属性中使用，这意味着如下代码同样会导致语法错误：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> object = {
+
+    <span class="hljs-title">// 语法错误：不能在 setter 中使用剩余参数</span>
+    set name(...value) {
+        <span class="hljs-title">// 一些操作</span>
+    }
+};
+</code></pre>
+<p class="calibre6">存在此限制的原因是：对象字面量的 setter 被限定只能使用单个参数；而剩余参数按照定义是不限制参数数量的，因此它在此处不被许可。</p>
+<h5 id="剩余参数如何影响-arguments-对象" class="calibre18"><span id="how-rest-parameters-affect-the-arguments-object" class="calibre19">剩余参数如何影响 arguments 对象</span></h5>
+<p class="calibre6">设计剩余参数是为了替代 ES 中的 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 。原先在 ES4 中就移除了 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 并添加了剩余参数，以便允许向函数传入不限数量的参数。尽管 ES4 从未被实施，但这个想法被保持下来并在 ES6 中被重新引入，虽然 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 仍未在语言中被移除。</p>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象在函数被调用时反映了传入的参数，与剩余参数能协同工作，就像如下程序所演示的：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">checkArgs</span>(<span class="hljs-params">...args</span>) </span>{
+    <span class="hljs-params">console</span>.log(args.length);
+    <span class="hljs-params">console</span>.log(<span class="hljs-params">arguments</span>.length);
+    <span class="hljs-params">console</span>.log(args[<span class="hljs-params">0</span>], <span class="hljs-params">arguments</span>[<span class="hljs-params">0</span>]);
+    <span class="hljs-params">console</span>.log(args[<span class="hljs-params">1</span>], <span class="hljs-params">arguments</span>[<span class="hljs-params">1</span>]);
+}
+
+checkArgs(<span class="hljs-string">"a"</span>, <span class="hljs-string">"b"</span>);
+</code></pre>
+<p class="calibre6">调用 <code class="pcalibre3 calibre11 pcalibre4">checkArgs()</code> 输出了：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5">2
+2
+a a
+b b
+</code></pre><p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象总能正确反映被传入函数的参数，而无视剩余参数的使用。</p>
+<p class="calibre6">这已是对剩余参数真正需要了解的全部内容，你可以开始使用它们了。</p>
+<h3 id="函数构造器的增强能力" class="calibre15"><span id="increased-capabilities-of-the-function-constructor" class="calibre13">函数构造器的增强能力</span></h3>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">Function</code> 构造器允许你动态创建一个新函数，但在 JS 中并不常用。传给该构造器的参数都是字符串，它们就是目标函数的参数与函数体，这里有个范例：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> add = <span class="hljs-keyword">new</span> <span class="hljs-params">Function</span>(<span class="hljs-string">"first"</span>, <span class="hljs-string">"second"</span>, <span class="hljs-string">"return first + second"</span>);
+
+<span class="hljs-params">console</span>.log(add(<span class="hljs-params">1</span>, <span class="hljs-params">1</span>));     <span class="hljs-title">// 2</span>
+</code></pre>
+<p class="calibre6">ES6 增强了 <code class="pcalibre3 calibre11 pcalibre4">Function</code> 构造器的能力，允许使用默认参数以及剩余参数。对于默认参数来说，你只需为参数名称添加等于符号以及默认值，正如下例：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> add = <span class="hljs-keyword">new</span> <span class="hljs-params">Function</span>(<span class="hljs-string">"first"</span>, <span class="hljs-string">"second = first"</span>,
+        <span class="hljs-string">"return first + second"</span>);
+
+<span class="hljs-params">console</span>.log(add(<span class="hljs-params">1</span>, <span class="hljs-params">1</span>));     <span class="hljs-title">// 2</span>
+<span class="hljs-params">console</span>.log(add(<span class="hljs-params">1</span>));        <span class="hljs-title">// 2</span>
+</code></pre>
+<p class="calibre6">在此例中，当只传递了一个参数时， <code class="pcalibre3 calibre11 pcalibre4">first</code> 的值会被赋给 <code class="pcalibre3 calibre11 pcalibre4">second</code> 参数，此处的语法与不使用 <code class="pcalibre3 calibre11 pcalibre4">Function</code> 的函数声明一致。</p>
+<p class="calibre6">而对剩余参数来说，只需在最后一个参数前添加 <code class="pcalibre3 calibre11 pcalibre4">...</code> 即可，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> pickFirst = <span class="hljs-keyword">new</span> <span class="hljs-params">Function</span>(<span class="hljs-string">"...args"</span>, <span class="hljs-string">"return args[0]"</span>);
+
+<span class="hljs-params">console</span>.log(pickFirst(<span class="hljs-params">1</span>, <span class="hljs-params">2</span>));   <span class="hljs-title">// 1</span>
+</code></pre>
+<p class="calibre6">此代码创建了一个仅使用剩余参数的函数，让其返回所传入的第一个参数。</p>
+<p class="calibre6">默认参数和剩余参数的添加，确保了 <code class="pcalibre3 calibre11 pcalibre4">Function</code> 构造器拥有与函数声明形式相同的所有能力。</p>
+<h3 id="扩展运算符" class="calibre15"><span id="the-spread-operator" class="calibre13">扩展运算符</span></h3>
+<p class="calibre6">与剩余参数关联最密切的就是扩展运算符。剩余参数允许你把多个独立的参数合并到一个数组中；而扩展运算符则允许将一个数组分割，并将各个项作为分离的参数传给函数。考虑一下 <code class="pcalibre3 calibre11 pcalibre4">Math.max()</code> 方法，它接受任意数量的参数，并会返回其中的最大值。这里有个此方法的简单用例：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> value1 = <span class="hljs-params">25</span>,
+    value2 = <span class="hljs-params">50</span>;
+
+<span class="hljs-params">console</span>.log(<span class="hljs-params">Math</span>.max(value1, value2));      <span class="hljs-title">// 50</span>
+</code></pre>
+<p class="calibre6">若像本例这样仅处理两个值，那么 <code class="pcalibre3 calibre11 pcalibre4">Math.max()</code> 非常容易使用：将这两个值传入，就会返回较大的那个。但若想处理数组中的值，此时该如何找到最大值？ <code class="pcalibre3 calibre11 pcalibre4">Math.max()</code> 方法并不允许你传入一个数组，因此在 ES5 或更早版本中，你必须自行搜索整个数组，或像下面这样使用 <code class="pcalibre3 calibre11 pcalibre4">apply()</code> 方法：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> values = [<span class="hljs-params">25</span>, <span class="hljs-params">50</span>, <span class="hljs-params">75</span>, <span class="hljs-params">100</span>]
+
+<span class="hljs-params">console</span>.log(<span class="hljs-params">Math</span>.max.apply(<span class="hljs-params">Math</span>, values));  <span class="hljs-title">// 100</span>
+</code></pre>
+<p class="calibre6">该解决方案是可行的，但如此使用 <code class="pcalibre3 calibre11 pcalibre4">apply()</code> 会让人有一点疑惑，它实际上使用了额外的语法混淆了代码的真实意图。</p>
+<p class="calibre6">ES6 的扩展运算符令这种情况变得简单。无须调用 <code class="pcalibre3 calibre11 pcalibre4">apply()</code> ，你可以像使用剩余参数那样在该数组前添加 <code class="pcalibre3 calibre11 pcalibre4">...</code> ，并直接将其传递给 <code class="pcalibre3 calibre11 pcalibre4">Math.max()</code> 。 JS 引擎将会将该数组分割为独立参数并把它们传递进去，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> values = [<span class="hljs-params">25</span>, <span class="hljs-params">50</span>, <span class="hljs-params">75</span>, <span class="hljs-params">100</span>]
+
+<span class="hljs-title">// 等价于 console.log(Math.max(25, 50, 75, 100));</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-params">Math</span>.max(...values));           <span class="hljs-title">// 100</span>
+</code></pre>
+<p class="calibre6">现在调用 <code class="pcalibre3 calibre11 pcalibre4">Math.max()</code> 看起来更传统一些，并避免了为一个简单数学操作使用复杂的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 绑定（即在上个例子中提供给 <code class="pcalibre3 calibre11 pcalibre4">Math.max.apply()</code> 的第一个参数）。</p>
+<p class="calibre6">你可以将扩展运算符与其他参数混用。假设你想让 <code class="pcalibre3 calibre11 pcalibre4">Math.max()</code> 返回的最小值为 0 （以防数组中混入了负值），你可以将参数 0 单独传入，并继续为其他参数使用扩展运算符，正如下例：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> values = [<span class="hljs-params">-25</span>, <span class="hljs-params">-50</span>, <span class="hljs-params">-75</span>, <span class="hljs-params">-100</span>]
+
+<span class="hljs-params">console</span>.log(<span class="hljs-params">Math</span>.max(...values, <span class="hljs-params">0</span>));        <span class="hljs-title">// 0</span>
+</code></pre>
+<p class="calibre6">本例中传给 <code class="pcalibre3 calibre11 pcalibre4">Math.max()</code> 的最后一个参数是 <code class="pcalibre3 calibre11 pcalibre4">0</code> ，它跟在使用扩展运算符的其他参数之后传入。</p>
+<p class="calibre6">用扩展运算符传递参数，使得更容易将数组作为函数参数来使用，你会发现在大部分场景中扩展运算符都是 <code class="pcalibre3 calibre11 pcalibre4">apply()</code> 方法的合适替代品。</p>
+<p class="calibre6">除了你至今看到的默认参数与剩余参数的用法之外，在 ES6 中还可以在 JS 的 <code class="pcalibre3 calibre11 pcalibre4">Function</code> 构造器中使用这两类参数。</p>
+<h3 id="es6-的名称属性" class="calibre15"><span id="ecmascript-6-s-name-property" class="calibre13">ES6 的名称属性</span></h3>
+<p class="calibre6">定义函数有各种各样的方式，在 JS 中识别函数就变得很有挑战性。此外，匿名函数表达式的流行使得调试有点困难，经常导致堆栈跟踪难以被阅读与解释。正因为此， ES6 给所有函数添加了 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性。</p>
+<h4 id="选择合适的名称" class="calibre15"><span id="choosing-appropriate-names" class="calibre13">选择合适的名称</span></h4>
+<p class="calibre6">ES6 中所有函数都有适当的 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性值。为了理解其实际运作，请看下例——它展示了一个函数与一个函数表达式，并将二者的 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性都打印出来：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">doSomething</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-title">// ...</span>
+}
+
+<span class="hljs-keyword">var</span> doAnotherThing = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-title">// ...</span>
+};
+
+<span class="hljs-params">console</span>.log(doSomething.name);          <span class="hljs-title">// "doSomething"</span>
+<span class="hljs-params">console</span>.log(doAnotherThing.name);       <span class="hljs-title">// "doAnotherThing"</span>
+</code></pre>
+<p class="calibre6">在此代码中，由于是一个函数声明， <code class="pcalibre3 calibre11 pcalibre4">doSomething()</code> 就拥有一个值为 <code class="pcalibre3 calibre11 pcalibre4">"doSomething"</code> 的 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性。而匿名函数表达式 <code class="pcalibre3 calibre11 pcalibre4">doAnotherThing()</code> 的<code class="pcalibre3 calibre11 pcalibre4">name</code> 属性值则是 <code class="pcalibre3 calibre11 pcalibre4">"doAnotherThing"</code> ，因为这是该函数所赋值的变量的名称。</p>
+<blockquote class="calibre20">
+<p class="calibre6">译注：匿名函数的名称属性在 FireFox 与 Edge 中仍然不被支持（值为空字符串），而 Chrome 直到 51.0 版本才提供了该特性。</p>
+</blockquote>
+<h4 id="名称属性的特殊情况" class="calibre15"><span id="special-cases-of-the-name-property" class="calibre13">名称属性的特殊情况</span></h4>
+<p class="calibre6">虽然函数声明与函数表达式的名称易于查找，但 ES6 更进一步确保了<strong class="calibre8">所有</strong>函数都拥有合适的名称。为了表明这点，请参考如下程序：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> doSomething = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">doSomethingElse</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-title">// ...</span>
+};
+
+<span class="hljs-keyword">var</span> person = {
+    get firstName() {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Nicholas"</span>
+    },
+    sayName: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-params">console</span>.log(<span class="hljs-keyword">this</span>.name);
+    }
+}
+
+<span class="hljs-params">console</span>.log(doSomething.name);      <span class="hljs-title">// "doSomethingElse"</span>
+<span class="hljs-params">console</span>.log(person.sayName.name);   <span class="hljs-title">// "sayName"</span>
+
+<span class="hljs-keyword">var</span> descriptor = <span class="hljs-params">Object</span>.getOwnPropertyDescriptor(person, <span class="hljs-string">"firstName"</span>);
+<span class="hljs-params">console</span>.log(descriptor.get.name); <span class="hljs-title">// "get firstName"</span>
+</code></pre>
+<p class="calibre6">本例中的 <code class="pcalibre3 calibre11 pcalibre4">doSomething.name</code> 的值是 <code class="pcalibre3 calibre11 pcalibre4">"doSomethingElse"</code> ，因为该函数表达式自己拥有一个名称，并且此名称的优先级要高于赋值目标的变量名。 <code class="pcalibre3 calibre11 pcalibre4">person.sayName()</code> 的 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性值是 <code class="pcalibre3 calibre11 pcalibre4">"sayName"</code> ，正如对象字面量指定的那样。类似的， <code class="pcalibre3 calibre11 pcalibre4">person.firstName</code> 实际是个 getter 函数，因此它的名称是 <code class="pcalibre3 calibre11 pcalibre4">"get firstName"</code> ，以标明它的特征；同样， setter 函数也会带有 <code class="pcalibre3 calibre11 pcalibre4">"set"</code> 的前缀（ getter 与 setter 函数都必须用 <code class="pcalibre3 calibre11 pcalibre4">Object.getOwnPropertyDescriptor()</code> 来检索）。</p>
+<p class="calibre6">函数名称还有另外两个特殊情况。使用 <code class="pcalibre3 calibre11 pcalibre4">bind()</code> 创建的函数会在名称属性值之前带有 <code class="pcalibre3 calibre11 pcalibre4">"bound"</code> 前缀；而使用 <code class="pcalibre3 calibre11 pcalibre4">Function</code> 构造器创建的函数，其名称属性则会有 <code class="pcalibre3 calibre11 pcalibre4">"anonymous"</code> 前缀，正如此例：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> doSomething = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-title">// ...</span>
+};
+
+<span class="hljs-params">console</span>.log(doSomething.bind().name);   <span class="hljs-title">// "bound doSomething"</span>
+
+<span class="hljs-params">console</span>.log((<span class="hljs-keyword">new</span> <span class="hljs-params">Function</span>()).name);     <span class="hljs-title">// "anonymous"</span>
+</code></pre>
+<p class="calibre6">绑定产生的函数拥有原函数的名称，并总会附带 <code class="pcalibre3 calibre11 pcalibre4">"bound"</code> 前缀，因此 <code class="pcalibre3 calibre11 pcalibre4">doSomething()</code> 函数的绑定版本就具有 <code class="pcalibre3 calibre11 pcalibre4">"bound doSomething"</code> 名称。</p>
+<blockquote class="calibre20">
+<p class="calibre6">需要注意的是，函数的 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性值未必会关联到同名变量。 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性是为了在调试时获得有用的相关信息，所以不能用 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性值去获取对函数的引用。</p>
+</blockquote>
+<h3 id="明确函数的双重用途" class="calibre15"><span id="clarifying-the-dual-purpose-of-functions" class="calibre13">明确函数的双重用途</span></h3>
+<p class="calibre6">在 ES5 以及更早版本中，函数根据是否使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 来调用而有双重用途。当使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 时，函数内部的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 是一个新对象，并作为函数的返回值，如下例所示：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Person</span>(<span class="hljs-params">name</span>) </span>{
+    <span class="hljs-keyword">this</span>.name = name;
+}
+
+<span class="hljs-keyword">var</span> person = <span class="hljs-keyword">new</span> Person(<span class="hljs-string">"Nicholas"</span>);
+<span class="hljs-keyword">var</span> notAPerson = Person(<span class="hljs-string">"Nicholas"</span>);
+
+<span class="hljs-params">console</span>.log(person);        <span class="hljs-title">// "[Object object]"</span>
+<span class="hljs-params">console</span>.log(notAPerson);    <span class="hljs-title">// "undefined"</span>
+</code></pre>
+<p class="calibre6">当创建 <code class="pcalibre3 calibre11 pcalibre4">notAPerson</code> 时，未使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 来调用 <code class="pcalibre3 calibre11 pcalibre4">Person()</code> ，输出了 <code class="pcalibre3 calibre11 pcalibre4">undefined</code> （并且在非严格模式下给全局对象添加了 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性）。 <code class="pcalibre3 calibre11 pcalibre4">Person</code> 首字母大写是指示其应当使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 来调用的唯一标识，这在 JS 编程中十分普遍。函数双重角色的混乱情况在 ES6 中发生了一些改变。</p>
+<p class="calibre6">JS 为函数提供了两个不同的内部方法： <code class="pcalibre3 calibre11 pcalibre4">[[Call]]</code> 与 <code class="pcalibre3 calibre11 pcalibre4">[[Construct]]</code> 。当函数未使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 进行调用时， <code class="pcalibre3 calibre11 pcalibre4">[[call]]</code> 方法会被执行，运行的是代码中显示的函数体。而当函数使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 进行调用时， <code class="pcalibre3 calibre11 pcalibre4">[[Construct]]</code> 方法则会被执行，负责创建一个被称为<strong class="calibre8">新目标</strong>的新的对象，并且使用该新目标作为 <code class="pcalibre3 calibre11 pcalibre4">this</code> 去执行函数体。拥有 <code class="pcalibre3 calibre11 pcalibre4">[[Construct]]</code> 方法的函数被称为<strong class="calibre8">构造器</strong>。</p>
+<blockquote class="calibre20">
+<p class="calibre6">记住并不是所有函数都拥有 <code class="pcalibre3 calibre11 pcalibre4">[[Construct]]</code> 方法，因此不是所有函数都可以用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 来调用。在“箭头函数”小节中介绍的箭头函数就未拥有该方法。</p>
+</blockquote>
+<h4 id="在-es5-中判断函数如何被调用" class="calibre15"><span id="determining-how-a-function-was-called-in-ecmascript-5" class="calibre13">在 ES5 中判断函数如何被调用</span></h4>
+<p class="calibre6">在 ES5 中判断函数是不是使用了 <code class="pcalibre3 calibre11 pcalibre4">new</code> 来调用（即作为构造器），最流行的方式是使用 <code class="pcalibre3 calibre11 pcalibre4">instanceof</code> ，例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Person</span>(<span class="hljs-params">name</span>) </span>{
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span> <span class="hljs-keyword">instanceof</span> Person) {
+        <span class="hljs-keyword">this</span>.name = name;   <span class="hljs-title">// 使用 new</span>
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-params">Error</span>(<span class="hljs-string">"You must use new with Person."</span>)
+    }
+}
+
+<span class="hljs-keyword">var</span> person = <span class="hljs-keyword">new</span> Person(<span class="hljs-string">"Nicholas"</span>);
+<span class="hljs-keyword">var</span> notAPerson = Person(<span class="hljs-string">"Nicholas"</span>);  <span class="hljs-title">// 抛出错误</span>
+</code></pre>
+<p class="calibre6">此处对 <code class="pcalibre3 calibre11 pcalibre4">this</code> 值进行了检查，来判断其是否为构造器的一个实例：若是，正常继续执行；否则抛出错误。这能奏效是因为 <code class="pcalibre3 calibre11 pcalibre4">[[Construct]]</code> 方法创建了 <code class="pcalibre3 calibre11 pcalibre4">Person</code> 的一个新实例并将其赋值给 <code class="pcalibre3 calibre11 pcalibre4">this</code> 。可惜的是，该方法并不绝对可靠，因为在不使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 的情况下 <code class="pcalibre3 calibre11 pcalibre4">this</code> 仍然可能是 <code class="pcalibre3 calibre11 pcalibre4">Person</code> 的实例，正如下例：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Person</span>(<span class="hljs-params">name</span>) </span>{
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span> <span class="hljs-keyword">instanceof</span> Person) {
+        <span class="hljs-keyword">this</span>.name = name;   <span class="hljs-title">// 使用 new</span>
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-params">Error</span>(<span class="hljs-string">"You must use new with Person."</span>)
+    }
+}
+
+<span class="hljs-keyword">var</span> person = <span class="hljs-keyword">new</span> Person(<span class="hljs-string">"Nicholas"</span>);
+<span class="hljs-keyword">var</span> notAPerson = Person.call(person, <span class="hljs-string">"Michael"</span>);    <span class="hljs-title">// 奏效了！</span>
+</code></pre>
+<p class="calibre6">调用 <code class="pcalibre3 calibre11 pcalibre4">Person.call()</code> 并将 <code class="pcalibre3 calibre11 pcalibre4">person</code> 变量作为第一个参数传入，这意味着将 <code class="pcalibre3 calibre11 pcalibre4">Person</code> 内部的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 设置为了 <code class="pcalibre3 calibre11 pcalibre4">person</code> 。对于该函数来说，没有任何方法能将这种方式与使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 调用区分开来。</p>
+<h4 id="newtarget-元属性" class="calibre15"><span id="the-new-target-metaproperty" class="calibre13">new.target 元属性</span></h4>
+<p class="calibre6">为了解决这个问题， ES6 引入了 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> <strong class="calibre8">元属性</strong>。元属性指的是“非对象”（例如 <code class="pcalibre3 calibre11 pcalibre4">new</code> ）上的一个属性，并提供关联到它的目标的附加信息。当函数的 <code class="pcalibre3 calibre11 pcalibre4">[[Construct]]</code> 方法被调用时， <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 会被填入 <code class="pcalibre3 calibre11 pcalibre4">new</code> 运算符的作用目标，该目标通常是新创建的对象实例的构造器，并且会成为函数体内部的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 值。而若 <code class="pcalibre3 calibre11 pcalibre4">[[Call]]</code> 被执行， <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 的值则会是 <code class="pcalibre3 calibre11 pcalibre4">undefined</code> 。</p>
+<p class="calibre6">通过检查 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 是否被定义，这个新的元属性就让你能安全地判断函数是否被使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 进行了调用。</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Person</span>(<span class="hljs-params">name</span>) </span>{
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> <span class="hljs-keyword">new</span>.target !== <span class="hljs-string">"undefined"</span>) {
+        <span class="hljs-keyword">this</span>.name = name;   <span class="hljs-title">// 使用 new</span>
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-params">Error</span>(<span class="hljs-string">"You must use new with Person."</span>)
+    }
+}
+
+<span class="hljs-keyword">var</span> person = <span class="hljs-keyword">new</span> Person(<span class="hljs-string">"Nicholas"</span>);
+<span class="hljs-keyword">var</span> notAPerson = Person.call(person, <span class="hljs-string">"Michael"</span>);    <span class="hljs-title">// 出错！</span>
+</code></pre>
+<p class="calibre6">使用 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 而非 <code class="pcalibre3 calibre11 pcalibre4">this instanceof Person</code> ， <code class="pcalibre3 calibre11 pcalibre4">Person</code> 构造器会在未使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 调用时正确地抛出错误。</p>
+<p class="calibre6">也可以检查 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 是否被使用特定构造器进行了调用，例如以下代码：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Person</span>(<span class="hljs-params">name</span>) </span>{
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">new</span>.target === Person) {
+        <span class="hljs-keyword">this</span>.name = name;   <span class="hljs-title">// 使用 new</span>
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-params">Error</span>(<span class="hljs-string">"You must use new with Person."</span>)
+    }
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">AnotherPerson</span>(<span class="hljs-params">name</span>) </span>{
+    Person.call(<span class="hljs-keyword">this</span>, name);
+}
+
+<span class="hljs-keyword">var</span> person = <span class="hljs-keyword">new</span> Person(<span class="hljs-string">"Nicholas"</span>);
+<span class="hljs-keyword">var</span> anotherPerson = <span class="hljs-keyword">new</span> AnotherPerson(<span class="hljs-string">"Nicholas"</span>);  <span class="hljs-title">// 出错！</span>
+</code></pre>
+<blockquote class="calibre20">
+<p class="calibre6">译注：原文此段代码有误。</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">if</span> (<span class="hljs-keyword">new</span>.target === Person) {
+</code></pre>
+<p class="calibre6">这一行原先写为：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> <span class="hljs-keyword">new</span>.target === Person) {
+</code></pre>
+<p class="calibre6">原先的写法是有问题的，不能正确发挥作用，它会在 <code class="pcalibre3 calibre11 pcalibre4">new Person("Nicholas")</code> 这行就抛出错误。</p>
+</blockquote>
+<p class="calibre6">在此代码中，为了正确工作， <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 必须是 <code class="pcalibre3 calibre11 pcalibre4">Person</code> 。当调用 <code class="pcalibre3 calibre11 pcalibre4">new AnotherPerson("Nicholas")</code> 时， <code class="pcalibre3 calibre11 pcalibre4">Person.call(this, name)</code> 也随之被调用，从而抛出了错误，因为此时在 <code class="pcalibre3 calibre11 pcalibre4">Person</code> 构造器内部的 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 值为 <code class="pcalibre3 calibre11 pcalibre4">undefined</code> （ <code class="pcalibre3 calibre11 pcalibre4">Person</code>  并未使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 调用）。</p>
+<blockquote class="calibre20">
+<p class="calibre6">警告：在函数之外使用 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 会有语法错误。</p>
+</blockquote>
+<p class="calibre6">ES6 通过新增 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 而消除了函数调用方面的不确定性。在该主题上，ES6 还随之解决了本语言之前另一个不确定的部分——在代码块内部声明函数。</p>
+<h3 id="块级函数" class="calibre15"><span id="block-level-functions" class="calibre13">块级函数</span></h3>
+<p class="calibre6">在 ES3 或更早版本中，在代码块中声明函数（即<strong class="calibre8">块级函数</strong>）严格来说应当是一个语法错误，但所有的浏览器却都支持该语法。可惜的是，每个支持该语法的浏览器都有轻微的行为差异，所以最佳实践就是不要在代码块中声明函数（更好的选择是使用函数表达式）。</p>
+<p class="calibre6">为了控制这种不兼容行为， ES5 的严格模式为代码块内部的函数声明引入了一个错误，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="calibre19">"use strict"</span>;
+
+<span class="hljs-keyword">if</span> (<span class="hljs-params">true</span>) {
+
+    <span class="hljs-title">// 在 ES5 会抛出语法错误， ES6 则不会</span>
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">doSomething</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-title">// ...</span>
+    }
+}
+</code></pre>
+<p class="calibre6">在 ES5 中，这段代码会抛出语法错误。然而 ES6 会将 <code class="pcalibre3 calibre11 pcalibre4">doSomething()</code> 函数视为块级声明，并允许它在定义所在的代码块内部被访问。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="calibre19">"use strict"</span>;
+
+<span class="hljs-keyword">if</span> (<span class="hljs-params">true</span>) {
+
+    <span class="hljs-params">console</span>.log(<span class="hljs-keyword">typeof</span> doSomething);        <span class="hljs-title">// "function"</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">doSomething</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-title">// ...</span>
+    }
+
+    doSomething();
+}
+
+<span class="hljs-params">console</span>.log(<span class="hljs-keyword">typeof</span> doSomething);            <span class="hljs-title">// "undefined"</span>
+</code></pre>
+<p class="calibre6">块级函数会被提升到定义所在的代码块的顶部，因此 <code class="pcalibre3 calibre11 pcalibre4">typeof doSomething</code> 会返回 <code class="pcalibre3 calibre11 pcalibre4">"function"</code> ，即便该检查位于此函数定义位置之前。一旦 <code class="pcalibre3 calibre11 pcalibre4">if</code> 代码块执行完毕， <code class="pcalibre3 calibre11 pcalibre4">doSomething()</code> 也就不复存在。</p>
+<h4 id="决定何时使用块级函数" class="calibre15"><span id="deciding-when-to-use-block-level-functions" class="calibre13">决定何时使用块级函数</span></h4>
+<p class="calibre6">块级函数与 <code class="pcalibre3 calibre11 pcalibre4">let</code> 函数表达式相似，在执行流跳出定义所在的代码块之后，函数定义就会被移除。关键区别在于：块级函数会被提升到所在代码块的顶部；而使用 <code class="pcalibre3 calibre11 pcalibre4">let</code> 的函数表达式则不会，正如以下范例所示：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="calibre19">"use strict"</span>;
+
+<span class="hljs-keyword">if</span> (<span class="hljs-params">true</span>) {
+
+    <span class="hljs-params">console</span>.log(<span class="hljs-keyword">typeof</span> doSomething);        <span class="hljs-title">// 抛出错误</span>
+
+    <span class="hljs-keyword">let</span> doSomething = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        <span class="hljs-title">// ...</span>
+    }
+
+    doSomething();
+}
+
+<span class="hljs-params">console</span>.log(<span class="hljs-keyword">typeof</span> doSomething);
+</code></pre>
+<p class="calibre6">此处代码在 <code class="pcalibre3 calibre11 pcalibre4">typeof doSomething</code> 被执行时中断了，因为 <code class="pcalibre3 calibre11 pcalibre4">let</code> 声明尚未被执行，将 <code class="pcalibre3 calibre11 pcalibre4">doSomething()</code> 放入了暂时性死区。知道这个区别之后，你就可以根据是否想要提升来选择应当使用块级函数还是 <code class="pcalibre3 calibre11 pcalibre4">let</code> 表达式。</p>
+<h4 id="非严格模式的块级函数" class="calibre15"><span id="block-level-functions-in-nonstrict-mode" class="calibre13">非严格模式的块级函数</span></h4>
+<p class="calibre6">ES6 在非严格模式下同样允许使用块级函数，但行为有细微不同。块级函数的作用域会被提升到所在函数或全局环境的顶部，而不是代码块的顶部。</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">// ES6 behavior</span>
+<span class="hljs-keyword">if</span> (<span class="hljs-params">true</span>) {
+
+    <span class="hljs-params">console</span>.log(<span class="hljs-keyword">typeof</span> doSomething);        <span class="hljs-title">// "function"</span>
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">doSomething</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-title">// ...</span>
+    }
+
+    doSomething();
+}
+
+<span class="hljs-params">console</span>.log(<span class="hljs-keyword">typeof</span> doSomething);            <span class="hljs-title">// "function"</span>
+</code></pre>
+<p class="calibre6">本例中的 <code class="pcalibre3 calibre11 pcalibre4">doSomething()</code> 会被提升到全局作用域，因此在 <code class="pcalibre3 calibre11 pcalibre4">if</code> 代码块外部它仍然存在。 ES6 标准化了这种行为来移除浏览器之前存在的不兼容性，于是在所有 ES6 运行环境中其行为都会遵循相同的方式。</p>
+<p class="calibre6">允许使用块级函数增强了在 JS 中声明函数的能力，但 ES6 还引入了一种全新的声明函数的方式。</p>
+<h3 id="箭头函数" class="calibre15"><span id="arrow-functions" class="calibre13">箭头函数</span></h3>
+<p class="calibre6">ES6 最有意思的一个新部分就是<strong class="calibre8">箭头函数</strong>（ <strong class="calibre8">arrow function</strong> ）。箭头函数正如名称所示那样使用一个“箭头”（ <code class="pcalibre3 calibre11 pcalibre4">=&gt;</code> ）来定义，但它的行为在很多重要方面与传统的 JS 函数不同：</p>
+<ul class="calibre9">
+<li class="calibre10"><strong class="calibre8">没有 <code class="pcalibre3 calibre11 pcalibre4">this</code> 、 <code class="pcalibre3 calibre11 pcalibre4">super</code> 、<code class="pcalibre3 calibre11 pcalibre4">arguments</code> ，也没有 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 绑定</strong>： <code class="pcalibre3 calibre11 pcalibre4">this</code> 、 <code class="pcalibre3 calibre11 pcalibre4">super</code> 、 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 、以及函数内部的 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 的值由所在的、最靠近的非箭头函数来决定（ <code class="pcalibre3 calibre11 pcalibre4">super</code> 详见第四章）。</li>
+<li class="calibre10"><strong class="calibre8">不能被使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 调用</strong>： 箭头函数没有 <code class="pcalibre3 calibre11 pcalibre4">[[Construct]]</code> 方法，因此不能被用为构造函数，使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 调用箭头函数会抛出错误。</li>
+<li class="calibre10"><strong class="calibre8">没有原型</strong>： 既然不能对箭头函数使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> ，那么它也不需要原型，也就是没有 <code class="pcalibre3 calibre11 pcalibre4">prototype</code> 属性。</li>
+<li class="calibre10"><strong class="calibre8">不能更改 <code class="pcalibre3 calibre11 pcalibre4">this</code></strong>： <code class="pcalibre3 calibre11 pcalibre4">this</code> 的值在函数内部不能被修改，在函数的整个生命周期内其值会保持不变。</li>
+<li class="calibre10"><strong class="calibre8">没有 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象</strong>： 既然箭头函数没有 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 绑定，你必须依赖于具名参数或剩余参数来访问函数的参数。</li>
+<li class="calibre10"><strong class="calibre8">不允许重复的具名参数</strong>： 箭头函数不允许拥有重复的具名参数，无论是否在严格模式下；而相对来说，传统函数只有在严格模式下才禁止这种重复。</li>
+</ul>
+<p class="calibre6">产生这些差异是有理由的。首先并且最重要的是，在 JS 编程中 <code class="pcalibre3 calibre11 pcalibre4">this</code> 绑定是发生错误的常见根源之一，在嵌套的函数中有时会因为调用方式的不同，而导致丢失对外层 <code class="pcalibre3 calibre11 pcalibre4">this</code> 值的追踪，就可能会导致预期外的程序行为。其次，箭头函数使用单一的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 值来执行代码，使得 JS 引擎可以更容易对代码的操作进行优化；而常规函数可能会作为构造函数使用（导致 <code class="pcalibre3 calibre11 pcalibre4">this</code> 易变而不利优化）。</p>
+<p class="calibre6">其余差异也聚集在减少箭头函数内部的错误与不确定性，这样 JS 引擎也能更好地优化箭头函数的运行。</p>
+<blockquote class="calibre20">
+<p class="calibre6">注意：箭头函数也拥有 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性，并且遵循与其他函数相同的规则。</p>
+</blockquote>
+<h4 id="箭头函数语法" class="calibre15"><span id="arrow-function-syntax" class="calibre13">箭头函数语法</span></h4>
+<p class="calibre6">箭头函数的语法可以有多种变体，取决于你要完成的目标。所有变体都以函数参数为开头，紧跟着的是箭头，再接下来则是函数体。参数与函数体都根据实际使用有不同的形式。例如，以下箭头函数接收单个参数并返回它：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> reflect = value =&gt; value;
+
+<span class="hljs-title">// 有效等价于：</span>
+
+<span class="hljs-keyword">var</span> reflect = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">value</span>) </span>{
+    <span class="hljs-keyword">return</span> value;
+};
+</code></pre>
+<p class="calibre6">当箭头函数只有单个参数时，该参数可以直接书写而不需要额外的语法；接下来是箭头以及箭头右边的表达式，该表达式会被计算并返回结果。即使此处没有明确的 <code class="pcalibre3 calibre11 pcalibre4">return</code> 语句，该箭头函数仍然会将所传入的参数返回出来。</p>
+<p class="calibre6">如果需要传入多于一个的参数，就需要将它们放在括号内，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> sum = (num1, num2) =&gt; num1 + num2;
+
+<span class="hljs-title">// 有效等价于：</span>
+
+<span class="hljs-keyword">var</span> sum = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">num1, num2</span>) </span>{
+    <span class="hljs-keyword">return</span> num1 + num2;
+};
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">sum()</code> 函数简单地将两个参数相加并返回结果。此箭头函数与上面的 <code class="pcalibre3 calibre11 pcalibre4">reflect()</code> 之间唯一区别在于：此处的参数被封闭在括号内，相互之间使用逗号分隔（就像传统函数那样）。</p>
+<p class="calibre6">如果函数没有任何参数，那么在声明时就必须使用一对空括号，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> getName = () =&gt; <span class="hljs-string">"Nicholas"</span>;
+
+<span class="hljs-title">// 有效等价于：</span>
+
+<span class="hljs-keyword">var</span> getName = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-string">"Nicholas"</span>;
+};
+</code></pre>
+<p class="calibre6">当你想使用更传统的函数体、也就是可能包含多个语句的时候，需要将函数体用一对花括号进行包裹，并明确定义一个返回值，正如下面这个版本的 <code class="pcalibre3 calibre11 pcalibre4">sum()</code> ：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> sum = (num1, num2) =&gt; {
+    <span class="hljs-keyword">return</span> num1 + num2;
+};
+
+<span class="hljs-title">// 有效等价于：</span>
+
+<span class="hljs-keyword">var</span> sum = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">num1, num2</span>) </span>{
+    <span class="hljs-keyword">return</span> num1 + num2;
+};
+</code></pre>
+<p class="calibre6">你基本可以将花括号内部的代码当做传统函数那样对待，除了 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象不可用之外。</p>
+<p class="calibre6">若你想创建一个空函数，就必须使用空的花括号，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> doNothing = () =&gt; {};
+
+<span class="hljs-title">// 有效等价于：</span>
+
+<span class="hljs-keyword">var</span> doNothing = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{};
+</code></pre>
+<p class="calibre6">花括号被用于表示函数的主体，它在你至今看到的例子中都工作正常。但若箭头函数想要从函数体内向外返回一个对象字面量，就必须将该字面量包裹在圆括号内，例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> getTempItem = id =&gt; ({ id: id, name: <span class="hljs-string">"Temp"</span> });
+
+<span class="hljs-title">// 有效等价于：</span>
+
+<span class="hljs-keyword">var</span> getTempItem = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">id</span>) </span>{
+
+    <span class="hljs-keyword">return</span> {
+        id: id,
+        name: <span class="hljs-string">"Temp"</span>
+    };
+};
+</code></pre>
+<p class="calibre6">将对象字面量包裹在括号内，标示了括号内是一个字面量而不是函数体。</p>
+<h4 id="创建立即调用函数表达式" class="calibre15"><span id="creating-immediately-invoked-function-expressions" class="calibre13">创建立即调用函数表达式</span></h4>
+<p class="calibre6">JS 中使用函数的一种流行方式是创建立即调用函数表达式（ immediately-invoked function expression ， IIFE ）。 IIFE 允许你定义一个匿名函数并在未保存引用的情况下立刻调用它。当你想创建一个作用域并隔离在程序其他部分外，这种模式就很有用了。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> person = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">name</span>) </span>{
+
+    <span class="hljs-keyword">return</span> {
+        getName: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+            <span class="hljs-keyword">return</span> name;
+        }
+    };
+
+}(<span class="hljs-string">"Nicholas"</span>);
+
+<span class="hljs-params">console</span>.log(person.getName());      <span class="hljs-title">// "Nicholas"</span>
+</code></pre>
+<p class="calibre6">此代码中 IIFE 被用于创建一个包含 <code class="pcalibre3 calibre11 pcalibre4">getName()</code> 方法的对象。该方法使用 <code class="pcalibre3 calibre11 pcalibre4">name</code> 参数作为返回值，有效地让 <code class="pcalibre3 calibre11 pcalibre4">name</code> 成为所返回对象的一个私有成员。</p>
+<p class="calibre6">你可以使用箭头函数来完成同样的事情，只要将其包裹在括号内即可：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> person = ((name) =&gt; {
+
+    <span class="hljs-keyword">return</span> {
+        getName: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+            <span class="hljs-keyword">return</span> name;
+        }
+    };
+
+})(<span class="hljs-string">"Nicholas"</span>);
+
+<span class="hljs-params">console</span>.log(person.getName());      <span class="hljs-title">// "Nicholas"</span>
+</code></pre>
+<p class="calibre6">需要注意的是括号仅包裹了箭头函数的定义，并未包裹 <code class="pcalibre3 calibre11 pcalibre4">("Nicholas")</code> 。这有别于使用传统函数时的方式——括号既可以连函数定义与参数调用一起包裹，也可以只用于包裹函数定义。</p>
+<blockquote class="calibre20">
+<p class="calibre6">译注：使用传统函数时，
+<code class="pcalibre3 calibre11 pcalibre4">(function(){/*函数体*/})();</code>
+与
+<code class="pcalibre3 calibre11 pcalibre4">(function(){/*函数体*/}());</code>
+这两种方式都是可行的。</p>
+<p class="calibre6">但若使用箭头函数，则只有下面的写法是有效的：
+<code class="pcalibre3 calibre11 pcalibre4">(() =&gt; {/*函数体*/})();</code></p>
+</blockquote>
+<h4 id="没有-this-绑定" class="calibre15"><span id="no-this-binding" class="calibre13">没有 this 绑定</span></h4>
+<p class="calibre6">JS 最常见的错误领域之一就是在函数内的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 绑定。由于一个函数内部的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 值可以被改变，这取决于调用该函数时的上下文，因此完全可能错误地影响了一个对象，尽管你本意是要修改另一个对象。研究如下例子：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> PageHandler = {
+
+    id: <span class="hljs-string">"123456"</span>,
+
+    init: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-params">document</span>.addEventListener(<span class="hljs-string">"click"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">event</span>) </span>{
+            <span class="hljs-keyword">this</span>.doSomething(event.type);     <span class="hljs-title">// 错误</span>
+        }, <span class="hljs-params">false</span>);
+    },
+
+    doSomething: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">type</span>) </span>{
+        <span class="hljs-params">console</span>.log(<span class="hljs-string">"Handling "</span> + type  + <span class="hljs-string">" for "</span> + <span class="hljs-keyword">this</span>.id);
+    }
+};
+</code></pre>
+<p class="calibre6">此代码的 <code class="pcalibre3 calibre11 pcalibre4">PageHandler</code> 对象被设计用于处理页面上的交互。 <code class="pcalibre3 calibre11 pcalibre4">init()</code> 方法被调用以建立该交互，并注册了一个事件处理函数来调用 <code class="pcalibre3 calibre11 pcalibre4">this.doSomething()</code> 。然而此代码并未按预期工作。</p>
+<p class="calibre6">调用 <code class="pcalibre3 calibre11 pcalibre4">this.doSomething()</code> 被中断是因为 <code class="pcalibre3 calibre11 pcalibre4">this</code> 是对事件目标对象（在此案例中就是 <code class="pcalibre3 calibre11 pcalibre4">document</code> ）的一个引用，而不是被绑定到 <code class="pcalibre3 calibre11 pcalibre4">PageHandler</code> 上。若试图运行此代码，你将会在事件处理函数被触发时得到一个错误，因为 <code class="pcalibre3 calibre11 pcalibre4">this.doSomething()</code> 并不存在于 <code class="pcalibre3 calibre11 pcalibre4">document</code> 对象上。</p>
+<p class="calibre6">你可以明确使用 <code class="pcalibre3 calibre11 pcalibre4">bind()</code> 方法将函数的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 值绑定到 <code class="pcalibre3 calibre11 pcalibre4">PageHandler</code> 上，以修正这段代码，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> PageHandler = {
+
+    id: <span class="hljs-string">"123456"</span>,
+
+    init: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-params">document</span>.addEventListener(<span class="hljs-string">"click"</span>, (<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">event</span>) </span>{
+            <span class="hljs-keyword">this</span>.doSomething(event.type);     <span class="hljs-title">// 没有错误</span>
+        }).bind(<span class="hljs-keyword">this</span>), <span class="hljs-params">false</span>);
+    },
+
+    doSomething: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">type</span>) </span>{
+        <span class="hljs-params">console</span>.log(<span class="hljs-string">"Handling "</span> + type  + <span class="hljs-string">" for "</span> + <span class="hljs-keyword">this</span>.id);
+    }
+};
+</code></pre>
+<p class="calibre6">现在此代码能像预期那样运行，但看起来有点奇怪。通过调用 <code class="pcalibre3 calibre11 pcalibre4">bind(this)</code> ，你实际上创建了一个新函数，它的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 被绑定到当前 <code class="pcalibre3 calibre11 pcalibre4">this</code> （也就是 <code class="pcalibre3 calibre11 pcalibre4">PageHandler</code> ）上。为了避免额外创建一个函数，修正此代码的更好方式是使用箭头函数。</p>
+<p class="calibre6">箭头函数没有 <code class="pcalibre3 calibre11 pcalibre4">this</code> 绑定，意味着箭头函数内部的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 值只能通过查找作用域链来确定。如果箭头函数被包含在一个非箭头函数内，那么 <code class="pcalibre3 calibre11 pcalibre4">this</code> 值就会与该函数的相等；否则， <code class="pcalibre3 calibre11 pcalibre4">this</code> 值就会是 <code class="pcalibre3 calibre11 pcalibre4">undefined</code> 。你可以使用箭头函数来书写如下代码：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> PageHandler = {
+
+    id: <span class="hljs-string">"123456"</span>,
+
+    init: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-params">document</span>.addEventListener(<span class="hljs-string">"click"</span>,
+                event =&gt; <span class="hljs-keyword">this</span>.doSomething(event.type), <span class="hljs-params">false</span>);
+    },
+
+    doSomething: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">type</span>) </span>{
+        <span class="hljs-params">console</span>.log(<span class="hljs-string">"Handling "</span> + type  + <span class="hljs-string">" for "</span> + <span class="hljs-keyword">this</span>.id);
+    }
+};
+</code></pre>
+<p class="calibre6">本例中的事件处理函数是一个调用 <code class="pcalibre3 calibre11 pcalibre4">this.doSomething()</code> 的箭头函数，它的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 值与 <code class="pcalibre3 calibre11 pcalibre4">init()</code> 方法的相同，因此这个版本的代码的工作方式类似于使用了 <code class="pcalibre3 calibre11 pcalibre4">bind(this)</code> 的上个例子。尽管 <code class="pcalibre3 calibre11 pcalibre4">doSomething()</code> 方法并不返回任何值，它仍然是函数体内唯一被执行的语句，因此无须使用花扩花来包裹它。</p>
+<p class="calibre6">箭头函数被设计为“抛弃型”的函数，因此不能被用于定义新的类型； <code class="pcalibre3 calibre11 pcalibre4">prototype</code> 属性的缺失让这个特性显而易见。对箭头函数使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 运算符会导致错误，正如下例：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> MyType = () =&gt; {},
+    object = <span class="hljs-keyword">new</span> MyType();  <span class="hljs-title">// 错误：你不能对箭头函数使用 'new'</span>
+</code></pre>
+<p class="calibre6">此代码调用 <code class="pcalibre3 calibre11 pcalibre4">new MyType()</code> 的操作失败了，由于 <code class="pcalibre3 calibre11 pcalibre4">MyType()</code> 是一个箭头函数，它就不存在 <code class="pcalibre3 calibre11 pcalibre4">[[Construct]]</code> 方法。了解箭头函数不能被用于 <code class="pcalibre3 calibre11 pcalibre4">new</code> 的特性后， JS 引擎就能进一步对其进行优化。</p>
+<p class="calibre6">同样，由于箭头函数的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 值由包含它的函数决定，因此不能使用 <code class="pcalibre3 calibre11 pcalibre4">call()</code> 、 <code class="pcalibre3 calibre11 pcalibre4">apply()</code> 或 <code class="pcalibre3 calibre11 pcalibre4">bind()</code> 方法来改变其 <code class="pcalibre3 calibre11 pcalibre4">this</code> 值。</p>
+<h4 id="箭头函数与数组" class="calibre15"><span id="arrow-functions-and-arrays" class="calibre13">箭头函数与数组</span></h4>
+<p class="calibre6">箭头函数的简洁语法也让它成为进行数组操作的理想选择。例如，若你想使用自定义比较器来对数组进行排序，通常会这么写：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> result = values.sort(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">a, b</span>) </span>{
+    <span class="hljs-keyword">return</span> a - b;
+});
+</code></pre>
+<p class="calibre6">这里为一个非常简单的工序使用了过多代码，可以比较一下使用了箭头函数的更简洁版本：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> result = values.sort((a, b) =&gt; a - b);
+</code></pre>
+<p class="calibre6">能使用回调函数的数组方法（例如 <code class="pcalibre3 calibre11 pcalibre4">sort()</code> 、 <code class="pcalibre3 calibre11 pcalibre4">map()</code> 与 <code class="pcalibre3 calibre11 pcalibre4">reduce()</code> 方法），都能从箭头函数的简洁语法中获得收益，它将看似复杂的需求转换为简单的代码。</p>
+<h4 id="没有-arguments-绑定" class="calibre15"><span id="no-arguments-binding" class="calibre13">没有 arguments 绑定</span></h4>
+<p class="calibre6">尽管箭头函数没有自己的 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象，但仍然能访问包含它的函数的 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象。无论此后箭头函数在何处执行，该对象都是可用的。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createArrowFunctionReturningFirstArg</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">return</span> () =&gt; <span class="hljs-params">arguments</span>[<span class="hljs-params">0</span>];
+}
+
+<span class="hljs-keyword">var</span> arrowFunction = createArrowFunctionReturningFirstArg(<span class="hljs-params">5</span>);
+
+<span class="hljs-params">console</span>.log(arrowFunction());       <span class="hljs-title">// 5</span>
+</code></pre>
+<p class="calibre6">在 <code class="pcalibre3 calibre11 pcalibre4">createArrowFunctionReturningFirstArg()</code> 内部， <code class="pcalibre3 calibre11 pcalibre4">arguments[0]</code> 元素被已创建的箭头函数 <code class="pcalibre3 calibre11 pcalibre4">arrowFunction</code> 所引用，该引用包含了传递给 <code class="pcalibre3 calibre11 pcalibre4">createArrowFunctionReturningFirstArg()</code> 函数的首个参数。当箭头函数在此后被执行时，它返回了 5 ，这也正是传递给 <code class="pcalibre3 calibre11 pcalibre4">createArrowFunctionReturningFirstArg()</code> 的首个参数。尽管箭头函数 <code class="pcalibre3 calibre11 pcalibre4">arrowFunction</code> 已不在创建它的函数的作用域内，但由于 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 标识符的作用域链解析， <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象依然可被访问。</p>
+<h4 id="识别箭头函数" class="calibre15"><span id="identifying-arrow-functions" class="calibre13">识别箭头函数</span></h4>
+<p class="calibre6">尽管语法不同，但箭头函数依然属于函数，并能被照常识别。研究如下代码：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> comparator = (a, b) =&gt; a - b;
+
+<span class="hljs-params">console</span>.log(<span class="hljs-keyword">typeof</span> comparator);                 <span class="hljs-title">// "function"</span>
+<span class="hljs-params">console</span>.log(comparator <span class="hljs-keyword">instanceof</span> <span class="hljs-params">Function</span>);    <span class="hljs-title">// true</span>
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">console.log()</code> 的输出揭示了 <code class="pcalibre3 calibre11 pcalibre4">typeof</code> 与 <code class="pcalibre3 calibre11 pcalibre4">instanceof</code> 在作用于箭头函数时的行为，与作用在其他函数上完全一致。</p>
+<p class="calibre6">也像对其他函数那样，你仍然可以对箭头函数使用 <code class="pcalibre3 calibre11 pcalibre4">call()</code> 、 <code class="pcalibre3 calibre11 pcalibre4">apply()</code> 与 <code class="pcalibre3 calibre11 pcalibre4">bind()</code> 方法，虽然函数的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 绑定并不会受影响。这里有几个例子：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> sum = (num1, num2) =&gt; num1 + num2;
+
+<span class="hljs-params">console</span>.log(sum.call(<span class="hljs-params">null</span>, <span class="hljs-params">1</span>, <span class="hljs-params">2</span>));      <span class="hljs-title">// 3</span>
+<span class="hljs-params">console</span>.log(sum.apply(<span class="hljs-params">null</span>, [<span class="hljs-params">1</span>, <span class="hljs-params">2</span>]));   <span class="hljs-title">// 3</span>
+
+<span class="hljs-keyword">var</span> boundSum = sum.bind(<span class="hljs-params">null</span>, <span class="hljs-params">1</span>, <span class="hljs-params">2</span>);
+
+<span class="hljs-params">console</span>.log(boundSum());                <span class="hljs-title">// 3</span>
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">sum()</code> 函数被使用 <code class="pcalibre3 calibre11 pcalibre4">call()</code> 与 <code class="pcalibre3 calibre11 pcalibre4">apply()</code> 方法调用并传递了参数，就像对其他函数所做的那样。 <code class="pcalibre3 calibre11 pcalibre4">bind()</code> 方法被用于创建 <code class="pcalibre3 calibre11 pcalibre4">boundSum()</code> ，后者的两个参数已被绑定为 <code class="pcalibre3 calibre11 pcalibre4">1</code> 与 <code class="pcalibre3 calibre11 pcalibre4">2</code> ，因此不再需要直接传入这两个参数。</p>
+<p class="calibre6">箭头函数能在任意位置替代你当前使用的匿名函数，例如回调函数。下一节涵盖的内容是 ES6 的另一项主要进展，不过该内容完全是内部实现，并没有使用新语法。</p>
+<h3 id="尾调用优化" class="calibre15"><span id="tail-call-optimization" class="calibre13">尾调用优化</span></h3>
+<p class="calibre6">在 ES6 中对函数最有趣的改动或许就是一项引擎优化，它改变了尾部调用的系统。<strong class="calibre8">尾调用</strong>（ <strong class="calibre8">tail call</strong> ）指的是调用函数的语句是另一个函数的最后语句，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">doSomething</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">return</span> doSomethingElse();   <span class="hljs-title">// 尾调用</span>
+}
+</code></pre>
+<p class="calibre6">在 ES5 引擎中实现的尾调用，其处理就像其他函数调用一样：一个新的栈帧（ stack frame ）被创建并推到调用栈之上，用于表示该次函数调用。这意味着之前每个栈帧都被保留在内存中，当调用栈太大时会出问题。</p>
+<h4 id="有何不同？" class="calibre15"><span id="what-s-different-" class="calibre13">有何不同？</span></h4>
+<p class="calibre6">ES6 在严格模式下力图为特定尾调用减少调用栈的大小（非严格模式的尾调用则保持不变）。当满足以下条件时，尾调用优化会清除当前栈帧并再次利用它，而不是为尾调用创建新的栈帧：</p>
+<ol class="calibre2">
+<li class="calibre10">尾调用不能引用当前栈帧中的变量（意味着该函数不能是闭包）；</li>
+<li class="calibre10">进行尾调用的函数在尾调用返回结果后不能做额外操作；</li>
+<li class="calibre10">尾调用的结果作为当前函数的返回值。</li>
+</ol>
+<p class="calibre6">作为一个例子，下面代码满足了全部三个条件，因此能被轻易地优化：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="calibre19">"use strict"</span>;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">doSomething</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-title">// 被优化</span>
+    <span class="hljs-keyword">return</span> doSomethingElse();
+}
+</code></pre>
+<p class="calibre6">该函数对 <code class="pcalibre3 calibre11 pcalibre4">doSomethingElse()</code> 进行了一次尾调用，并立即返回了其结果，同时并未访问局部作用域的任何变量。一个小改动——不返回结果，就会产生一个无法被优化的函数：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="calibre19">"use strict"</span>;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">doSomething</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-title">// 未被优化：缺少 return</span>
+    doSomethingElse();
+}
+</code></pre>
+<p class="calibre6">类似的，如果你的函数在尾调用返回结果之后进行了额外操作，那么该函数也无法被优化：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="calibre19">"use strict"</span>;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">doSomething</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-title">// 未被优化：在返回之后还要执行加法</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-params">1</span> + doSomethingElse();
+}
+</code></pre>
+<p class="calibre6">此例在 <code class="pcalibre3 calibre11 pcalibre4">doSomethingElse()</code> 的结果上对其进行了加 1 操作，而没有直接返回该结果，这已足以关闭优化。</p>
+<p class="calibre6">无意中关闭优化的另一个常见方式，是将函数调用的结果储存在一个变量上，之后才返回了结果，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="calibre19">"use strict"</span>;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">doSomething</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-title">// 未被优化：调用并不在尾部</span>
+    <span class="hljs-keyword">var</span> result = doSomethingElse();
+    <span class="hljs-keyword">return</span> result;
+}
+</code></pre>
+<p class="calibre6">本例之所以不能被优化，是因为 <code class="pcalibre3 calibre11 pcalibre4">doSomethingElse()</code> 的值并没有立即被返回。</p>
+<p class="calibre6">使用闭包或许就是需要避免的最困难情况，因为闭包能够访问上层作用域的变量，会导致尾调用优化被关闭。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="calibre19">"use strict"</span>;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">doSomething</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">var</span> num = <span class="hljs-params">1</span>,
+        func = () =&gt; num;
+
+    <span class="hljs-title">// 未被优化：此函数是闭包</span>
+    <span class="hljs-keyword">return</span> func();
+}
+</code></pre>
+<p class="calibre6">此例中闭包 <code class="pcalibre3 calibre11 pcalibre4">func()</code> 需要访问局部变量 <code class="pcalibre3 calibre11 pcalibre4">num</code> ，虽然调用 <code class="pcalibre3 calibre11 pcalibre4">func()</code> 后立即返回了其结果，但是对于 <code class="pcalibre3 calibre11 pcalibre4">num</code> 的引用导致优化不会发生。</p>
+<h4 id="如何控制尾调用优化" class="calibre15"><span id="how-to-harness-tail-call-optimization" class="calibre13">如何控制尾调用优化</span></h4>
+<p class="calibre6">在实践中，尾调用优化在后台进行，所以不必对此考虑太多，除非要尽力去优化一个函数。尾调用优化的主要用例是在递归函数中，而且在其中的优化具有最大效果。考虑以下计算阶乘的函数：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">factorial</span>(<span class="hljs-params">n</span>) </span>{
+
+    <span class="hljs-keyword">if</span> (n &lt;= <span class="hljs-params">1</span>) {
+        <span class="hljs-keyword">return</span> <span class="hljs-params">1</span>;
+    } <span class="hljs-keyword">else</span> {
+
+        <span class="hljs-title">// 未被优化：在返回之后还要执行乘法</span>
+        <span class="hljs-keyword">return</span> n * factorial(n - <span class="hljs-params">1</span>);
+    }
+}
+</code></pre>
+<p class="calibre6">此版本的函数并不会被优化，因为在递归调用 <code class="pcalibre3 calibre11 pcalibre4">factorial()</code> 之后还要执行乘法运算。如果 <code class="pcalibre3 calibre11 pcalibre4">n</code> 是一个大数字，那么调用栈的大小会增长，并且可能导致堆栈溢出。</p>
+<p class="calibre6">为了优化此函数，你需要确保在最后的函数调用之后不会发生乘法运算。为此你可以使用一个默认参数来将乘法操作移出 <code class="pcalibre3 calibre11 pcalibre4">return</code> 语句。有结果的函数携带着临时结果进入下一次迭代，这样创建的函数的功能与前例相同，但它能被 ES6 的引擎所优化。此处是新的代码：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">factorial</span>(<span class="hljs-params">n, p = 1</span>) </span>{
+
+    <span class="hljs-keyword">if</span> (n &lt;= <span class="hljs-params">1</span>) {
+        <span class="hljs-keyword">return</span> <span class="hljs-params">1</span> * p;
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">let</span> result = n * p;
+
+        <span class="hljs-title">// 被优化</span>
+        <span class="hljs-keyword">return</span> factorial(n - <span class="hljs-params">1</span>, result);
+    }
+}
+</code></pre>
+<p class="calibre6">在重写的 <code class="pcalibre3 calibre11 pcalibre4">factorial()</code> 函数中，添加了第二个参数 <code class="pcalibre3 calibre11 pcalibre4">p</code> ，其默认值为 1 。 <code class="pcalibre3 calibre11 pcalibre4">p</code> 参数保存着前一次乘法的结果，因此下一次的结果就能在进行函数调用之前被算出。当 <code class="pcalibre3 calibre11 pcalibre4">n</code> 大于 1 时，会先进行乘法运算并将其结果作为第二个参数传入 <code class="pcalibre3 calibre11 pcalibre4">factorial()</code> 。这就允许 ES6 引擎去优化这个递归调用。</p>
+<p class="calibre6">尾调用优化是你在书写任意递归函数时都需要考虑的因素，因为它能提供显著的性能提升，尤其是被应用到计算复杂度很高的函数时。</p>
+<h3 id="总结" class="calibre15"><span id="summary" class="calibre13">总结</span></h3>
+<p class="calibre6">函数在 ES6 中并未经历巨大变化，然而一系列增量改进使得函数更易使用。</p>
+<p class="calibre6">在特定参数未被传入时，函数的默认参数允许你更容易指定需要使用的值。而在 ES6 之前，这要求在函数内使用一些额外代码，以便检查参数是已否提供并为其分配一个不同的值。</p>
+<p class="calibre6">剩余参数允许你将余下的所有参数放入指定数组。使用真正的数组并让你指定哪些参数需要被包含，使得剩余参数成为比 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 更为灵活的解决方案。</p>
+<p class="calibre6">扩展运算符是剩余参数的好伙伴，允许在调用函数时将数组解构为分离的参数。在 ES6 之前，要把数组的元素作为独立参数传给函数只有两种办法：手动指定每一个参数，或者使用 <code class="pcalibre3 calibre11 pcalibre4">apply()</code> 方法。有了扩展运算符，你就能轻易将数组传递给函数而无须担心该函数的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 绑定。</p>
+<p class="calibre6">新增的 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性能帮你在调试与执行方面更容易地识别函数。此外， ES6 正式定义了块级函数的行为，因此在严格模式下它们不再是语法错误。</p>
+<p class="calibre6">在 ES6 中，函数的行为被 <code class="pcalibre3 calibre11 pcalibre4">[[Call]]</code> 与 <code class="pcalibre3 calibre11 pcalibre4">[[Construct]]</code> 方法所定义，前者对应普通的函数执行，后者则对应着使用了 <code class="pcalibre3 calibre11 pcalibre4">new</code> 的调用。 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 元属性也能用于判断函数被调用时是否使用了 <code class="pcalibre3 calibre11 pcalibre4">new</code> 。</p>
+<p class="calibre6">ES6 函数的最大变化就是增加了箭头函数。箭头函数被设计用于替代匿名函数表达式，它拥有更简洁的语法、词法级的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 绑定，并且没有 <code class="pcalibre3 calibre11 pcalibre4">arguments</code> 对象。此外，箭头函数不能修改它们的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 绑定，因此不能被用作构造器。</p>
+<p class="calibre6">尾调用优化允许某些函数的调用被优化，以保持更小的调用栈、使用更少的内存，并防止堆栈溢出。当能进行安全优化时，它会由引擎自动应用。不过你可以考虑重写递归函数，以便能够利用这种优化。</p>
+
+        </div>
+    
+</div>
+
+        
+    
+
+
+</body></html>

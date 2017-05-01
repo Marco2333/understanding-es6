@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id" version="2.0">
+  <metadata xmlns:calibre="http://calibre.kovidgoyal.net/2009/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+    <dc:description>《Understanding ECMAScript 6》中文翻译</dc:description>
+    <dc:publisher>GitBook</dc:publisher>
+    <dc:creator opf:file-as="Unknown" opf:role="aut">sagittarius-rev</dc:creator>
+    <dc:contributor opf:role="bkp">GitBook</dc:contributor>
+    <dc:language>zh</dc:language>
+    <dc:title>《Understanding ECMAScript 6》中文翻译</dc:title>
+    <meta name="calibre:timestamp" content="2016-11-29T00:37:58.183211+00:00"/>
+    <dc:identifier id="uuid_id" opf:scheme="uuid">c195e316-f96f-45ea-841f-7b778bf7eceb</dc:identifier>
+    <meta name="cover" content="cover"/>
+  </metadata>
+  <manifest>
+    <item href="cover.jpg" id="cover" media-type="image/jpeg"/>
+    <item href="8f42515a.png" id="added3" media-type="image/png"/>
+    <item href="SUMMARY.html" id="html" media-type="application/xhtml+xml"/>
+    <item href="c8260c7a.png" id="added2" media-type="image/png"/>
+    <item href="chapter_1.html" id="html3" media-type="application/xhtml+xml"/>
+    <item href="chapter_10.html" id="html12" media-type="application/xhtml+xml"/>
+    <item href="chapter_11.html" id="html13" media-type="application/xhtml+xml"/>
+    <item href="chapter_12.html" id="html14" media-type="application/xhtml+xml"/>
+    <item href="chapter_13.html" id="html15" media-type="application/xhtml+xml"/>
+    <item href="chapter_2.html" id="html4" media-type="application/xhtml+xml"/>
+    <item href="chapter_3.html" id="html5" media-type="application/xhtml+xml"/>
+    <item href="chapter_4.html" id="html6" media-type="application/xhtml+xml"/>
+    <item href="chapter_5.html" id="html7" media-type="application/xhtml+xml"/>
+    <item href="chapter_6.html" id="html8" media-type="application/xhtml+xml"/>
+    <item href="chapter_7.html" id="html9" media-type="application/xhtml+xml"/>
+    <item href="chapter_8.html" id="html10" media-type="application/xhtml+xml"/>
+    <item href="chapter_9.html" id="html11" media-type="application/xhtml+xml"/>
+    <item href="chapter_Appendix_A.html" id="html16" media-type="application/xhtml+xml"/>
+    <item href="chapter_Appendix_B.html" id="html17" media-type="application/xhtml+xml"/>
+    <item href="index.html" id="html1" media-type="application/xhtml+xml"/>
+    <item href="introduction.html" id="html2" media-type="application/xhtml+xml"/>
+    <item href="page_styles.css" id="page_css" media-type="text/css"/>
+    <item href="stylesheet.css" id="css" media-type="text/css"/>
+    <item href="titlepage.xhtml" id="titlepage" media-type="application/xhtml+xml"/>
+    <item href="toc.ncx" id="ncx" media-type="application/x-dtbncx+xml"/>
+  </manifest>
+  <spine toc="ncx">
+    <itemref idref="titlepage"/>
+    <itemref idref="html"/>
+    <itemref idref="html1"/>
+    <itemref idref="html2"/>
+    <itemref idref="html3"/>
+    <itemref idref="html4"/>
+    <itemref idref="html5"/>
+    <itemref idref="html6"/>
+    <itemref idref="html7"/>
+    <itemref idref="html8"/>
+    <itemref idref="html9"/>
+    <itemref idref="html10"/>
+    <itemref idref="html11"/>
+    <itemref idref="html12"/>
+    <itemref idref="html13"/>
+    <itemref idref="html14"/>
+    <itemref idref="html15"/>
+    <itemref idref="html16"/>
+    <itemref idref="html17"/>
+  </spine>
+  <guide>
+    <reference href="titlepage.xhtml" title="Cover" type="cover"/>
+  </guide>
+</package>

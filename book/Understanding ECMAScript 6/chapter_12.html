@@ -1,0 +1,1349 @@
+<?xml version='1.0' encoding='utf-8'?>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+  <head>
+    <title>第十二章 代理与反射接口</title>
+    <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+    <meta content="" name="description"/>
+    <meta content="GitBook 3.2.2" name="generator"/>
+    <meta content="sagittarius-rev" name="author"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link href="stylesheet.css" rel="stylesheet" type="text/css"/>
+<link href="page_styles.css" rel="stylesheet" type="text/css"/>
+</head>
+  <body class="calibre">
+        
+<div class="page">
+    
+        <h1 class="book-chapter" id="calibre_toc_14">第十二章 代理与反射接口</h1>
+        <div class="section">
+            <h2 id="第十二章-代理与反射接口" class="calibre12">第十二章 代理与反射接口</h2>
+<p class="calibre6">ES5 与 ES6 都推进了 JS 功能的公开。例如， JS 运行环境包含一些不可枚举、不可写入的对象属性，然而在 ES5 之前开发者无法定义他们自己的不可枚举属性或不可写入属性。 ES5 引入了 <code class="pcalibre3 calibre11 pcalibre4">Object.defineProperty()</code> 方法以便开发者在这方面能够像 JS 引擎那样做。</p>
+<p class="calibre6">ES6 通过增加内置对象使得开发者能进一步接近 JS 引擎的能力。为了让开发者能够创建内置对象，语言通过<strong class="calibre8">代理</strong>（ <strong class="calibre8">proxy</strong> ）暴露了在对象上的内部工作，代理是一种封装，能够拦截并改变 JS 引擎的底层操作。本章会首先介绍代理所想要处理的问题，并且会讨论如何更有效地创建并使用代理。</p>
+<ul class="calibre9">
+<li class="calibre10"><a href="#the-array-problem" class="calibre7 pcalibre pcalibre1 pcalibre2">数组的问题</a></li>
+<li class="calibre10"><a href="#what-are-proxies-and-reflection-" class="calibre7 pcalibre pcalibre1 pcalibre2">代理与反射是什么？</a></li>
+<li class="calibre10"><a href="#creating-a-simple-proxy" class="calibre7 pcalibre pcalibre1 pcalibre2">创建一个简单的代理</a></li>
+<li class="calibre10"><a href="#validating-properties-using-the--set--trap" class="calibre7 pcalibre pcalibre1 pcalibre2">使用 set 陷阱函数验证属性值</a></li>
+<li class="calibre10"><a href="#object-shape-validation-using-the--get--trap" class="calibre7 pcalibre pcalibre1 pcalibre2">使用 get 陷阱函数进行对象外形验证</a></li>
+<li class="calibre10"><a href="#hiding-property-existence-using-the--has--trap" class="calibre7 pcalibre pcalibre1 pcalibre2">使用 has 陷阱函数隐藏属性</a></li>
+<li class="calibre10"><a href="#preventing-property-deletion-with-the--deleteproperty--trap" class="calibre7 pcalibre pcalibre1 pcalibre2">使用 deleteProperty 陷阱函数避免属性被删除</a></li>
+<li class="calibre10"><a href="#prototype-proxy-traps" class="calibre7 pcalibre pcalibre1 pcalibre2">原型代理的陷阱函数</a><ul class="calibre14">
+<li class="calibre10"><a href="#how-prototype-proxy-traps-work" class="calibre7 pcalibre pcalibre1 pcalibre2">原型代理的陷阱函数如何工作</a></li>
+<li class="calibre10"><a href="#why-two-sets-of-methods-" class="calibre7 pcalibre pcalibre1 pcalibre2">为何存在两组方法？</a></li>
+</ul>
+</li>
+<li class="calibre10"><a href="#object-extensibility-traps" class="calibre7 pcalibre pcalibre1 pcalibre2">对象可扩展性的陷阱函数</a><ul class="calibre14">
+<li class="calibre10"><a href="#two-basic-examples" class="calibre7 pcalibre pcalibre1 pcalibre2">两个基本范例</a></li>
+<li class="calibre10"><a href="#duplicate-extensibility-methods" class="calibre7 pcalibre pcalibre1 pcalibre2">可扩展性的重复方法</a></li>
+</ul>
+</li>
+<li class="calibre10"><a href="#property-descriptor-traps" class="calibre7 pcalibre pcalibre1 pcalibre2">属性描述符的陷阱函数</a><ul class="calibre14">
+<li class="calibre10"><a href="#blocking-object-defineproperty--" class="calibre7 pcalibre pcalibre1 pcalibre2">阻止 Object.defineProperty()</a></li>
+<li class="calibre10"><a href="#descriptor-object-restrictions" class="calibre7 pcalibre pcalibre1 pcalibre2">描述符对象的限制</a></li>
+<li class="calibre10"><a href="#duplicate-descriptor-methods" class="calibre7 pcalibre pcalibre1 pcalibre2">重复的描述符方法</a><ul class="calibre17">
+<li class="calibre10"><a href="#defineproperty---methods" class="calibre7 pcalibre pcalibre1 pcalibre2">defineProperty() 方法</a></li>
+<li class="calibre10"><a href="#getownpropertydescriptor---methods" class="calibre7 pcalibre pcalibre1 pcalibre2">getOwnPropertyDescriptor() 方法</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="calibre10"><a href="#the--ownkeys--trap" class="calibre7 pcalibre pcalibre1 pcalibre2">ownKeys 陷阱函数</a></li>
+<li class="calibre10"><a href="#function-proxies-with-the--apply--and--construct--traps" class="calibre7 pcalibre pcalibre1 pcalibre2">使用 apply 与 construct 陷阱函数的函数代理</a><ul class="calibre14">
+<li class="calibre10"><a href="#validating-function-parameters" class="calibre7 pcalibre pcalibre1 pcalibre2">验证函数的参数</a></li>
+<li class="calibre10"><a href="#calling-constructors-without-new" class="calibre7 pcalibre pcalibre1 pcalibre2">调用构造器而无须使用 new</a></li>
+<li class="calibre10"><a href="#overriding-abstract-base-class-constructors" class="calibre7 pcalibre pcalibre1 pcalibre2">重写抽象基础类的构造器</a></li>
+<li class="calibre10"><a href="#callable-class-constructors" class="calibre7 pcalibre pcalibre1 pcalibre2">可被调用的类构造器</a></li>
+</ul>
+</li>
+<li class="calibre10"><a href="#revocable-proxies" class="calibre7 pcalibre pcalibre1 pcalibre2">可被撤销的代理</a></li>
+<li class="calibre10"><a href="#solving-the-array-problem" class="calibre7 pcalibre pcalibre1 pcalibre2">解决数组的问题</a><ul class="calibre14">
+<li class="calibre10"><a href="#detecting-array-indices" class="calibre7 pcalibre pcalibre1 pcalibre2">检测数组的索引</a></li>
+<li class="calibre10"><a href="#increasing-length-when-adding-new-elements" class="calibre7 pcalibre pcalibre1 pcalibre2">在添加新元素时增加长度属性</a></li>
+<li class="calibre10"><a href="#deleting-elements-on-reducing-length" class="calibre7 pcalibre pcalibre1 pcalibre2">在减少长度属性时移除元素</a></li>
+<li class="calibre10"><a href="#implementing-the-myarray-class" class="calibre7 pcalibre pcalibre1 pcalibre2">实现 MyArray 类</a></li>
+</ul>
+</li>
+<li class="calibre10"><a href="#using-a-proxy-as-a-prototype" class="calibre7 pcalibre pcalibre1 pcalibre2">将代理对象作为原型使用</a><ul class="calibre14">
+<li class="calibre10"><a href="#using-the--get--trap-on-a-prototype" class="calibre7 pcalibre pcalibre1 pcalibre2">在原型上使用 get 陷阱函数</a></li>
+<li class="calibre10"><a href="#using-the--set--trap-on-a-prototype" class="calibre7 pcalibre pcalibre1 pcalibre2">在原型上使用 set 陷阱函数</a></li>
+<li class="calibre10"><a href="#using-the--has--trap-on-a-prototype" class="calibre7 pcalibre pcalibre1 pcalibre2">在原型上使用 has 陷阱函数</a></li>
+<li class="calibre10"><a href="#proxies-as-prototypes-on-classes" class="calibre7 pcalibre pcalibre1 pcalibre2">将代理作为类的原型</a></li>
+</ul>
+</li>
+<li class="calibre10"><a href="#summary" class="calibre7 pcalibre pcalibre1 pcalibre2">总结</a></li>
+</ul>
+<h3 id="数组的问题" class="calibre15"><span id="the-array-problem" class="calibre13">数组的问题</span></h3>
+<p class="calibre6">在 ES6 之前， JS 的数组对象拥有特定的行为方式，无法被开发者在自定义对象中进行模拟。当你给数组元素赋值时，数组的 <code class="pcalibre3 calibre11 pcalibre4">length</code> 属性会受到影响，同时你也可以通过修改 <code class="pcalibre3 calibre11 pcalibre4">length</code> 属性来变更数组的元素。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> colors = [<span class="hljs-string">"red"</span>, <span class="hljs-string">"green"</span>, <span class="hljs-string">"blue"</span>];
+
+<span class="hljs-params">console</span>.log(colors.length);         <span class="hljs-title">// 3</span>
+
+colors[<span class="hljs-params">3</span>] = <span class="hljs-string">"black"</span>;
+
+<span class="hljs-params">console</span>.log(colors.length);         <span class="hljs-title">// 4</span>
+<span class="hljs-params">console</span>.log(colors[<span class="hljs-params">3</span>]);             <span class="hljs-title">// "black"</span>
+
+colors.length = <span class="hljs-params">2</span>;
+
+<span class="hljs-params">console</span>.log(colors.length);         <span class="hljs-title">// 2</span>
+<span class="hljs-params">console</span>.log(colors[<span class="hljs-params">3</span>]);             <span class="hljs-title">// undefined</span>
+<span class="hljs-params">console</span>.log(colors[<span class="hljs-params">2</span>]);             <span class="hljs-title">// undefined</span>
+<span class="hljs-params">console</span>.log(colors[<span class="hljs-params">1</span>]);             <span class="hljs-title">// "green"</span>
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">colors</code> 开始时有三个元素。把 <code class="pcalibre3 calibre11 pcalibre4">"black"</code> 赋值给 <code class="pcalibre3 calibre11 pcalibre4">colors[3]</code> 会自动将 <code class="pcalibre3 calibre11 pcalibre4">length</code> 增加到 <code class="pcalibre3 calibre11 pcalibre4">4</code> ；而此后设置 <code class="pcalibre3 calibre11 pcalibre4">length</code> 为 <code class="pcalibre3 calibre11 pcalibre4">2</code> 则会移除数组的最末两个元素，从而只保留起始处的两个元素。在 ES5 中开发者无法模拟实现这种行为，但代理的出现改变了这种情况。</p>
+<blockquote class="calibre20">
+<p class="calibre6">这种不规范行为就是 ES6 将数组认定为奇异对象的原因。</p>
+</blockquote>
+<h3 id="代理与反射是什么？" class="calibre15"><span id="what-are-proxies-and-reflection-" class="calibre13">代理与反射是什么？</span></h3>
+<p class="calibre6">通过调用 <code class="pcalibre3 calibre11 pcalibre4">new Proxy()</code> ，你可以创建一个代理用来替代另一个对象（被称为<strong class="calibre8">目标</strong>），这个代理对目标对象进行了虚拟，因此该代理与该目标对象表面上可以被当作同一个对象来对待。</p>
+<p class="calibre6">代理允许你拦截在目标对象上的底层操作，而这原本是 JS 引擎的内部能力。拦截行为使用了一个能够响应特定操作的函数（被称为<strong class="calibre8">陷阱</strong>）。</p>
+<p class="calibre6">被 <code class="pcalibre3 calibre11 pcalibre4">Reflect</code> 对象所代表的反射接口，是给底层操作提供默认行为的方法的集合，这些操作是能够被代理重写的。每个代理陷阱都有一个对应的反射方法，每个方法都与对应的陷阱函数同名，并且接收的参数也与之一致。下表总结了这些行为：</p>
+<table class="calibre25">
+<thead class="calibre26">
+<tr class="calibre27">
+<th class="calibre28">代理陷阱</th>
+<th class="calibre28">被重写的行为</th>
+<th class="calibre28">默认行为</th>
+</tr>
+</thead>
+<tbody class="calibre29">
+<tr class="calibre27">
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">get</code></td>
+<td class="calibre30">读取一个属性的值</td>
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">Reflect.get()</code></td>
+</tr>
+<tr class="calibre31">
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">set</code></td>
+<td class="calibre30">写入一个属性</td>
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">Reflect.set()</code></td>
+</tr>
+<tr class="calibre27">
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">has</code></td>
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">in</code> 运算符</td>
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">Reflect.has()</code></td>
+</tr>
+<tr class="calibre31">
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">deleteProperty</code></td>
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">delete</code> 运算符</td>
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">Reflect.deleteProperty()</code></td>
+</tr>
+<tr class="calibre27">
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">getPrototypeOf</code></td>
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">Object.getPrototypeOf()</code></td>
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">Reflect.getPrototypeOf()</code></td>
+</tr>
+<tr class="calibre31">
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">setPrototypeOf</code></td>
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">Object.setPrototypeOf()</code></td>
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">Reflect.setPrototypeOf()</code></td>
+</tr>
+<tr class="calibre27">
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">isExtensible</code></td>
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">Object.isExtensible()</code></td>
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">Reflect.isExtensible()</code></td>
+</tr>
+<tr class="calibre31">
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">preventExtensions</code></td>
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">Object.preventExtensions()</code></td>
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">Reflect.preventExtensions()</code></td>
+</tr>
+<tr class="calibre27">
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">getOwnPropertyDescriptor</code></td>
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">Object.getOwnPropertyDescriptor()</code></td>
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">Reflect.getOwnPropertyDescriptor()</code></td>
+</tr>
+<tr class="calibre31">
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">defineProperty</code></td>
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">Object.defineProperty()</code></td>
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">Reflect.defineProperty</code></td>
+</tr>
+<tr class="calibre27">
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">ownKeys</code></td>
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">Object.keys</code> 、 <code class="pcalibre3 calibre11 pcalibre4">Object.getOwnPropertyNames()</code> 与 <code class="pcalibre3 calibre11 pcalibre4">Object.getOwnPropertySymbols()</code></td>
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">Reflect.ownKeys()</code></td>
+</tr>
+<tr class="calibre31">
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">apply</code></td>
+<td class="calibre30">调用一个函数</td>
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">Reflect.apply()</code></td>
+</tr>
+<tr class="calibre27">
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">construct</code></td>
+<td class="calibre30">使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 调用一个函数</td>
+<td class="calibre30"><code class="pcalibre3 calibre11 pcalibre4">Reflect.construct()</code></td>
+</tr>
+</tbody>
+</table>
+<p class="calibre6">每个陷阱函数都可以重写 JS 对象的一个特定内置行为，允许你拦截并修改它。如果你仍然需要使用原先的内置行为，则可使用对应的反射接口方法。一旦创建了代理，你就能清晰了解代理与反射接口之间的关系，因此我们最好通过一些例子来进行深入研究。</p>
+<blockquote class="calibre20">
+<p class="calibre6">ES6 的原始草案还有一个名为 <code class="pcalibre3 calibre11 pcalibre4">enumerate</code> 的陷阱函数，其设计意图是更改 <code class="pcalibre3 calibre11 pcalibre4">for-in</code> 与 <code class="pcalibre3 calibre11 pcalibre4">Object.keys()</code> 在对象上进行属性枚举的机制。然而，该陷阱函数在 ECMAScript 7 （也被称为 ECMAScript 2016 ）中被移除了，因为它太难于实现。 <code class="pcalibre3 calibre11 pcalibre4">enumerate</code> 陷阱函数不会再出现在任何 JS 运行环境中，也不会在本章进行介绍。</p>
+</blockquote>
+<h3 id="创建一个简单的代理" class="calibre15"><span id="creating-a-simple-proxy" class="calibre13">创建一个简单的代理</span></h3>
+<p class="calibre6">当你使用 <code class="pcalibre3 calibre11 pcalibre4">Proxy</code> 构造器来创建一个代理时，需要传递两个参数：目标对象以及一个处理器（handler），后者是定义了一个或多个陷阱函数的对象。如果未提供陷阱函数，代理会对所有操作采取默认行为。为了创建一个仅进行传递的代理，你需要使用不包含任何陷阱函数的处理器：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> target = {};
+
+<span class="hljs-keyword">let</span> proxy = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>(target, {});
+
+proxy.name = <span class="hljs-string">"proxy"</span>;
+<span class="hljs-params">console</span>.log(proxy.name);        <span class="hljs-title">// "proxy"</span>
+<span class="hljs-params">console</span>.log(target.name);       <span class="hljs-title">// "proxy"</span>
+
+target.name = <span class="hljs-string">"target"</span>;
+<span class="hljs-params">console</span>.log(proxy.name);        <span class="hljs-title">// "target"</span>
+<span class="hljs-params">console</span>.log(target.name);       <span class="hljs-title">// "target"</span>
+</code></pre>
+<p class="calibre6">该例中的 <code class="pcalibre3 calibre11 pcalibre4">proxy</code> 对象将所有操作直接传递给 <code class="pcalibre3 calibre11 pcalibre4">target</code> 对象。当 <code class="pcalibre3 calibre11 pcalibre4">proxy.name</code> 属性被赋值为字符串 <code class="pcalibre3 calibre11 pcalibre4">"proxy"</code> 的时候，<code class="pcalibre3 calibre11 pcalibre4">target.name</code> 属性也同时被创建，代理对象 <code class="pcalibre3 calibre11 pcalibre4">proxy</code> 自身其实并没有存储该属性，它只是简单将值传递给 <code class="pcalibre3 calibre11 pcalibre4">target</code> 对象。同样， <code class="pcalibre3 calibre11 pcalibre4">proxy.name</code> 与 <code class="pcalibre3 calibre11 pcalibre4">target.name</code> 的属性值总是相等，因为它们都指向 <code class="pcalibre3 calibre11 pcalibre4">target.name</code> ，这就意味着：为 <code class="pcalibre3 calibre11 pcalibre4">target.name</code> 设置一个新值会在 <code class="pcalibre3 calibre11 pcalibre4">proxy.name</code> 上反映出相同的改变。当然，缺少陷阱函数的代理没什么用，那么若为其定义一个陷阱函数，又会如何？</p>
+<h3 id="使用-set-陷阱函数验证属性值" class="calibre15"><span id="validating-properties-using-the--set--trap" class="calibre13">使用 set 陷阱函数验证属性值</span></h3>
+<p class="calibre6">假设你想要创建一个对象，并要求其属性值只能是数值，这就意味着该对象的每个新增属性都要被验证，并且在属性值不为数值类型时应当抛出错误。为此你需要定义 <code class="pcalibre3 calibre11 pcalibre4">set</code> 陷阱函数来重写设置属性值时的默认行为，该陷阱函数能接受四个参数：</p>
+<ol class="calibre2">
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">trapTarget</code> ：将接收属性的对象（即代理的目标对象）；</li>
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">key</code> ：需要写入的属性的键（字符串类型或符号类型）；</li>
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">value</code> ：将被写入属性的值；</li>
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">receiver</code> ：操作发生的对象（通常是代理对象）。</li>
+</ol>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">Reflect.set()</code> 是 <code class="pcalibre3 calibre11 pcalibre4">set</code> 陷阱函数对应的反射方法，同时也是 <code class="pcalibre3 calibre11 pcalibre4">set</code> 操作的默认行为。 <code class="pcalibre3 calibre11 pcalibre4">Reflect.set()</code> 方法与 <code class="pcalibre3 calibre11 pcalibre4">set</code> 陷阱函数一样，能接受这四个参数，让该方法能在陷阱函数内部被方便使用。该陷阱函数需要在属性被设置完成的情况下返回 <code class="pcalibre3 calibre11 pcalibre4">true</code> ，否则就要返回 <code class="pcalibre3 calibre11 pcalibre4">false</code> ，而 <code class="pcalibre3 calibre11 pcalibre4">Reflect.set()</code> 也会基于操作是否成功而返回相应的结果。</p>
+<p class="calibre6">你需要使用 <code class="pcalibre3 calibre11 pcalibre4">set</code> 陷阱函数来拦截传入的 <code class="pcalibre3 calibre11 pcalibre4">value</code> 值，以便对属性值进行验证。这里有个例子：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> target = {
+    name: <span class="hljs-string">"target"</span>
+};
+
+<span class="hljs-keyword">let</span> proxy = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>(target, {
+    set(trapTarget, key, value, receiver) {
+
+        <span class="hljs-title">// 忽略已有属性，避免影响它们</span>
+        <span class="hljs-keyword">if</span> (!trapTarget.hasOwnProperty(key)) {
+            <span class="hljs-keyword">if</span> (<span class="hljs-params">isNaN</span>(value)) {
+                <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-params">TypeError</span>(<span class="hljs-string">"Property must be a number."</span>);
+            }
+        }
+
+        <span class="hljs-title">// 添加属性</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.set(trapTarget, key, value, receiver);
+    }
+});
+
+<span class="hljs-title">// 添加一个新属性</span>
+proxy.count = <span class="hljs-params">1</span>;
+<span class="hljs-params">console</span>.log(proxy.count);       <span class="hljs-title">// 1</span>
+<span class="hljs-params">console</span>.log(target.count);      <span class="hljs-title">// 1</span>
+
+<span class="hljs-title">// 你可以为 name 赋一个非数值类型的值，因为该属性已经存在</span>
+proxy.name = <span class="hljs-string">"proxy"</span>;
+<span class="hljs-params">console</span>.log(proxy.name);        <span class="hljs-title">// "proxy"</span>
+<span class="hljs-params">console</span>.log(target.name);       <span class="hljs-title">// "proxy"</span>
+
+<span class="hljs-title">// 抛出错误</span>
+proxy.anotherName = <span class="hljs-string">"proxy"</span>;
+</code></pre>
+<p class="calibre6">这段代码定义了一个代理陷阱，用于对 <code class="pcalibre3 calibre11 pcalibre4">target</code> 对象新增属性的值进行验证。当执行 <code class="pcalibre3 calibre11 pcalibre4">proxy.count = 1</code> 时， <code class="pcalibre3 calibre11 pcalibre4">set</code> 陷阱函数被调用，此时 <code class="pcalibre3 calibre11 pcalibre4">trapTarget</code> 的值等于 <code class="pcalibre3 calibre11 pcalibre4">target</code> 对象， <code class="pcalibre3 calibre11 pcalibre4">key</code> 的值是字符串 <code class="pcalibre3 calibre11 pcalibre4">"count"</code> ， <code class="pcalibre3 calibre11 pcalibre4">value</code> 的值是 <code class="pcalibre3 calibre11 pcalibre4">1</code> ，而 <code class="pcalibre3 calibre11 pcalibre4">receiver</code> 的值是 <code class="pcalibre3 calibre11 pcalibre4">proxy</code> （该参数在本例中并没有被使用）。 <code class="pcalibre3 calibre11 pcalibre4">target</code> 对象上尚不存在名为 <code class="pcalibre3 calibre11 pcalibre4">count</code> 的属性，因此代理将 <code class="pcalibre3 calibre11 pcalibre4">value</code> 参数传递给 <code class="pcalibre3 calibre11 pcalibre4">isNaN()</code> 方法进行验证；如果验证结果是 <code class="pcalibre3 calibre11 pcalibre4">NaN</code> ，表示传入的属性值不是一个数值，需要抛出错误；但由于这段代码将 <code class="pcalibre3 calibre11 pcalibre4">count</code> 参数设置为 <code class="pcalibre3 calibre11 pcalibre4">1</code> ，验证通过，代理使用一致的四个参数去调用 <code class="pcalibre3 calibre11 pcalibre4">Reflect.set()</code> 方法，从而创建了一个新的属性。</p>
+<p class="calibre6">当 <code class="pcalibre3 calibre11 pcalibre4">proxy.name</code> 被赋值为字符串时，操作成功完成。这是因为 <code class="pcalibre3 calibre11 pcalibre4">target</code> 对象已经拥有一个 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性，因此验证时通过调用 <code class="pcalibre3 calibre11 pcalibre4">trapTarget.hasOwnProperty()</code> 会忽略该属性，这就确保允许在该对象的已有属性上使用非数值的属性值。</p>
+<p class="calibre6">当 <code class="pcalibre3 calibre11 pcalibre4">proxy.anotherName</code> 被赋值为字符串时，抛出了一个错误。这是因为该对象上并不存在 <code class="pcalibre3 calibre11 pcalibre4">anotherName</code> 属性，因此该属性的值必须被验证，而因为提供的值不是一个数值，验证过程就会抛出错误。</p>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">set</code> 代理陷阱允许你在写入属性值的时候进行拦截，而 <code class="pcalibre3 calibre11 pcalibre4">get</code> 代理陷阱则允许你在读取属性值的时候进行拦截。</p>
+<h3 id="使用-get-陷阱函数进行对象外形验证" class="calibre15"><span id="object-shape-validation-using-the--get--trap" class="calibre13">使用 get 陷阱函数进行对象外形验证</span></h3>
+<p class="calibre6">JS 语言有趣但有时却令人困惑的特性之一，就是读取对象不存在的属性时并不会抛出错误，而会把 <code class="pcalibre3 calibre11 pcalibre4">undefined</code> 当作该属性的值，例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> target = {};
+
+<span class="hljs-params">console</span>.log(target.name);       <span class="hljs-title">// undefined</span>
+</code></pre>
+<p class="calibre6">在多数语言中，试图读取 <code class="pcalibre3 calibre11 pcalibre4">target.name</code> 属性都会抛出错误，因为该属性并不存在；但 JS 语言却会使用 <code class="pcalibre3 calibre11 pcalibre4">undefined</code> 。如果你曾经在大型代码库上进行过工作，那么你可能明白这种行为会导致严重的问题，尤其是当属性名称存在书写错误时。使用代理进行对象外形验证，可以帮你从这个错误中拯救出来。</p>
+<p class="calibre6"><strong class="calibre8">对象外形</strong>（ <strong class="calibre8">Object Shape</strong> ）指的是对象已有的属性与方法的集合， JS 引擎使用对象外形来进行代码优化，经常会创建一些类来表示对象。如果你能大胆假设某个对象总是拥有与起始时相同的属性与方法（可以通过 <code class="pcalibre3 calibre11 pcalibre4">Object.preventExtensions()</code> 方法、 <code class="pcalibre3 calibre11 pcalibre4">Object.seal()</code> 方法或 <code class="pcalibre3 calibre11 pcalibre4">Object.freeze()</code> 方法来达到这种效果），那么在访问不存在的属性时抛出错误在这种场合就会非常有用。代理能够让对象外形验证变得轻而易举。</p>
+<p class="calibre6">由于该属性验证只须在读取属性时被触发，因此只要使用 <code class="pcalibre3 calibre11 pcalibre4">get</code> 陷阱函数。该陷阱函数会在读取属性时被调用，即使该属性在对象中并不存在，它能接受三个参数：</p>
+<ol class="calibre2">
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">trapTarget</code> ：将会被读取属性的对象（即代理的目标对象）；</li>
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">key</code> ：需要读取的属性的键（字符串类型或符号类型）；</li>
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">receiver</code> ：操作发生的对象（通常是代理对象）。</li>
+</ol>
+<p class="calibre6">这些参数借鉴了 <code class="pcalibre3 calibre11 pcalibre4">set</code> 陷阱函数的参数，只有一个明显的不同，也就是没有使用 <code class="pcalibre3 calibre11 pcalibre4">value</code> 参数，因为 <code class="pcalibre3 calibre11 pcalibre4">get</code> 陷阱函数并不需要为属性写入数据。 <code class="pcalibre3 calibre11 pcalibre4">Reflect.get()</code> 方法同样接收这三个参数，并且默认会返回属性的值。</p>
+<p class="calibre6">你可以使用 <code class="pcalibre3 calibre11 pcalibre4">get</code> 陷阱函数与 <code class="pcalibre3 calibre11 pcalibre4">Reflect.get()</code> 方法在目标属性不存在时抛出错误，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> proxy = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>({}, {
+        get(trapTarget, key, receiver) {
+            <span class="hljs-keyword">if</span> (!(key <span class="hljs-keyword">in</span> receiver)) {
+                <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-params">TypeError</span>(<span class="hljs-string">"Property "</span> + key + <span class="hljs-string">" doesn't exist."</span>);
+            }
+
+            <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.get(trapTarget, key, receiver);
+        }
+    });
+
+<span class="hljs-title">// 添加属性的功能正常</span>
+proxy.name = <span class="hljs-string">"proxy"</span>;
+<span class="hljs-params">console</span>.log(proxy.name);            <span class="hljs-title">// "proxy"</span>
+
+<span class="hljs-title">// 读取不存在属性会抛出错误</span>
+<span class="hljs-params">console</span>.log(proxy.nme);             <span class="hljs-title">// 抛出错误</span>
+</code></pre>
+<p class="calibre6">在本例中， <code class="pcalibre3 calibre11 pcalibre4">get</code> 陷阱函数拦截了属性读取操作，它使用 <code class="pcalibre3 calibre11 pcalibre4">in</code> 运算符来判断 <code class="pcalibre3 calibre11 pcalibre4">receiver</code> 对象上是否已存在对应属性。 <code class="pcalibre3 calibre11 pcalibre4">receiver</code> 并没有使用 <code class="pcalibre3 calibre11 pcalibre4">trapTarget</code> ，而是用了 <code class="pcalibre3 calibre11 pcalibre4">in</code> ，这是因为 <code class="pcalibre3 calibre11 pcalibre4">receiver</code> 本身就是拥有一个 <code class="pcalibre3 calibre11 pcalibre4">has</code> 陷阱函数的代理对象（ <code class="pcalibre3 calibre11 pcalibre4">has</code> 陷阱函数会在下一节介绍），在此处使用 <code class="pcalibre3 calibre11 pcalibre4">trapTarget</code> 会跳过 <code class="pcalibre3 calibre11 pcalibre4">has</code> 陷阱函数，并可能给你一个错误的结果。如果要查找的属性不存在，那么就会抛出错误；否则会执行默认的行为。</p>
+<p class="calibre6">这段代码允许添加新的属性（例如 <code class="pcalibre3 calibre11 pcalibre4">proxy.name</code> ）以供写入，并且此后可以正常读取该属性的值。最后一行代码有一个拼写错误： <code class="pcalibre3 calibre11 pcalibre4">proxy.nme</code> 应当是 <code class="pcalibre3 calibre11 pcalibre4">proxy.name</code> ，由于 <code class="pcalibre3 calibre11 pcalibre4">nme</code> 属性并不存在，程序抛出了一个错误。</p>
+<h3 id="使用-has-陷阱函数隐藏属性" class="calibre15"><span id="hiding-property-existence-using-the--has--trap" class="calibre13">使用 has 陷阱函数隐藏属性</span></h3>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">in</code> 运算符用于判断指定对象中是否存在某个属性，如果对象的属性名与指定的字符串或符号值相匹配，那么 <code class="pcalibre3 calibre11 pcalibre4">in</code> 运算符应当返回 <code class="pcalibre3 calibre11 pcalibre4">true</code> ，无论该属性是对象自身的属性还是其原型的属性。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> target = {
+    value: <span class="hljs-params">42</span>;
+}
+
+<span class="hljs-params">console</span>.log(<span class="hljs-string">"value"</span> <span class="hljs-keyword">in</span> target);     <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-string">"toString"</span> <span class="hljs-keyword">in</span> target);  <span class="hljs-title">// true</span>
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">value</code> 与 <code class="pcalibre3 calibre11 pcalibre4">toString</code> 均存在于 <code class="pcalibre3 calibre11 pcalibre4">object</code> 对象中，因此 <code class="pcalibre3 calibre11 pcalibre4">in</code> 运算符都会返回 <code class="pcalibre3 calibre11 pcalibre4">true</code> 。其中 <code class="pcalibre3 calibre11 pcalibre4">value</code> 是对象自身的属性，而 <code class="pcalibre3 calibre11 pcalibre4">toString</code> 则是原型属性（从 <code class="pcalibre3 calibre11 pcalibre4">Object</code> 对象上继承而来）。代理允许你使用 <code class="pcalibre3 calibre11 pcalibre4">has</code> 陷阱函数来拦截这个操作，从而在使用 <code class="pcalibre3 calibre11 pcalibre4">in</code> 运算符时返回不同的结果。</p>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">has</code> 陷阱函数会在使用 <code class="pcalibre3 calibre11 pcalibre4">in</code> 运算符的情况下被调用，并且会被传入两个参数：</p>
+<ol class="calibre2">
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">trapTarget</code> ：需要读取属性的对象（即代理的目标对象）；</li>
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">key</code> ：需要检查的属性的键（字符串类型或符号类型）。</li>
+</ol>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">Reflect.has()</code> 方法接受与之相同的参数，并向 <code class="pcalibre3 calibre11 pcalibre4">in</code> 运算符返回默认响应结果。使用 <code class="pcalibre3 calibre11 pcalibre4">has</code> 陷阱函数以及 <code class="pcalibre3 calibre11 pcalibre4">Reflect.has()</code> 方法，允许你修改部分属性在接受 <code class="pcalibre3 calibre11 pcalibre4">in</code> 检测时的行为，但保留其他属性的默认行为。例如，假设你只想要隐藏 <code class="pcalibre3 calibre11 pcalibre4">value</code> 属性，你可以这么做：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> target = {
+    name: <span class="hljs-string">"target"</span>,
+    value: <span class="hljs-params">42</span>
+};
+
+<span class="hljs-keyword">let</span> proxy = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>(target, {
+    has(trapTarget, key) {
+
+        <span class="hljs-keyword">if</span> (key === <span class="hljs-string">"value"</span>) {
+            <span class="hljs-keyword">return</span> <span class="hljs-params">false</span>;
+        } <span class="hljs-keyword">else</span> {
+            <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.has(trapTarget, key);
+        }
+    }
+});
+
+<span class="hljs-params">console</span>.log(<span class="hljs-string">"value"</span> <span class="hljs-keyword">in</span> proxy);      <span class="hljs-title">// false</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-string">"name"</span> <span class="hljs-keyword">in</span> proxy);       <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-string">"toString"</span> <span class="hljs-keyword">in</span> proxy);   <span class="hljs-title">// true</span>
+</code></pre>
+<p class="calibre6">这里的 <code class="pcalibre3 calibre11 pcalibre4">proxy</code> 对象使用了 <code class="pcalibre3 calibre11 pcalibre4">has</code> 陷阱函数，用于检查 <code class="pcalibre3 calibre11 pcalibre4">key</code> 值是否为 <code class="pcalibre3 calibre11 pcalibre4">"value"</code> 。如果是，则返回 <code class="pcalibre3 calibre11 pcalibre4">false</code> ；否则通过调用 <code class="pcalibre3 calibre11 pcalibre4">Reflect.has()</code> 方法来返回默认的结果。这样，虽然 <code class="pcalibre3 calibre11 pcalibre4">value</code> 属性确实存在于目标对象中，但 <code class="pcalibre3 calibre11 pcalibre4">in</code> 运算符却会对该属性返回 <code class="pcalibre3 calibre11 pcalibre4">false</code> ；而其他的属性（ <code class="pcalibre3 calibre11 pcalibre4">name</code> 与 <code class="pcalibre3 calibre11 pcalibre4">toString</code> ）则会正确地返回 <code class="pcalibre3 calibre11 pcalibre4">true</code> 。</p>
+<h3 id="使用-deleteproperty-陷阱函数避免属性被删除" class="calibre15"><span id="preventing-property-deletion-with-the--deleteproperty--trap" class="calibre13">使用 deleteProperty 陷阱函数避免属性被删除</span></h3>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">delete</code> 运算符能够从指定对象上删除一个属性，在删除成功时返回 <code class="pcalibre3 calibre11 pcalibre4">true</code> ，否则返回 <code class="pcalibre3 calibre11 pcalibre4">false</code> 。如果试图用 <code class="pcalibre3 calibre11 pcalibre4">delete</code> 运算符去删除一个不可配置的属性，在严格模式下将会抛出错误；而非严格模式下只是单纯返回 <code class="pcalibre3 calibre11 pcalibre4">false</code> 。这里有个例子：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> target = {
+    name: <span class="hljs-string">"target"</span>,
+    value: <span class="hljs-params">42</span>
+};
+
+<span class="hljs-params">Object</span>.defineProperty(target, <span class="hljs-string">"name"</span>, { configurable: <span class="hljs-params">false</span> });
+
+<span class="hljs-params">console</span>.log(<span class="hljs-string">"value"</span> <span class="hljs-keyword">in</span> target);     <span class="hljs-title">// true</span>
+
+<span class="hljs-keyword">let</span> result1 = <span class="hljs-keyword">delete</span> target.value;
+<span class="hljs-params">console</span>.log(result1);               <span class="hljs-title">// true</span>
+
+<span class="hljs-params">console</span>.log(<span class="hljs-string">"value"</span> <span class="hljs-keyword">in</span> target);     <span class="hljs-title">// false</span>
+
+<span class="hljs-title">// 注：下一行代码在严格模式下会抛出错误</span>
+<span class="hljs-keyword">let</span> result2 = <span class="hljs-keyword">delete</span> target.name;
+<span class="hljs-params">console</span>.log(result2);               <span class="hljs-title">// false</span>
+
+<span class="hljs-params">console</span>.log(<span class="hljs-string">"name"</span> <span class="hljs-keyword">in</span> target);      <span class="hljs-title">// true</span>
+</code></pre>
+<p class="calibre6">这里使用了 <code class="pcalibre3 calibre11 pcalibre4">delete</code> 运算符删除了 <code class="pcalibre3 calibre11 pcalibre4">value</code> 属性，因此在第三行代码的 <code class="pcalibre3 calibre11 pcalibre4">console.log()</code> 调用中，使用 <code class="pcalibre3 calibre11 pcalibre4">in</code> 操作符检测该属性会得到 <code class="pcalibre3 calibre11 pcalibre4">false</code> 。 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性是不可配置的，因此对其使用 <code class="pcalibre3 calibre11 pcalibre4">delete</code> 操作符只会返回 <code class="pcalibre3 calibre11 pcalibre4">false</code> 而不能删除该属性（如果代码运行在严格模式下，则会抛出错误）。你可以在代理对象中使用 <code class="pcalibre3 calibre11 pcalibre4">deleteProperty</code> 陷阱函数以改变这种行为。</p>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">deleteProperty</code> 陷阱函数会在使用 <code class="pcalibre3 calibre11 pcalibre4">delete</code> 运算符去删除对象属性时下被调用，并且会被传入两个参数：</p>
+<ol class="calibre2">
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">trapTarget</code> ：需要删除属性的对象（即代理的目标对象）；</li>
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">key</code> ：需要删除的属性的键（字符串类型或符号类型）。</li>
+</ol>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">Reflect.deleteProperty()</code> 方法也接受这两个参数，并提供了 <code class="pcalibre3 calibre11 pcalibre4">deleteProperty</code> 陷阱函数的默认实现。你可以结合 <code class="pcalibre3 calibre11 pcalibre4">Reflect.deleteProperty()</code> 方法以及 <code class="pcalibre3 calibre11 pcalibre4">deleteProperty</code> 陷阱函数，来修改 <code class="pcalibre3 calibre11 pcalibre4">delete</code> 运算符的行为。例如，能确保 <code class="pcalibre3 calibre11 pcalibre4">value</code> 属性不被删除：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> target = {
+    name: <span class="hljs-string">"target"</span>,
+    value: <span class="hljs-params">42</span>
+};
+
+<span class="hljs-keyword">let</span> proxy = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>(target, {
+    deleteProperty(trapTarget, key) {
+
+        <span class="hljs-keyword">if</span> (key === <span class="hljs-string">"value"</span>) {
+            <span class="hljs-keyword">return</span> <span class="hljs-params">false</span>;
+        } <span class="hljs-keyword">else</span> {
+            <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.deleteProperty(trapTarget, key);
+        }
+    }
+});
+
+<span class="hljs-title">// 尝试删除 proxy.value</span>
+
+<span class="hljs-params">console</span>.log(<span class="hljs-string">"value"</span> <span class="hljs-keyword">in</span> proxy);      <span class="hljs-title">// true</span>
+
+<span class="hljs-keyword">let</span> result1 = <span class="hljs-keyword">delete</span> proxy.value;
+<span class="hljs-params">console</span>.log(result1);               <span class="hljs-title">// false</span>
+
+<span class="hljs-params">console</span>.log(<span class="hljs-string">"value"</span> <span class="hljs-keyword">in</span> proxy);      <span class="hljs-title">// true</span>
+
+<span class="hljs-title">// 尝试删除 proxy.name</span>
+
+<span class="hljs-params">console</span>.log(<span class="hljs-string">"name"</span> <span class="hljs-keyword">in</span> proxy);       <span class="hljs-title">// true</span>
+
+<span class="hljs-keyword">let</span> result2 = <span class="hljs-keyword">delete</span> proxy.name;
+<span class="hljs-params">console</span>.log(result2);               <span class="hljs-title">// true</span>
+
+<span class="hljs-params">console</span>.log(<span class="hljs-string">"name"</span> <span class="hljs-keyword">in</span> proxy);       <span class="hljs-title">// false</span>
+</code></pre>
+<p class="calibre6">这段代码与 <code class="pcalibre3 calibre11 pcalibre4">has</code> 陷阱函数的例子相似，在 <code class="pcalibre3 calibre11 pcalibre4">deleteProperty</code> 陷阱函数中检查 <code class="pcalibre3 calibre11 pcalibre4">key</code> 的值是否为 <code class="pcalibre3 calibre11 pcalibre4">"value"</code> 。如果是，返回 <code class="pcalibre3 calibre11 pcalibre4">false</code> ；否则通过调用 <code class="pcalibre3 calibre11 pcalibre4">Reflect.deleteProperty()</code> 方法来进行默认的操作。 <code class="pcalibre3 calibre11 pcalibre4">value</code> 属性是不能被删除的，因为该操作被 <code class="pcalibre3 calibre11 pcalibre4">proxy</code> 对象拦截；而 <code class="pcalibre3 calibre11 pcalibre4">name</code> 则能如期被删除。这么做允许你在严格模式下保护属性避免其被删除，并且不会抛出错误。</p>
+<h3 id="原型代理的陷阱函数" class="calibre15"><span id="prototype-proxy-traps" class="calibre13">原型代理的陷阱函数</span></h3>
+<p class="calibre6">第四章介绍了 <code class="pcalibre3 calibre11 pcalibre4">Object.setPrototypeOf()</code> 方法， ES6 引入该方法用于对 ES5 的 <code class="pcalibre3 calibre11 pcalibre4">Object.getPrototypeOf()</code> 方法进行补充。代理允许你通过 <code class="pcalibre3 calibre11 pcalibre4">setPrototypeOf</code> 与 <code class="pcalibre3 calibre11 pcalibre4">getPrototypeOf</code> 陷阱函数来对这两个方法的操作进行拦截。 <code class="pcalibre3 calibre11 pcalibre4">Object</code> 对象上的这两个方法都会调用代理中对应名称的陷阱函数，从而允许你改变这两个方法的行为。</p>
+<p class="calibre6">由于存在着两个陷阱函数与原型代理相关联，因此分别有一组方法对应着每个陷阱函数。 <code class="pcalibre3 calibre11 pcalibre4">setPrototypeOf</code> 陷阱函数接受三个参数：</p>
+<ol class="calibre2">
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">trapTarget</code> ：需要设置原型的对象（即代理的目标对象）；</li>
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">proto</code> ：需用被用作原型的对象。</li>
+</ol>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">Object.setPrototypeOf()</code> 方法与 <code class="pcalibre3 calibre11 pcalibre4">Reflect.setPrototypeOf()</code> 方法会被传入相同的参数。另一方面， <code class="pcalibre3 calibre11 pcalibre4">getPrototypeOf</code> 陷阱函数只接受 <code class="pcalibre3 calibre11 pcalibre4">trapTarget</code> 参数， <code class="pcalibre3 calibre11 pcalibre4">Object.getPrototypeOf()</code> 方法与 <code class="pcalibre3 calibre11 pcalibre4">Reflect.getPrototypeOf()</code> 方法也是如此。</p>
+<h4 id="原型代理的陷阱函数如何工作" class="calibre15"><span id="how-prototype-proxy-traps-work" class="calibre13">原型代理的陷阱函数如何工作</span></h4>
+<p class="calibre6">这些陷阱函数受到一些限制。首先， <code class="pcalibre3 calibre11 pcalibre4">getPrototypeOf</code> 陷阱函数的返回值必须是一个对象或者 <code class="pcalibre3 calibre11 pcalibre4">null</code> ，其他任何类型的返回值都会引发“运行时”错误。对于返回值的检测确保了 <code class="pcalibre3 calibre11 pcalibre4">Object.getPrototypeOf()</code> 会返回预期的结果。类似的， <code class="pcalibre3 calibre11 pcalibre4">setPrototypeOf</code> 必须在操作没有成功的情况下返回 <code class="pcalibre3 calibre11 pcalibre4">false</code> ，这样会让 <code class="pcalibre3 calibre11 pcalibre4">Object.setPrototypeOf()</code> 抛出错误；而若 <code class="pcalibre3 calibre11 pcalibre4">setPrototypeOf</code> 的返回值不是 <code class="pcalibre3 calibre11 pcalibre4">false</code> ，则 <code class="pcalibre3 calibre11 pcalibre4">Object.setPrototypeOf()</code> 就会认为操作已成功。</p>
+<p class="calibre6">下面这个例子通过返回 <code class="pcalibre3 calibre11 pcalibre4">null</code> 隐藏了代理对象的原型，并且使得该原型不可被修改：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> target = {};
+<span class="hljs-keyword">let</span> proxy = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>(target, {
+    getPrototypeOf(trapTarget) {
+        <span class="hljs-keyword">return</span> <span class="hljs-params">null</span>;
+    },
+    setPrototypeOf(trapTarget, proto) {
+        <span class="hljs-keyword">return</span> <span class="hljs-params">false</span>;
+    }
+});
+
+<span class="hljs-keyword">let</span> targetProto = <span class="hljs-params">Object</span>.getPrototypeOf(target);
+<span class="hljs-keyword">let</span> proxyProto = <span class="hljs-params">Object</span>.getPrototypeOf(proxy);
+
+<span class="hljs-params">console</span>.log(targetProto === <span class="hljs-params">Object</span>.prototype);      <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(proxyProto === <span class="hljs-params">Object</span>.prototype);       <span class="hljs-title">// false</span>
+<span class="hljs-params">console</span>.log(proxyProto);                            <span class="hljs-title">// null</span>
+
+<span class="hljs-title">// 成功</span>
+<span class="hljs-params">Object</span>.setPrototypeOf(target, {});
+
+<span class="hljs-title">// 抛出错误</span>
+<span class="hljs-params">Object</span>.setPrototypeOf(proxy, {});
+</code></pre>
+<p class="calibre6">这段代码突出了 <code class="pcalibre3 calibre11 pcalibre4">target</code> 对象与 <code class="pcalibre3 calibre11 pcalibre4">proxy</code> 对象的行为差异。使用 <code class="pcalibre3 calibre11 pcalibre4">target</code> 对象作为参数调用 <code class="pcalibre3 calibre11 pcalibre4">Object.getPrototypeOf()</code> 会返回一个对象值；而使用 <code class="pcalibre3 calibre11 pcalibre4">proxy</code> 对象调用该方法则会返回 <code class="pcalibre3 calibre11 pcalibre4">null</code> ，因为 <code class="pcalibre3 calibre11 pcalibre4">getPrototypeOf</code> 陷阱函数被调用了。类似的，使用 <code class="pcalibre3 calibre11 pcalibre4">target</code> 去调用 <code class="pcalibre3 calibre11 pcalibre4">Object.setPrototypeOf()</code> 会成功；而由于 <code class="pcalibre3 calibre11 pcalibre4">setPrototypeOf</code> 陷阱函数的存在，使用 <code class="pcalibre3 calibre11 pcalibre4">proxy</code> 则会引发错误。</p>
+<p class="calibre6">如果你想在这两个陷阱函数中使用默认的行为，那么只需调用 <code class="pcalibre3 calibre11 pcalibre4">Reflect</code> 对象上的相应方法。例如，下面的代码为 <code class="pcalibre3 calibre11 pcalibre4">getPrototypeOf</code> 方法与 <code class="pcalibre3 calibre11 pcalibre4">setPrototypeOf</code> 方法实现了默认的行为：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> target = {};
+<span class="hljs-keyword">let</span> proxy = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>(target, {
+    getPrototypeOf(trapTarget) {
+        <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.getPrototypeOf(trapTarget);
+    },
+    setPrototypeOf(trapTarget, proto) {
+        <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.setPrototypeOf(trapTarget, proto);
+    }
+});
+
+<span class="hljs-keyword">let</span> targetProto = <span class="hljs-params">Object</span>.getPrototypeOf(target);
+<span class="hljs-keyword">let</span> proxyProto = <span class="hljs-params">Object</span>.getPrototypeOf(proxy);
+
+<span class="hljs-params">console</span>.log(targetProto === <span class="hljs-params">Object</span>.prototype);      <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(proxyProto === <span class="hljs-params">Object</span>.prototype);       <span class="hljs-title">// true</span>
+
+<span class="hljs-title">// 成功</span>
+<span class="hljs-params">Object</span>.setPrototypeOf(target, {});
+
+<span class="hljs-title">// 同样成功</span>
+<span class="hljs-params">Object</span>.setPrototypeOf(proxy, {});
+</code></pre>
+<p class="calibre6">在这个例子中，你可以将 <code class="pcalibre3 calibre11 pcalibre4">target</code> 对象与 <code class="pcalibre3 calibre11 pcalibre4">proxy</code> 对象互换使用，因为 <code class="pcalibre3 calibre11 pcalibre4">getPrototypeOf</code> 与 <code class="pcalibre3 calibre11 pcalibre4">setPrototypeOf</code> 陷阱函数只是直接传递参数去调用默认的实现。需要特别注意的是，本例使用了 <code class="pcalibre3 calibre11 pcalibre4">Reflect.getPrototypeOf()</code> 方法与 <code class="pcalibre3 calibre11 pcalibre4">Reflect.setPrototypeOf()</code> 方法，而没有使用 <code class="pcalibre3 calibre11 pcalibre4">Object</code> 对象上的同名方法，因为这些方法存在重要差别。</p>
+<h4 id="为何存在两组方法？" class="calibre15"><span id="why-two-sets-of-methods-" class="calibre13">为何存在两组方法？</span></h4>
+<p class="calibre6">关于 <code class="pcalibre3 calibre11 pcalibre4">Reflect.getPrototypeOf()</code> 与 <code class="pcalibre3 calibre11 pcalibre4">Reflect.setPrototypeOf()</code> ，令人困惑的是它们看起来与 <code class="pcalibre3 calibre11 pcalibre4">Object.getPrototypeOf()</code> 与 <code class="pcalibre3 calibre11 pcalibre4">Object.setPrototypeOf()</code> 非常相似。然而虽然两组方法分别进行着相似的操作，它们之间仍然存在显著差异。</p>
+<p class="calibre6">首先， <code class="pcalibre3 calibre11 pcalibre4">Object.getPrototypeOf()</code> 与 <code class="pcalibre3 calibre11 pcalibre4">Object.setPrototypeOf()</code> 属于高级操作，从产生之初便已提供给开发者使用；而 <code class="pcalibre3 calibre11 pcalibre4">Reflect.getPrototypeOf()</code> 与 <code class="pcalibre3 calibre11 pcalibre4">Reflect.setPrototypeOf()</code> 属于底层操作，允许开发者访问 <code class="pcalibre3 calibre11 pcalibre4">[[GetPrototypeOf]]</code> 与 <code class="pcalibre3 calibre11 pcalibre4">[[SetPrototypeOf]]</code> 这两个原先仅供语言内部使用的操作。 <code class="pcalibre3 calibre11 pcalibre4">Reflect.getPrototypeOf()</code> 方法是对内部的 <code class="pcalibre3 calibre11 pcalibre4">[[GetPrototypeOf]]</code> 操作的封装（并附加了一些输入验证），而 <code class="pcalibre3 calibre11 pcalibre4">Reflect.setPrototypeOf()</code> 方法与 <code class="pcalibre3 calibre11 pcalibre4">[[SetPrototypeOf]]</code> 操作之间也存在类似的关系。虽然 <code class="pcalibre3 calibre11 pcalibre4">Object</code> 对象上的同名方法也调用了 <code class="pcalibre3 calibre11 pcalibre4">[[GetPrototypeOf]]</code> 与 <code class="pcalibre3 calibre11 pcalibre4">[[SetPrototypeOf]]</code> ，但它们在调用这两个操作之前添加了一些步骤、并检查返回值，以决定如何行动。</p>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">Reflect.getPrototypeOf()</code> 方法在接收到的参数不是一个对象时会抛出错误，而 <code class="pcalibre3 calibre11 pcalibre4">Object.getPrototypeOf()</code> 则会在操作之前先将参数值转换为一个对象。如果你分别传入一个数值给这两个方法，会得到截然不同的结果：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> result1 = <span class="hljs-params">Object</span>.getPrototypeOf(<span class="hljs-params">1</span>);
+<span class="hljs-params">console</span>.log(result1 === <span class="hljs-params">Number</span>.prototype);  <span class="hljs-title">// true</span>
+
+<span class="hljs-title">// 抛出错误</span>
+<span class="hljs-params">Reflect</span>.getPrototypeOf(<span class="hljs-params">1</span>);
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">Object.getPrototypeOf()</code> 方法能够为数值 <code class="pcalibre3 calibre11 pcalibre4">1</code> 找到一个原型，因为它首先会将数值 <code class="pcalibre3 calibre11 pcalibre4">1</code> 转换为一个 <code class="pcalibre3 calibre11 pcalibre4">Number</code> 对象，这样就可以使用 <code class="pcalibre3 calibre11 pcalibre4">Number</code> 对象的原型。而 <code class="pcalibre3 calibre11 pcalibre4">Reflect.getPrototypeOf()</code> 方法并不会转换这个参数，由于数值 <code class="pcalibre3 calibre11 pcalibre4">1</code> 不是一个对象，因此该方法调用会导致一个错误。</p>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">Reflect.setPrototypeOf()</code> 方法与 <code class="pcalibre3 calibre11 pcalibre4">Object.setPrototypeOf()</code> 方法还有几点差异。首先， <code class="pcalibre3 calibre11 pcalibre4">Reflect.setPrototypeOf()</code> 方法返回一个布尔值用于表示操作是否已成功，成功时返回 <code class="pcalibre3 calibre11 pcalibre4">true</code> ，而失败时返回 <code class="pcalibre3 calibre11 pcalibre4">false</code> ；但若 <code class="pcalibre3 calibre11 pcalibre4">Object.setPrototypeOf()</code> 方法的操作失败，它会抛出错误。</p>
+<p class="calibre6">在“原型代理的陷阱函数如何工作”那个小节的第一个例子中，当 <code class="pcalibre3 calibre11 pcalibre4">setPrototypeOf</code> 代理陷阱返回 <code class="pcalibre3 calibre11 pcalibre4">false</code> 时，它导致 <code class="pcalibre3 calibre11 pcalibre4">Object.setPrototypeOf()</code> 方法抛出了错误。此外， <code class="pcalibre3 calibre11 pcalibre4">Object.setPrototypeOf()</code> 方法会将传入的第一个参数作为自身的返回值，因此并不适合用来实现 <code class="pcalibre3 calibre11 pcalibre4">setPrototypeOf</code> 代理陷阱的默认行为。下面的代码演示了这些区别：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> target1 = {};
+<span class="hljs-keyword">let</span> result1 = <span class="hljs-params">Object</span>.setPrototypeOf(target1, {});
+<span class="hljs-params">console</span>.log(result1 === target1);                   <span class="hljs-title">// true</span>
+
+<span class="hljs-keyword">let</span> target2 = {};
+<span class="hljs-keyword">let</span> result2 = <span class="hljs-params">Reflect</span>.setPrototypeOf(target2, {});
+<span class="hljs-params">console</span>.log(result2 === target2);                   <span class="hljs-title">// false</span>
+<span class="hljs-params">console</span>.log(result2);                               <span class="hljs-title">// true</span>
+</code></pre>
+<p class="calibre6">在本例中， <code class="pcalibre3 calibre11 pcalibre4">Object.setPrototypeOf()</code> 方法将 <code class="pcalibre3 calibre11 pcalibre4">target1</code> 对象作为返回值，而 <code class="pcalibre3 calibre11 pcalibre4">Reflect.setPrototypeOf()</code> 方法则返回了 <code class="pcalibre3 calibre11 pcalibre4">true</code> 。这个微妙的差异非常重要，虽然 <code class="pcalibre3 calibre11 pcalibre4">Object</code> 对象与 <code class="pcalibre3 calibre11 pcalibre4">Reflect</code> 对象貌似存在重复的方法，但在代理陷阱内却必须使用 <code class="pcalibre3 calibre11 pcalibre4">Reflect</code> 对象上的方法。</p>
+<blockquote class="calibre20">
+<p class="calibre6">在使用代理时，这两组方法都会调用 <code class="pcalibre3 calibre11 pcalibre4">getPrototypeOf</code> 与 <code class="pcalibre3 calibre11 pcalibre4">setPrototypeOf</code> 陷阱函数。</p>
+</blockquote>
+<h3 id="对象可扩展性的陷阱函数" class="calibre15"><span id="object-extensibility-traps" class="calibre13">对象可扩展性的陷阱函数</span></h3>
+<p class="calibre6">ES5 通过 <code class="pcalibre3 calibre11 pcalibre4">Object.preventExtensions()</code> 与 <code class="pcalibre3 calibre11 pcalibre4">Object.isExtensible()</code> 方法给对象增加了可扩展性。而 ES6 则通过 <code class="pcalibre3 calibre11 pcalibre4">preventExtensions</code> 与 <code class="pcalibre3 calibre11 pcalibre4">isExtensible</code> 陷阱函数允许代理拦截对于底层对象的方法调用。这两个陷阱函数都接受名为 <code class="pcalibre3 calibre11 pcalibre4">trapTarget</code> 的单个参数，此参数代表方法在哪个对象上被调用。 <code class="pcalibre3 calibre11 pcalibre4">isExtensible</code> 陷阱函数必须返回一个布尔值用于表明目标对象是否可被扩展，而 <code class="pcalibre3 calibre11 pcalibre4">preventExtensions</code> 陷阱函数也需要返回一个布尔值，用于表明操作是否已成功。</p>
+<p class="calibre6">同时也存在 <code class="pcalibre3 calibre11 pcalibre4">Reflect.preventExtensions()</code> 与 <code class="pcalibre3 calibre11 pcalibre4">Reflect.isExtensible()</code> 方法，用于实现默认的行为。这两个方法都返回布尔值，因此它们可以在对应的陷阱函数内直接使用。</p>
+<h4 id="两个基本范例" class="calibre15"><span id="two-basic-examples" class="calibre13">两个基本范例</span></h4>
+<p class="calibre6">为了弄懂对象可扩展性的陷阱函数如何运作，可研究如下代码，该代码实现了 <code class="pcalibre3 calibre11 pcalibre4">isExtensible</code> 与 <code class="pcalibre3 calibre11 pcalibre4">preventExtensions</code> 陷阱函数的默认行为。</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> target = {};
+<span class="hljs-keyword">let</span> proxy = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>(target, {
+    isExtensible(trapTarget) {
+        <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.isExtensible(trapTarget);
+    },
+    preventExtensions(trapTarget) {
+        <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.preventExtensions(trapTarget);
+    }
+});
+
+<span class="hljs-params">console</span>.log(<span class="hljs-params">Object</span>.isExtensible(target));       <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-params">Object</span>.isExtensible(proxy));        <span class="hljs-title">// true</span>
+
+<span class="hljs-params">Object</span>.preventExtensions(proxy);
+
+<span class="hljs-params">console</span>.log(<span class="hljs-params">Object</span>.isExtensible(target));       <span class="hljs-title">// false</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-params">Object</span>.isExtensible(proxy));        <span class="hljs-title">// false</span>
+</code></pre>
+<p class="calibre6">这个例子将 <code class="pcalibre3 calibre11 pcalibre4">Object.preventExtensions()</code> 与 <code class="pcalibre3 calibre11 pcalibre4">Object.isExtensible()</code> 方法直接从 <code class="pcalibre3 calibre11 pcalibre4">proxy</code> 对象传递到 <code class="pcalibre3 calibre11 pcalibre4">target</code> 对象。当然，你也可以自行修改这种行为。例如，如果不想让代理上的 <code class="pcalibre3 calibre11 pcalibre4">Object.preventExtensions()</code> 操作成功，你可以强制 <code class="pcalibre3 calibre11 pcalibre4">preventExtensions</code> 陷阱函数返回 <code class="pcalibre3 calibre11 pcalibre4">false</code> 。</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> target = {};
+<span class="hljs-keyword">let</span> proxy = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>(target, {
+    isExtensible(trapTarget) {
+        <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.isExtensible(trapTarget);
+    },
+    preventExtensions(trapTarget) {
+        <span class="hljs-keyword">return</span> <span class="hljs-params">false</span>
+    }
+});
+
+<span class="hljs-params">console</span>.log(<span class="hljs-params">Object</span>.isExtensible(target));       <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-params">Object</span>.isExtensible(proxy));        <span class="hljs-title">// true</span>
+
+<span class="hljs-params">Object</span>.preventExtensions(proxy);
+
+<span class="hljs-params">console</span>.log(<span class="hljs-params">Object</span>.isExtensible(target));       <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-params">Object</span>.isExtensible(proxy));        <span class="hljs-title">// true</span>
+</code></pre>
+<p class="calibre6">这段代码中，对于 <code class="pcalibre3 calibre11 pcalibre4">Object.preventExtensions(proxy)</code> 的调用被有效地忽略了。因为 <code class="pcalibre3 calibre11 pcalibre4">preventExtensions</code> 陷阱函数返回了 <code class="pcalibre3 calibre11 pcalibre4">false</code>，因此该操作并不会被传递到 <code class="pcalibre3 calibre11 pcalibre4">target</code> 对象上，于是后面的 <code class="pcalibre3 calibre11 pcalibre4">Object.isExtensible()</code> 仍然会返回 <code class="pcalibre3 calibre11 pcalibre4">true</code>。</p>
+<blockquote class="calibre20">
+<p class="calibre6">译注：此代码在 FireFox 和 Edge 中能够正常执行，但在 Chrome 中却会在 <code class="pcalibre3 calibre11 pcalibre4">Object.preventExtensions(proxy)</code> 这一行抛出错误。</p>
+</blockquote>
+<h4 id="可扩展性的重复方法" class="calibre15"><span id="duplicate-extensibility-methods" class="calibre13">可扩展性的重复方法</span></h4>
+<p class="calibre6">你可能已经注意到：在可扩展性方面， <code class="pcalibre3 calibre11 pcalibre4">Object</code> 对象与 <code class="pcalibre3 calibre11 pcalibre4">Reflect</code> 对象再次出现了重复的方法。不过它们之间的差异相对要小得多： <code class="pcalibre3 calibre11 pcalibre4">Object.isExtensible()</code> 方法与 <code class="pcalibre3 calibre11 pcalibre4">Reflect.isExtensible()</code> 方法几乎一样，只在接收到的参数不是一个对象时才有例外。此时 <code class="pcalibre3 calibre11 pcalibre4">Object.isExtensible()</code> 总是会返回 <code class="pcalibre3 calibre11 pcalibre4">false</code> ，而 <code class="pcalibre3 calibre11 pcalibre4">Reflect.isExtensible()</code> 则会抛出一个错误。这里有个示例：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> result1 = <span class="hljs-params">Object</span>.isExtensible(<span class="hljs-params">2</span>);
+<span class="hljs-params">console</span>.log(result1);                       <span class="hljs-title">// false</span>
+
+<span class="hljs-title">// 抛出错误</span>
+<span class="hljs-keyword">let</span> result2 = <span class="hljs-params">Reflect</span>.isExtensible(<span class="hljs-params">2</span>);
+</code></pre>
+<p class="calibre6">这种区别与 <code class="pcalibre3 calibre11 pcalibre4">Object.getPrototypeOf()</code> 方法和 <code class="pcalibre3 calibre11 pcalibre4">Reflect.getPrototypeOf()</code> 方法之间的区别相似，底层功能的方法与对应的高层方法相比，会进行更严格的错误检查。</p>
+<p class="calibre6"> <code class="pcalibre3 calibre11 pcalibre4">Object.preventExtensions()</code> 方法与 <code class="pcalibre3 calibre11 pcalibre4">Reflect.preventExtensions()</code> 方法也是非常相似的。 <code class="pcalibre3 calibre11 pcalibre4">Object.preventExtensions()</code> 方法总是将传递给它的参数值作为自身的返回值，即使该参数不是一个对象；而另一方面 <code class="pcalibre3 calibre11 pcalibre4">Reflect.preventExtensions()</code> 方法则会在参数不是对象时抛出错误。当参数确实是一个对象时， <code class="pcalibre3 calibre11 pcalibre4">Reflect.preventExtensions()</code> 会在操作成功时返回 <code class="pcalibre3 calibre11 pcalibre4">true</code> ，否则返回 <code class="pcalibre3 calibre11 pcalibre4">false</code> 。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> result1 = <span class="hljs-params">Object</span>.preventExtensions(<span class="hljs-params">2</span>);
+<span class="hljs-params">console</span>.log(result1);                               <span class="hljs-title">// 2</span>
+
+<span class="hljs-keyword">let</span> target = {};
+<span class="hljs-keyword">let</span> result2 = <span class="hljs-params">Reflect</span>.preventExtensions(target);
+<span class="hljs-params">console</span>.log(result2);                               <span class="hljs-title">// true</span>
+
+<span class="hljs-title">// 抛出错误</span>
+<span class="hljs-keyword">let</span> result3 = <span class="hljs-params">Reflect</span>.preventExtensions(<span class="hljs-params">2</span>);
+</code></pre>
+<p class="calibre6">此代码中的 <code class="pcalibre3 calibre11 pcalibre4">Object.preventExtensions()</code> 将传递给它的参数 <code class="pcalibre3 calibre11 pcalibre4">2</code> 作为返回值，尽管 <code class="pcalibre3 calibre11 pcalibre4">2</code> 并不是一个对象。 而 <code class="pcalibre3 calibre11 pcalibre4">Reflect.preventExtensions()</code> 方法在接收一个对象作为参数时返回了 <code class="pcalibre3 calibre11 pcalibre4">true</code> ，但在接收 <code class="pcalibre3 calibre11 pcalibre4">2</code> 时抛出了错误。</p>
+<h3 id="属性描述符的陷阱函数" class="calibre15"><span id="property-descriptor-traps" class="calibre13">属性描述符的陷阱函数</span></h3>
+<p class="calibre6">ES5 最重要的特征之一就是引入了 <code class="pcalibre3 calibre11 pcalibre4">Object.defineProperty()</code> 方法用于定义属性的特性。在 JS 之前的版本中，没有方法可以定义一个访问器属性，也不能让属性变成只读或是不可枚举。而这些特性都能够利用 <code class="pcalibre3 calibre11 pcalibre4">Object.defineProperty()</code> 方法来实现，并且你还可以利用 <code class="pcalibre3 calibre11 pcalibre4">Object.getOwnPropertyDescriptor()</code> 方法来检索这些特性。</p>
+<p class="calibre6">代理允许你使用 <code class="pcalibre3 calibre11 pcalibre4">defineProperty</code> 与 <code class="pcalibre3 calibre11 pcalibre4">getOwnPropertyDescriptor</code> 陷阱函数，来分别拦截对于 <code class="pcalibre3 calibre11 pcalibre4">Object.defineProperty()</code> 与 <code class="pcalibre3 calibre11 pcalibre4">Object.getOwnPropertyDescriptor()</code> 的调用。 <code class="pcalibre3 calibre11 pcalibre4">defineProperty</code> 陷阱函数接受下列三个参数：</p>
+<ol class="calibre2">
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">trapTarget</code> ：需要被定义属性的对象（即代理的目标对象）；</li>
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">key</code> ：属性的键（字符串类型或符号类型）；</li>
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">descriptor</code> ：为该属性准备的描述符对象。</li>
+</ol>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">defineProperty</code> 陷阱函数要求你在操作成功时返回 <code class="pcalibre3 calibre11 pcalibre4">true</code> ，否则返回 <code class="pcalibre3 calibre11 pcalibre4">false</code> 。 <code class="pcalibre3 calibre11 pcalibre4">getOwnPropertyDescriptor</code> 陷阱函数则只接受 <code class="pcalibre3 calibre11 pcalibre4">trapTarget</code> 与 <code class="pcalibre3 calibre11 pcalibre4">key</code> 这两个参数，并会返回对应的描述符。 <code class="pcalibre3 calibre11 pcalibre4">Reflect.defineProperty()</code> 与 <code class="pcalibre3 calibre11 pcalibre4">Reflect.getOwnPropertyDescriptor()</code> 方法作为上述陷阱函数的对应方法，接受与之相同的参数。这里有个例子，实现了每个陷阱函数的默认行为：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> proxy = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>({}, {
+    defineProperty(trapTarget, key, descriptor) {
+        <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.defineProperty(trapTarget, key, descriptor);
+    },
+    getOwnPropertyDescriptor(trapTarget, key) {
+        <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.getOwnPropertyDescriptor(trapTarget, key);
+    }
+});
+
+<span class="hljs-params">Object</span>.defineProperty(proxy, <span class="hljs-string">"name"</span>, {
+    value: <span class="hljs-string">"proxy"</span>
+});
+
+<span class="hljs-params">console</span>.log(proxy.name);            <span class="hljs-title">// "proxy"</span>
+
+<span class="hljs-keyword">let</span> descriptor = <span class="hljs-params">Object</span>.getOwnPropertyDescriptor(proxy, <span class="hljs-string">"name"</span>);
+
+<span class="hljs-params">console</span>.log(descriptor.value);      <span class="hljs-title">// "proxy"</span>
+</code></pre>
+<p class="calibre6">这段代码使用了 <code class="pcalibre3 calibre11 pcalibre4">Object.defineProperty()</code> 方法在代理对象上定义了名为 <code class="pcalibre3 calibre11 pcalibre4">"name"</code> 的属性，该属性的描述符可以使用 <code class="pcalibre3 calibre11 pcalibre4">Object.getOwnPropertyDescriptor()</code> 方法进行检索。</p>
+<h4 id="阻止-objectdefineproperty" class="calibre15"><span id="blocking-object-defineproperty--" class="calibre13">阻止 Object.defineProperty()</span></h4>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">defineProperty</code> 陷阱函数要求你返回一个布尔值用于表示操作是否已成功。当它返回 <code class="pcalibre3 calibre11 pcalibre4">true</code> 时， <code class="pcalibre3 calibre11 pcalibre4">Object.defineProperty()</code> 会正常执行；而如果它返回了 <code class="pcalibre3 calibre11 pcalibre4">false</code> ，则 <code class="pcalibre3 calibre11 pcalibre4">Object.defineProperty()</code> 会抛出错误。 你可以使用该功能来限制哪些属性可以被 <code class="pcalibre3 calibre11 pcalibre4">Object.defineProperty()</code> 方法定义。例如，如果想阻止定义符号类型的属性，你可以检查传入的键是否为字符串，若不是则返回 <code class="pcalibre3 calibre11 pcalibre4">false</code> ，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> proxy = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>({}, {
+    defineProperty(trapTarget, key, descriptor) {
+
+        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> key === <span class="hljs-string">"symbol"</span>) {
+            <span class="hljs-keyword">return</span> <span class="hljs-params">false</span>;
+        }
+
+        <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.defineProperty(trapTarget, key, descriptor);
+    }
+});
+
+<span class="hljs-params">Object</span>.defineProperty(proxy, <span class="hljs-string">"name"</span>, {
+    value: <span class="hljs-string">"proxy"</span>
+});
+
+<span class="hljs-params">console</span>.log(proxy.name);                    <span class="hljs-title">// "proxy"</span>
+
+<span class="hljs-keyword">let</span> nameSymbol = <span class="hljs-params">Symbol</span>(<span class="hljs-string">"name"</span>);
+
+<span class="hljs-title">// 抛出错误</span>
+<span class="hljs-params">Object</span>.defineProperty(proxy, nameSymbol, {
+    value: <span class="hljs-string">"proxy"</span>
+});
+</code></pre>
+<p class="calibre6">当 <code class="pcalibre3 calibre11 pcalibre4">key</code> 是一个符号时， <code class="pcalibre3 calibre11 pcalibre4">defineProperty</code> 代理陷阱会返回 <code class="pcalibre3 calibre11 pcalibre4">false</code> ，而其他情况下则会保持默认的行为。当使用字符串 <code class="pcalibre3 calibre11 pcalibre4">"name"</code> 作为键去调用 <code class="pcalibre3 calibre11 pcalibre4">Object.defineProperty()</code> 时，该方法能够成功执行；然而当使用符号变量 <code class="pcalibre3 calibre11 pcalibre4">nameSymbol</code> 去调用 <code class="pcalibre3 calibre11 pcalibre4">Object.defineProperty()</code> 的时候， <code class="pcalibre3 calibre11 pcalibre4">defineProperty</code> 陷阱函数返回了 <code class="pcalibre3 calibre11 pcalibre4">false</code>，导致程序抛出了错误。</p>
+<blockquote class="calibre20">
+<p class="calibre6">你可以让陷阱函数返回 <code class="pcalibre3 calibre11 pcalibre4">true</code> ，同时不去调用 <code class="pcalibre3 calibre11 pcalibre4">Reflect.defineProperty()</code> 方法，这样 <code class="pcalibre3 calibre11 pcalibre4">Object.defineProperty()</code> 就会静默失败，如此便可在未实际去定义属性的情况下抑制运行错误。</p>
+</blockquote>
+<h4 id="描述符对象的限制" class="calibre15"><span id="descriptor-object-restrictions" class="calibre13">描述符对象的限制</span></h4>
+<p class="calibre6">为了确保 <code class="pcalibre3 calibre11 pcalibre4">Object.defineProperty()</code> 与 <code class="pcalibre3 calibre11 pcalibre4">Object.getOwnPropertyDescriptor()</code> 方法的行为一致，传递给 <code class="pcalibre3 calibre11 pcalibre4">defineProperty</code> 陷阱函数的描述符对象必须是正规的。出于同一原因， <code class="pcalibre3 calibre11 pcalibre4">getOwnPropertyDescriptor</code>陷阱函数返回的对象也始终需要被验证。</p>
+<p class="calibre6">任意对象都能作为 <code class="pcalibre3 calibre11 pcalibre4">Object.defineProperty()</code> 方法的第三个参数；然而传递给 <code class="pcalibre3 calibre11 pcalibre4">defineProperty</code> 陷阱函数的描述符对象参数，则只有 <code class="pcalibre3 calibre11 pcalibre4">enumerable</code> 、 <code class="pcalibre3 calibre11 pcalibre4">configurable</code> 、 <code class="pcalibre3 calibre11 pcalibre4">value</code> 、 <code class="pcalibre3 calibre11 pcalibre4">writable</code> 、 <code class="pcalibre3 calibre11 pcalibre4">get</code> 与 <code class="pcalibre3 calibre11 pcalibre4">set</code> 这些属性是被许可的。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> proxy = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>({}, {
+    defineProperty(trapTarget, key, descriptor) {
+        <span class="hljs-params">console</span>.log(descriptor.value);              <span class="hljs-title">// "proxy"</span>
+        <span class="hljs-params">console</span>.log(descriptor.name);               <span class="hljs-title">// undefined</span>
+
+        <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.defineProperty(trapTarget, key, descriptor);
+    }
+});
+
+
+<span class="hljs-params">Object</span>.defineProperty(proxy, <span class="hljs-string">"name"</span>, {
+    value: <span class="hljs-string">"proxy"</span>,
+    name: <span class="hljs-string">"custom"</span>
+});
+</code></pre>
+<p class="calibre6">此代码中调用 <code class="pcalibre3 calibre11 pcalibre4">Object.defineProperty()</code> 时，在第三个参数上使用了一个非标准的 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性。当 <code class="pcalibre3 calibre11 pcalibre4">defineProperty</code> 陷阱函数被调用时， <code class="pcalibre3 calibre11 pcalibre4">descriptor</code> 对象不会拥有 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性，却拥有一个 <code class="pcalibre3 calibre11 pcalibre4">value</code> 属性。这是因为 <code class="pcalibre3 calibre11 pcalibre4">descriptor</code> 对象实际上并不是原先传递给 <code class="pcalibre3 calibre11 pcalibre4">Object.defineProperty()</code> 方法的第三个参数，而是一个新的对象，其中只包含了被许可的属性（因此 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性被丢弃了）。 <code class="pcalibre3 calibre11 pcalibre4">Reflect.defineProperty()</code> 方法同样也会忽略描述符上的非标准属性。</p>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">getOwnPropertyDescriptor</code> 陷阱函数有一个微小差异，要求返回值必须是 <code class="pcalibre3 calibre11 pcalibre4">null</code> 、 <code class="pcalibre3 calibre11 pcalibre4">undefined</code> ，或者是一个对象。如果返回值是一个对象，则只允许该对象拥有 <code class="pcalibre3 calibre11 pcalibre4">enumerable</code> 、 <code class="pcalibre3 calibre11 pcalibre4">configurable</code> 、 <code class="pcalibre3 calibre11 pcalibre4">value</code> 、 <code class="pcalibre3 calibre11 pcalibre4">writable</code> 、 <code class="pcalibre3 calibre11 pcalibre4">get</code> 或 <code class="pcalibre3 calibre11 pcalibre4">set</code> 这些自有属性。如果你返回的对象包含了不被许可的自有属性，则程序会抛出错误，就像下面演示的这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> proxy = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>({}, {
+    getOwnPropertyDescriptor(trapTarget, key) {
+        <span class="hljs-keyword">return</span> {
+            name: <span class="hljs-string">"proxy"</span>
+        };
+    }
+});
+
+<span class="hljs-title">// 抛出错误</span>
+<span class="hljs-keyword">let</span> descriptor = <span class="hljs-params">Object</span>.getOwnPropertyDescriptor(proxy, <span class="hljs-string">"name"</span>);
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">name</code> 属性在属性描述符中是不被许可的，因此当 <code class="pcalibre3 calibre11 pcalibre4">Object.getOwnPropertyDescriptor()</code> 被调用时， <code class="pcalibre3 calibre11 pcalibre4">getOwnPropertyDescriptor</code> 的返回值会触发一个错误。这个限制保证了 <code class="pcalibre3 calibre11 pcalibre4">Object.getOwnPropertyDescriptor()</code> 的返回值总是拥有可信任的结构，无论是否使用了代理。</p>
+<h4 id="重复的描述符方法" class="calibre15"><span id="duplicate-descriptor-methods" class="calibre13">重复的描述符方法</span></h4>
+<p class="calibre6">ES6 再次出现了令人困惑的相似方法， <code class="pcalibre3 calibre11 pcalibre4">Object.defineProperty()</code> 和 <code class="pcalibre3 calibre11 pcalibre4">Object.getOwnPropertyDescriptor()</code> 方法貌似分别与 <code class="pcalibre3 calibre11 pcalibre4">Reflect.defineProperty()</code> 和 <code class="pcalibre3 calibre11 pcalibre4">Reflect.getOwnPropertyDescriptor()</code> 方法相同。正如本章之前讨论过的那些配套方法一样，这些方法也存在一些微小但重要的差异。</p>
+<h5 id="defineproperty-方法" class="calibre18"><span id="defineproperty---methods" class="calibre19">defineProperty() 方法</span></h5>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">Object.defineProperty()</code> 方法与 <code class="pcalibre3 calibre11 pcalibre4">Reflect.defineProperty()</code> 方法几乎一模一样，只是返回值有区别。前者返回调用它时的第一个参数，而后者在操作成功时返回 <code class="pcalibre3 calibre11 pcalibre4">true</code> 、失败时返回 <code class="pcalibre3 calibre11 pcalibre4">false</code> 。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> target = {};
+
+<span class="hljs-keyword">let</span> result1 = <span class="hljs-params">Object</span>.defineProperty(target, <span class="hljs-string">"name"</span>, { value: <span class="hljs-string">"target "</span>});
+
+<span class="hljs-params">console</span>.log(target === result1);        <span class="hljs-title">// true</span>
+
+<span class="hljs-keyword">let</span> result2 = <span class="hljs-params">Reflect</span>.defineProperty(target, <span class="hljs-string">"name"</span>, { value: <span class="hljs-string">"reflect"</span> });
+
+<span class="hljs-params">console</span>.log(result2);                   <span class="hljs-title">// true</span>
+</code></pre>
+<p class="calibre6">使用 <code class="pcalibre3 calibre11 pcalibre4">target</code> 对象去调用 <code class="pcalibre3 calibre11 pcalibre4">Object.defineProperty()</code> 方法，返回值也是 <code class="pcalibre3 calibre11 pcalibre4">target</code> 。而同样使用 <code class="pcalibre3 calibre11 pcalibre4">target</code> 对象去调用 <code class="pcalibre3 calibre11 pcalibre4">Reflect.defineProperty()</code> ，返回值却是 <code class="pcalibre3 calibre11 pcalibre4">true</code> ，表示操作已经成功。由于 <code class="pcalibre3 calibre11 pcalibre4">defineProperty</code> 代理陷阱需要一个布尔值作为返回值，因此最好在必要时使用 <code class="pcalibre3 calibre11 pcalibre4">Reflect.defineProperty()</code> 来实现默认的行为。</p>
+<h5 id="getownpropertydescriptor-方法" class="calibre18"><span id="getownpropertydescriptor---methods" class="calibre19">getOwnPropertyDescriptor() 方法</span></h5>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">Object.getOwnPropertyDescriptor()</code> 方法会在接收的第一个参数是一个基本类型值时，将该参数转换为一个对象。另一方面， <code class="pcalibre3 calibre11 pcalibre4">Reflect.getOwnPropertyDescriptor()</code> 方法则会在第一个参数是基本类型值的时候抛出错误。下面这个例子展示了二者的特性：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> descriptor1 = <span class="hljs-params">Object</span>.getOwnPropertyDescriptor(<span class="hljs-params">2</span>, <span class="hljs-string">"name"</span>);
+<span class="hljs-params">console</span>.log(descriptor1);       <span class="hljs-title">// undefined</span>
+
+<span class="hljs-title">// 抛出错误</span>
+<span class="hljs-keyword">let</span> descriptor2 = <span class="hljs-params">Reflect</span>.getOwnPropertyDescriptor(<span class="hljs-params">2</span>, <span class="hljs-string">"name"</span>);
+</code></pre>
+<p class="calibre6">此代码中的 <code class="pcalibre3 calibre11 pcalibre4">Object.getOwnPropertyDescriptor()</code> 方法返回了 <code class="pcalibre3 calibre11 pcalibre4">undefined</code> ，因为它将 <code class="pcalibre3 calibre11 pcalibre4">2</code> 转换为一个对象，转换后的对象并不包含 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性，而返回 <code class="pcalibre3 calibre11 pcalibre4">undefined</code> 是指定属性名在目标对象中不存在时的标准行为。然而当 <code class="pcalibre3 calibre11 pcalibre4">Reflect.getOwnPropertyDescriptor()</code> 被调用时，立刻抛出了一个错误，因为该方法不接受基本类型值作为它的第一个参数。</p>
+<h3 id="ownkeys-陷阱函数" class="calibre15"><span id="the--ownkeys--trap" class="calibre13">ownKeys 陷阱函数</span></h3>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">ownKeys</code> 代理陷阱拦截了内部方法 <code class="pcalibre3 calibre11 pcalibre4">[[OwnPropertyKeys]]</code> ，并允许你返回一个数组用于重写该行为。返回的这个数组会被用于四个方法： <code class="pcalibre3 calibre11 pcalibre4">Object.keys()</code> 方法、 <code class="pcalibre3 calibre11 pcalibre4">Object.getOwnPropertyNames()</code> 方法、 <code class="pcalibre3 calibre11 pcalibre4">Object.getOwnPropertySymbols()</code> 方法与 <code class="pcalibre3 calibre11 pcalibre4">Object.assign()</code> 方法，其中 <code class="pcalibre3 calibre11 pcalibre4">Object.assign()</code> 方法会使用该数组来决定哪些属性会被复制。</p>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">ownKeys</code> 陷阱函数的默认行为由 <code class="pcalibre3 calibre11 pcalibre4">Reflect.ownKeys()</code> 方法实现，会返回一个由全部自有属性的键构成的数组，无论键的类型是字符串还是符号。 <code class="pcalibre3 calibre11 pcalibre4">Object.getOwnProperyNames()</code> 方法与 <code class="pcalibre3 calibre11 pcalibre4">Object.keys()</code> 方法会将符号值从该数组中过滤出去；相反， <code class="pcalibre3 calibre11 pcalibre4">Object.getOwnPropertySymbols()</code> 会将字符串值过滤掉；而 <code class="pcalibre3 calibre11 pcalibre4">Object.assign()</code> 方法会使用数组中所有的字符串值与符号值。</p>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">ownKeys</code> 陷阱函数接受单个参数，即目标对象，同时必须返回一个数组或者一个类数组对象，不合要求的返回值会导致错误。你可以使用 <code class="pcalibre3 calibre11 pcalibre4">ownKeys</code> 陷阱函数去过滤特定的属性，以避免这些属性被 <code class="pcalibre3 calibre11 pcalibre4">Object.keys()</code> 方法、 <code class="pcalibre3 calibre11 pcalibre4">Object.getOwnPropertyNames()</code> 方法、 <code class="pcalibre3 calibre11 pcalibre4">Object.getOwnPropertySymbols()</code> 方法或 <code class="pcalibre3 calibre11 pcalibre4">Object.assign()</code> 方法使用。假设你不想在结果中包含任何以下划线打头的属性（在 JS 的编码惯例中，这代表该字段是私有的），那么可以使用 <code class="pcalibre3 calibre11 pcalibre4">ownKeys</code> 陷阱函数来将它们过滤掉，就像下面这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> proxy = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>({}, {
+    ownKeys(trapTarget) {
+        <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.ownKeys(trapTarget).filter(key =&gt; {
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">typeof</span> key !== <span class="hljs-string">"string"</span> || key[<span class="hljs-params">0</span>] !== <span class="hljs-string">"_"</span>;
+        });
+    }
+});
+
+<span class="hljs-keyword">let</span> nameSymbol = <span class="hljs-params">Symbol</span>(<span class="hljs-string">"name"</span>);
+
+proxy.name = <span class="hljs-string">"proxy"</span>;
+proxy._name = <span class="hljs-string">"private"</span>;
+proxy[nameSymbol] = <span class="hljs-string">"symbol"</span>;
+
+<span class="hljs-keyword">let</span> names = <span class="hljs-params">Object</span>.getOwnPropertyNames(proxy),
+    keys = <span class="hljs-params">Object</span>.keys(proxy);
+    symbols = <span class="hljs-params">Object</span>.getOwnPropertySymbols(proxy);
+
+<span class="hljs-params">console</span>.log(names.length);      <span class="hljs-title">// 1</span>
+<span class="hljs-params">console</span>.log(names[<span class="hljs-params">0</span>]);          <span class="hljs-title">// "proxy"</span>
+
+<span class="hljs-params">console</span>.log(keys.length);      <span class="hljs-title">// 1</span>
+<span class="hljs-params">console</span>.log(keys[<span class="hljs-params">0</span>]);          <span class="hljs-title">// "proxy"</span>
+
+<span class="hljs-params">console</span>.log(symbols.length);    <span class="hljs-title">// 1</span>
+<span class="hljs-params">console</span>.log(symbols[<span class="hljs-params">0</span>]);        <span class="hljs-title">// "Symbol(name)"</span>
+</code></pre>
+<p class="calibre6">这个例子使用了一个 <code class="pcalibre3 calibre11 pcalibre4">ownKeys</code> 陷阱函数，首先调用了 <code class="pcalibre3 calibre11 pcalibre4">Reflect.ownKeys()</code> 方法来获取目标对象的键列表；接下来， <code class="pcalibre3 calibre11 pcalibre4">filter()</code> 方法被用于将所有下划线打头的字符串类型的键过滤出去；这之后向 <code class="pcalibre3 calibre11 pcalibre4">proxy</code> 对象添加了三个属性： <code class="pcalibre3 calibre11 pcalibre4">name</code> 、 <code class="pcalibre3 calibre11 pcalibre4">_name</code> 与 <code class="pcalibre3 calibre11 pcalibre4">nameSymbol</code>。当 <code class="pcalibre3 calibre11 pcalibre4">proxy</code> 对象上的 <code class="pcalibre3 calibre11 pcalibre4">Object.getOwnPropertyNames()</code> 方法与 <code class="pcalibre3 calibre11 pcalibre4">Object.keys()</code> 方法被调用时，只获得了 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性；类似的， <code class="pcalibre3 calibre11 pcalibre4">Object.getOwnPropertySymbols()</code> 方法被调用时只获得了 <code class="pcalibre3 calibre11 pcalibre4">nameSymbol</code> 属性；而 <code class="pcalibre3 calibre11 pcalibre4">_name</code> 属性则始终没有出现在结果里，因为它被过滤了。</p>
+<p class="calibre6">虽然 <code class="pcalibre3 calibre11 pcalibre4">ownKeys</code> 代理陷阱允许你修改少数操作所返回的键值，但它不能影响一些常用操作，例如 <code class="pcalibre3 calibre11 pcalibre4">for-of</code> 循环以及 <code class="pcalibre3 calibre11 pcalibre4">Object.keys()</code> 方法，这些都是使用代理所无法改变的。</p>
+<blockquote class="calibre20">
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">ownKeys</code> 陷阱函数也能影响 <code class="pcalibre3 calibre11 pcalibre4">for-in</code> 循环，因为这种循环调用了陷阱函数来决定哪些值能够被用在循环内。</p>
+</blockquote>
+<h3 id="使用-apply-与-construct-陷阱函数的函数代理" class="calibre15"><span id="function-proxies-with-the--apply--and--construct--traps" class="calibre13">使用 apply 与 construct 陷阱函数的函数代理</span></h3>
+<p class="calibre6">在所有的代理陷阱中，只有 <code class="pcalibre3 calibre11 pcalibre4">apply</code> 与 <code class="pcalibre3 calibre11 pcalibre4">construct</code> 要求代理目标对象必须是一个函数。回忆一下第三章的内容，函数拥有两个内部方法： <code class="pcalibre3 calibre11 pcalibre4">[[Call]]</code> 与 <code class="pcalibre3 calibre11 pcalibre4">[[Construct]]</code> ，前者会在函数被直接调用时执行，而后者会在函数被使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 运算符调用时执行。 <code class="pcalibre3 calibre11 pcalibre4">apply</code> 与 <code class="pcalibre3 calibre11 pcalibre4">construct</code> 陷阱函数对应着这两个内部方法，并允许你对其进行重写。当不使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 去调用一个函数时， <code class="pcalibre3 calibre11 pcalibre4">apply</code> 陷阱函数会接收到下列三个参数（ <code class="pcalibre3 calibre11 pcalibre4">Reflect.apply()</code> 也会接收这些参数）：</p>
+<ol class="calibre2">
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">trapTarget</code> ：被执行的函数（即代理的目标对象）；</li>
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">thisArg</code> ：调用过程中函数内部的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 值；</li>
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">argumentsList</code> ：被传递给函数的参数数组。</li>
+</ol>
+<p class="calibre6">当使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 去执行函数时， <code class="pcalibre3 calibre11 pcalibre4">construct</code> 陷阱函数会被调用并接收到下列两个参数：</p>
+<ol class="calibre2">
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">trapTarget</code> ：被执行的函数（即代理的目标对象）；</li>
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">argumentsList</code> ：被传递给函数的参数数组。</li>
+</ol>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">Reflect.construct()</code> 方法同样会接收到这两个参数，还会收到可选的第三参数 <code class="pcalibre3 calibre11 pcalibre4">newTarget</code> ，如果提供了此参数，则它就指定了函数内部的 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 值。</p>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">apply</code> 与 <code class="pcalibre3 calibre11 pcalibre4">construct</code> 陷阱函数结合起来就完全控制了任意的代理目标对象函数的行为。为了模拟函数的默认行为，你可以这么做：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> target = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{ <span class="hljs-keyword">return</span> <span class="hljs-params">42</span> },
+    proxy = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>(target, {
+        apply: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">trapTarget, thisArg, argumentList</span>) </span>{
+            <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.apply(trapTarget, thisArg, argumentList);
+        },
+        construct: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">trapTarget, argumentList</span>) </span>{
+            <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.construct(trapTarget, argumentList);
+        }
+    });
+
+<span class="hljs-title">// 使用了函数的代理，其目标对象会被视为函数</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-keyword">typeof</span> proxy);                  <span class="hljs-title">// "function"</span>
+
+<span class="hljs-params">console</span>.log(proxy());                       <span class="hljs-title">// 42</span>
+
+<span class="hljs-keyword">var</span> instance = <span class="hljs-keyword">new</span> proxy();
+<span class="hljs-params">console</span>.log(instance <span class="hljs-keyword">instanceof</span> proxy);     <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(instance <span class="hljs-keyword">instanceof</span> target);    <span class="hljs-title">// true</span>
+</code></pre>
+<p class="calibre6">本例中的函数会返回一个数值 <code class="pcalibre3 calibre11 pcalibre4">42</code> 。该函数的代理使用了 <code class="pcalibre3 calibre11 pcalibre4">apply</code> 与 <code class="pcalibre3 calibre11 pcalibre4">construct</code> 陷阱函数来将对应行为分别委托给 <code class="pcalibre3 calibre11 pcalibre4">Reflect.apply()</code> 与 <code class="pcalibre3 calibre11 pcalibre4">Reflect.construct()</code> 方法。最终结果是代理函数就像目标函数一样工作，包括使用 <code class="pcalibre3 calibre11 pcalibre4">typeof</code> 会将其检测为函数，并且使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 运算符调用会产生一个实例对象 <code class="pcalibre3 calibre11 pcalibre4">instance</code> 。 <code class="pcalibre3 calibre11 pcalibre4">instance</code> 对象会被同时判定为 <code class="pcalibre3 calibre11 pcalibre4">proxy</code> 与 <code class="pcalibre3 calibre11 pcalibre4">target</code> 对象的实例，是因为 <code class="pcalibre3 calibre11 pcalibre4">instanceof</code> 运算符使用了原型链来进行推断，而原型链查找并没有受到这个代理的影响，因此 <code class="pcalibre3 calibre11 pcalibre4">proxy</code> 对象与 <code class="pcalibre3 calibre11 pcalibre4">target</code> 对象对于 JS 引擎来说就有同一个原型。</p>
+<h4 id="验证函数的参数" class="calibre15"><span id="validating-function-parameters" class="calibre13">验证函数的参数</span></h4>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">apply</code> 与 <code class="pcalibre3 calibre11 pcalibre4">construct</code> 陷阱函数在函数的执行方式上开启了很多的可能性。例如，假设你想要保证所有参数都是某个特定类型的，可使用 <code class="pcalibre3 calibre11 pcalibre4">apply</code> 陷阱函数来进行验证:</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">// 将所有参数相加</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sum</span>(<span class="hljs-params">...values</span>) </span>{
+    <span class="hljs-keyword">return</span> values.reduce((previous, current) =&gt; previous + current, <span class="hljs-params">0</span>);
+}
+
+<span class="hljs-keyword">let</span> sumProxy = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>(sum, {
+        apply: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">trapTarget, thisArg, argumentList</span>) </span>{
+
+            argumentList.forEach((arg) =&gt; {
+                <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> arg !== <span class="hljs-string">"number"</span>) {
+                    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-params">TypeError</span>(<span class="hljs-string">"All arguments must be numbers."</span>);
+                }
+            });
+
+            <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.apply(trapTarget, thisArg, argumentList);
+        },
+        construct: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">trapTarget, argumentList</span>) </span>{
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-params">TypeError</span>(<span class="hljs-string">"This function can't be called with new."</span>);
+        }
+    });
+
+<span class="hljs-params">console</span>.log(sumProxy(<span class="hljs-params">1</span>, <span class="hljs-params">2</span>, <span class="hljs-params">3</span>, <span class="hljs-params">4</span>));          <span class="hljs-title">// 10</span>
+
+<span class="hljs-title">// 抛出错误</span>
+<span class="hljs-params">console</span>.log(sumProxy(<span class="hljs-params">1</span>, <span class="hljs-string">"2"</span>, <span class="hljs-params">3</span>, <span class="hljs-params">4</span>));
+
+<span class="hljs-title">// 同样抛出错误</span>
+<span class="hljs-keyword">let</span> result = <span class="hljs-keyword">new</span> sumProxy();
+</code></pre>
+<p class="calibre6">此例使用了 <code class="pcalibre3 calibre11 pcalibre4">apply</code> 陷阱函数来确保所有的参数都是数值。 <code class="pcalibre3 calibre11 pcalibre4">sum()</code> 函数会将所有传递进来的参数值相加，如果传入参数的值不是数值类型，该函数仍然会尝试加法操作，这样可能会导致意外的结果。此代码通过将 <code class="pcalibre3 calibre11 pcalibre4">sum()</code> 函数封装在 <code class="pcalibre3 calibre11 pcalibre4">sumProxy()</code> 代理中，在函数运行之前拦截了函数调用，以保证每个参数都是数值。出于安全的考虑，这段代码使用 <code class="pcalibre3 calibre11 pcalibre4">construct</code> 陷阱抛出错误，以确保该函数不会被使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 运算符调用。</p>
+<p class="calibre6">相反的，你也可以限制函数必须使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 运算符调用，同时确保它的参数都是数值：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Numbers</span>(<span class="hljs-params">...values</span>) </span>{
+    <span class="hljs-keyword">this</span>.values = values;
+}
+
+<span class="hljs-keyword">let</span> NumbersProxy = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>(Numbers, {
+
+        apply: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">trapTarget, thisArg, argumentList</span>) </span>{
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-params">TypeError</span>(<span class="hljs-string">"This function must be called with new."</span>);
+        },
+
+        construct: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">trapTarget, argumentList</span>) </span>{
+            argumentList.forEach((arg) =&gt; {
+                <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> arg !== <span class="hljs-string">"number"</span>) {
+                    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-params">TypeError</span>(<span class="hljs-string">"All arguments must be numbers."</span>);
+                }
+            });
+
+            <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.construct(trapTarget, argumentList);
+        }
+    });
+
+<span class="hljs-keyword">let</span> instance = <span class="hljs-keyword">new</span> NumbersProxy(<span class="hljs-params">1</span>, <span class="hljs-params">2</span>, <span class="hljs-params">3</span>, <span class="hljs-params">4</span>);
+<span class="hljs-params">console</span>.log(instance.values);               <span class="hljs-title">// [1,2,3,4]</span>
+
+<span class="hljs-title">// 抛出错误</span>
+NumbersProxy(<span class="hljs-params">1</span>, <span class="hljs-params">2</span>, <span class="hljs-params">3</span>, <span class="hljs-params">4</span>);
+</code></pre>
+<p class="calibre6">此代码中的 <code class="pcalibre3 calibre11 pcalibre4">apply</code> 陷阱函数会抛出错误，而 <code class="pcalibre3 calibre11 pcalibre4">construct</code> 陷阱函数则使用了 <code class="pcalibre3 calibre11 pcalibre4">Reflect.construct()</code> 方法来验证输入并返回一个新的实例。当然，你也可以不必使用代理，而是用 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 来完成相同的功能。</p>
+<h4 id="调用构造器而无须使用-new" class="calibre15"><span id="calling-constructors-without-new" class="calibre13">调用构造器而无须使用 new</span></h4>
+<p class="calibre6">第三章曾介绍了 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 元属性，在使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 运算符调用函数时，这个属性就是对该函数的一个引用。这意味着你可以使用 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 来判断函数被调用时是否使用了 <code class="pcalibre3 calibre11 pcalibre4">new</code> ，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Numbers</span>(<span class="hljs-params">...values</span>) </span>{
+
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> <span class="hljs-keyword">new</span>.target === <span class="hljs-string">"undefined"</span>) {
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-params">TypeError</span>(<span class="hljs-string">"This function must be called with new."</span>);
+    }
+
+    <span class="hljs-keyword">this</span>.values = values;
+}
+
+<span class="hljs-keyword">let</span> instance = <span class="hljs-keyword">new</span> Numbers(<span class="hljs-params">1</span>, <span class="hljs-params">2</span>, <span class="hljs-params">3</span>, <span class="hljs-params">4</span>);
+<span class="hljs-params">console</span>.log(instance.values);               <span class="hljs-title">// [1,2,3,4]</span>
+
+<span class="hljs-title">// 抛出错误</span>
+Numbers(<span class="hljs-params">1</span>, <span class="hljs-params">2</span>, <span class="hljs-params">3</span>, <span class="hljs-params">4</span>);
+</code></pre>
+<p class="calibre6">这个例子在不使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 来调用 <code class="pcalibre3 calibre11 pcalibre4">Numbers</code> 函数的情况下抛出了错误，与“验证函数的参数”那个小节的例子效果一致，但并没有使用代理。相对于使用代理，这种写法更简单，并且若只想阻止不使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 来调用函数的行为，这种写法也更胜一筹。然而有时你所要修改其行为的函数是你所无法控制的，此时使用代理就有意义了。</p>
+<p class="calibre6">假设 <code class="pcalibre3 calibre11 pcalibre4">Numbers</code> 函数是硬编码的，无法被修改，已知该代码依赖于 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> ，而你想要在调用函数时避免这个检查。在“必须使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> ”这一限制已经确定的情况下，你可以使用 <code class="pcalibre3 calibre11 pcalibre4">apply</code> 陷阱函数来规避它：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Numbers</span>(<span class="hljs-params">...values</span>) </span>{
+
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> <span class="hljs-keyword">new</span>.target === <span class="hljs-string">"undefined"</span>) {
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-params">TypeError</span>(<span class="hljs-string">"This function must be called with new."</span>);
+    }
+
+    <span class="hljs-keyword">this</span>.values = values;
+}
+
+<span class="hljs-keyword">let</span> NumbersProxy = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>(Numbers, {
+        apply: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">trapTarget, thisArg, argumentsList</span>) </span>{
+            <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.construct(trapTarget, argumentsList);
+        }
+    });
+
+
+<span class="hljs-keyword">let</span> instance = NumbersProxy(<span class="hljs-params">1</span>, <span class="hljs-params">2</span>, <span class="hljs-params">3</span>, <span class="hljs-params">4</span>);
+<span class="hljs-params">console</span>.log(instance.values);               <span class="hljs-title">// [1,2,3,4]</span>
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">NumbersProxy</code> 函数允许你调用 <code class="pcalibre3 calibre11 pcalibre4">Numbers</code> 而无须使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> ，并且让这种调用的效果与使用了 <code class="pcalibre3 calibre11 pcalibre4">new</code> 的情况保持一致。为此， <code class="pcalibre3 calibre11 pcalibre4">apply</code> 陷阱函数使用传给自身的参数去对 <code class="pcalibre3 calibre11 pcalibre4">Reflect.construct()</code> 方法进行了调用，于是 <code class="pcalibre3 calibre11 pcalibre4">Numbers</code> 内部的 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 就被设置为 <code class="pcalibre3 calibre11 pcalibre4">Numbers</code> ，从而避免抛出错误。尽管这只是修改 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 的一个简单例子，但你还可以做得更加直接。</p>
+<h4 id="重写抽象基础类的构造器" class="calibre15"><span id="overriding-abstract-base-class-constructors" class="calibre13">重写抽象基础类的构造器</span></h4>
+<p class="calibre6">你可以进一步指定 <code class="pcalibre3 calibre11 pcalibre4">Reflect.construct()</code> 的第三个参数，用于给 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 赋值。当函数把 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 与已知值进行比较的时候，例如在创建一个抽象基础类的构造器的场合下（参阅第九章），这么做会很有帮助。在抽象基础类的构造器中， <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 被要求不能是构造器自身，正如这个例子：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="calibre19"><span class="hljs-keyword">class</span> <span class="hljs-title">AbstractNumbers</span> </span>{
+
+    <span class="hljs-keyword">constructor</span>(...values) {
+        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">new</span>.target === AbstractNumbers) {
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-params">TypeError</span>(<span class="hljs-string">"This function must be inherited from."</span>);
+        }
+
+        <span class="hljs-keyword">this</span>.values = values;
+    }
+}
+
+<span class="calibre19"><span class="hljs-keyword">class</span> <span class="hljs-title">Numbers</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AbstractNumbers</span> </span>{}
+
+<span class="hljs-keyword">let</span> instance = <span class="hljs-keyword">new</span> Numbers(<span class="hljs-params">1</span>, <span class="hljs-params">2</span>, <span class="hljs-params">3</span>, <span class="hljs-params">4</span>);
+<span class="hljs-params">console</span>.log(instance.values);           <span class="hljs-title">// [1,2,3,4]</span>
+
+<span class="hljs-title">// 抛出错误</span>
+<span class="hljs-keyword">new</span> AbstractNumbers(<span class="hljs-params">1</span>, <span class="hljs-params">2</span>, <span class="hljs-params">3</span>, <span class="hljs-params">4</span>);
+</code></pre>
+<p class="calibre6">当 <code class="pcalibre3 calibre11 pcalibre4">new AbstractNumbers()</code> 被调用时， <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 等于 <code class="pcalibre3 calibre11 pcalibre4">AbstractNumbers</code> ，从而抛出了错误；而调用 <code class="pcalibre3 calibre11 pcalibre4">new Numbers()</code> 能正常工作，因为此时 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 等于 <code class="pcalibre3 calibre11 pcalibre4">Numbers</code> 。你可以使用代理手动指定 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 从而绕过这个限制：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="calibre19"><span class="hljs-keyword">class</span> <span class="hljs-title">AbstractNumbers</span> </span>{
+
+    <span class="hljs-keyword">constructor</span>(...values) {
+        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">new</span>.target === AbstractNumbers) {
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-params">TypeError</span>(<span class="hljs-string">"This function must be inherited from."</span>);
+        }
+
+        <span class="hljs-keyword">this</span>.values = values;
+    }
+}
+
+<span class="hljs-keyword">let</span> AbstractNumbersProxy = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>(AbstractNumbers, {
+        construct: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">trapTarget, argumentList</span>) </span>{
+            <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.construct(trapTarget, argumentList, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{});
+        }
+    });
+
+
+<span class="hljs-keyword">let</span> instance = <span class="hljs-keyword">new</span> AbstractNumbersProxy(<span class="hljs-params">1</span>, <span class="hljs-params">2</span>, <span class="hljs-params">3</span>, <span class="hljs-params">4</span>);
+<span class="hljs-params">console</span>.log(instance.values);               <span class="hljs-title">// [1,2,3,4]</span>
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">AbstractNumbersProxy</code> 使用 <code class="pcalibre3 calibre11 pcalibre4">construct</code> 陷阱函数拦截了对于 <code class="pcalibre3 calibre11 pcalibre4">new AbstractNumbersProxy()</code> 方法的调用，这样陷阱函数就将一个空函数作为第三个参数传递给了 <code class="pcalibre3 calibre11 pcalibre4">Reflect.construct()</code> 方法，让这个空函数成为构造器内部的 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 。由于此时 <code class="pcalibre3 calibre11 pcalibre4">new.target</code> 的值并不等于 <code class="pcalibre3 calibre11 pcalibre4">AbstractNumbers</code> ，就不会抛出错误，构造器可以执行完成。</p>
+<h4 id="可被调用的类构造器" class="calibre15"><span id="callable-class-constructors" class="calibre13">可被调用的类构造器</span></h4>
+<p class="calibre6">第九章说明了构造器必须始终使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 来调用，原因是类构造器的内部方法 <code class="pcalibre3 calibre11 pcalibre4">[[Call]]</code> 被明确要求抛出错误。然而代理可以拦截对于 <code class="pcalibre3 calibre11 pcalibre4">[[Call]]</code> 方法的调用，意味着你可以借助代理有效创建一个可被调用的类构造器。例如，如果想让类构造器在缺少 <code class="pcalibre3 calibre11 pcalibre4">new</code> 的情况下能够工作，你可以使用 <code class="pcalibre3 calibre11 pcalibre4">apply</code> 陷阱函数来创建一个新实例。这里有个例子：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="calibre19"><span class="hljs-keyword">class</span> <span class="hljs-title">Person</span> </span>{
+    <span class="hljs-keyword">constructor</span>(name) {
+        <span class="hljs-keyword">this</span>.name = name;
+    }
+}
+
+<span class="hljs-keyword">let</span> PersonProxy = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>(Person, {
+        apply: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">trapTarget, thisArg, argumentList</span>) </span>{
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> trapTarget(...argumentList);
+        }
+    });
+
+
+<span class="hljs-keyword">let</span> me = PersonProxy(<span class="hljs-string">"Nicholas"</span>);
+<span class="hljs-params">console</span>.log(me.name);                   <span class="hljs-title">// "Nicholas"</span>
+<span class="hljs-params">console</span>.log(me <span class="hljs-keyword">instanceof</span> Person);      <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(me <span class="hljs-keyword">instanceof</span> PersonProxy); <span class="hljs-title">// true</span>
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">PersonProxy</code> 对象是 <code class="pcalibre3 calibre11 pcalibre4">Person</code> 类构造器的一个代理。类构造器实际上也是函数，因此在使用代理时它的行为就像函数一样。 <code class="pcalibre3 calibre11 pcalibre4">apply</code> 陷阱函数重写了默认的行为，返回 <code class="pcalibre3 calibre11 pcalibre4">trapTarget</code> （这里等于 <code class="pcalibre3 calibre11 pcalibre4">Person</code> ）的一个实例，此代码使用 <code class="pcalibre3 calibre11 pcalibre4">trapTarget</code> 以保证通用性，避免了手动指定特定的类。此处还使用了扩展运算符，将 <code class="pcalibre3 calibre11 pcalibre4">argumentList</code> 展开并传递给 <code class="pcalibre3 calibre11 pcalibre4">trapTarget</code> 方法。在没有使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 的情况下调用 <code class="pcalibre3 calibre11 pcalibre4">PersonProxy()</code> ，获得了 <code class="pcalibre3 calibre11 pcalibre4">Person</code> 的一个新实例；而若你试图不使用 <code class="pcalibre3 calibre11 pcalibre4">new</code> 去调用 <code class="pcalibre3 calibre11 pcalibre4">Person()</code> ，构造器仍然会抛出错误。创建一个可被调用的类构造器，是只有使用代理才能做到的。</p>
+<h3 id="可被撤销的代理" class="calibre15"><span id="revocable-proxies" class="calibre13">可被撤销的代理</span></h3>
+<p class="calibre6">在被创建之后，代理通常就不能再从目标对象上被解绑。本章之前的例子都使用了不可被撤销的代理，但有的情况下你可能想撤销一个代理以便让它不能再被使用。当你想通过公共接口向外提供一个安全的对象，并且要求要随时都能切断对某些功能的访问，这种情况下可被撤销的代理就会非常有用。</p>
+<p class="calibre6">你可以使用 <code class="pcalibre3 calibre11 pcalibre4">Proxy.revocable()</code> 方法来创建一个可被撤销的代理，该方法接受的参数与 <code class="pcalibre3 calibre11 pcalibre4">Proxy</code> 构造器的相同：一个目标对象、一个代理处理器，而返回值是包含下列属性的一个对象：</p>
+<ol class="calibre2">
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">proxy</code> ：可被撤销的代理对象；</li>
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">revoke</code> ：用于撤销代理的函数。</li>
+</ol>
+<p class="calibre6">当 <code class="pcalibre3 calibre11 pcalibre4">revoke()</code> 函数被调用后，就不能再对该 <code class="pcalibre3 calibre11 pcalibre4">proxy</code> 对象进行更多操作，任何与该代理对象交互的意图都会触发代理的陷阱函数，从而抛出一个错误。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> target = {
+    name: <span class="hljs-string">"target"</span>
+};
+
+<span class="hljs-keyword">let</span> { proxy, revoke } = <span class="hljs-params">Proxy</span>.revocable(target, {});
+
+<span class="hljs-params">console</span>.log(proxy.name);        <span class="hljs-title">// "target"</span>
+
+revoke();
+
+<span class="hljs-title">// 抛出错误</span>
+<span class="hljs-params">console</span>.log(proxy.name);
+</code></pre>
+<p class="calibre6">这个例子创建了一个可被撤销的代理，它对 <code class="pcalibre3 calibre11 pcalibre4">Proxy.revocable()</code> 方法返回的对象进行了解构赋值，把同名属性的值赋给了 <code class="pcalibre3 calibre11 pcalibre4">proxy</code> 与 <code class="pcalibre3 calibre11 pcalibre4">revoke</code> 变量。此时 <code class="pcalibre3 calibre11 pcalibre4">proxy</code> 对象可以像一个不可被撤销的代理那样被使用，于是 <code class="pcalibre3 calibre11 pcalibre4">proxy.name</code> 属性的值就是 <code class="pcalibre3 calibre11 pcalibre4">"target"</code> ，因为它直接传递了 <code class="pcalibre3 calibre11 pcalibre4">target.name</code> 的值。然而一旦 <code class="pcalibre3 calibre11 pcalibre4">revoke()</code> 函数被调用， <code class="pcalibre3 calibre11 pcalibre4">proxy</code> 就不再是一个函数，之后试图访问 <code class="pcalibre3 calibre11 pcalibre4">proxy.name</code> 会抛出错误，同时其他对于 <code class="pcalibre3 calibre11 pcalibre4">proxy</code> 对象的操作也都会触发陷阱函数。</p>
+<h3 id="解决数组的问题" class="calibre15"><span id="solving-the-array-problem" class="calibre13">解决数组的问题</span></h3>
+<p class="calibre6">在本章开始时，我解释了为何在 ES6 之前开发者无法准确模拟 JS 数组的行为。而代理与反射接口则允许你创建这样一种对象：在属性被添加或删除时，它的行为与内置数组类型的行为相同。为了刷新你的记忆，这里有个例子展示了代理所要模拟的行为：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> colors = [<span class="hljs-string">"red"</span>, <span class="hljs-string">"green"</span>, <span class="hljs-string">"blue"</span>];
+
+<span class="hljs-params">console</span>.log(colors.length);         <span class="hljs-title">// 3</span>
+
+colors[<span class="hljs-params">3</span>] = <span class="hljs-string">"black"</span>;
+
+<span class="hljs-params">console</span>.log(colors.length);         <span class="hljs-title">// 4</span>
+<span class="hljs-params">console</span>.log(colors[<span class="hljs-params">3</span>]);             <span class="hljs-title">// "black"</span>
+
+colors.length = <span class="hljs-params">2</span>;
+
+<span class="hljs-params">console</span>.log(colors.length);         <span class="hljs-title">// 2</span>
+<span class="hljs-params">console</span>.log(colors[<span class="hljs-params">3</span>]);             <span class="hljs-title">// undefined</span>
+<span class="hljs-params">console</span>.log(colors[<span class="hljs-params">2</span>]);             <span class="hljs-title">// undefined</span>
+<span class="hljs-params">console</span>.log(colors[<span class="hljs-params">1</span>]);             <span class="hljs-title">// "green"</span>
+</code></pre>
+<p class="calibre6">这个例子可以体现出两个特别重要的行为特性：</p>
+<ol class="calibre2">
+<li class="calibre10">当 <code class="pcalibre3 calibre11 pcalibre4">colors[3]</code> 被赋值时， <code class="pcalibre3 calibre11 pcalibre4">length</code> 属性被自动增加到 4 ；</li>
+<li class="calibre10">当 <code class="pcalibre3 calibre11 pcalibre4">length</code> 属性被设置为 2 时，数组的最后两个元素被自动移除了。</li>
+</ol>
+<p class="calibre6">当想要重现内置数组的工作方式时，仅需模拟这两个行为即可。接下来的几小节将会介绍如何正确地将一个对象模拟为数组。</p>
+<h4 id="检测数组的索引" class="calibre15"><span id="detecting-array-indices" class="calibre13">检测数组的索引</span></h4>
+<p class="calibre6">必须始终牢记：对于数组来说，为整数属性赋值是一种特殊情况，不同于对非整数的键的处理。在如何判断一个属性键是否为数组的索引方面， ES6 规范给出了指南：</p>
+<blockquote class="calibre20">
+<p class="calibre6">对于名为 <code class="pcalibre3 calibre11 pcalibre4">P</code> 的一个字符串属性名称来说，当且仅当 <code class="pcalibre3 calibre11 pcalibre4">ToString(ToUint32(P))</code> 等于 <code class="pcalibre3 calibre11 pcalibre4">P</code> 、并且 <code class="pcalibre3 calibre11 pcalibre4">ToUint32(P)</code> 不等于 2<sup class="calibre21">32</sup> - 1 时，它才能被用作数组的索引。</p>
+</blockquote>
+<p class="calibre6">这个操作可以用下述的 JS 代码来实现：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">toUint32</span>(<span class="hljs-params">value</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-params">Math</span>.floor(<span class="hljs-params">Math</span>.abs(<span class="hljs-params">Number</span>(value))) % <span class="hljs-params">Math</span>.pow(<span class="hljs-params">2</span>, <span class="hljs-params">32</span>);
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isArrayIndex</span>(<span class="hljs-params">key</span>) </span>{
+    <span class="hljs-keyword">let</span> numericKey = toUint32(key);
+    <span class="hljs-keyword">return</span> <span class="hljs-params">String</span>(numericKey) == key &amp;&amp; numericKey &lt; (<span class="hljs-params">Math</span>.pow(<span class="hljs-params">2</span>, <span class="hljs-params">32</span>) - <span class="hljs-params">1</span>);
+}
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">toUint32()</code> 函数使用规范中描述的算法，将给定值转换为一个无符号的 32 位整数。 <code class="pcalibre3 calibre11 pcalibre4">isArrayIndex()</code> 函数首先将键值转换为一个 uint32 数，并执行了比较操作来判断该键是否能够作为数组的索引。借助这两个工具函数，你就可以开始实现一个对象来模拟内置数组。</p>
+<h4 id="在添加新元素时增加长度属性" class="calibre15"><span id="increasing-length-when-adding-new-elements" class="calibre13">在添加新元素时增加长度属性</span></h4>
+<p class="calibre6">你可能已经注意到：数组上述两个特殊行为都依赖于对属性的赋值，这就意味着你只需要使用 <code class="pcalibre3 calibre11 pcalibre4">set</code> 代理陷阱来达成这两个行为。首先，下面的例子实现了第一个行为，即：当一个大于 <code class="pcalibre3 calibre11 pcalibre4">length - 1</code> 的数组索引被使用时， <code class="pcalibre3 calibre11 pcalibre4">length</code> 属性需要被增加。</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">toUint32</span>(<span class="hljs-params">value</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-params">Math</span>.floor(<span class="hljs-params">Math</span>.abs(<span class="hljs-params">Number</span>(value))) % <span class="hljs-params">Math</span>.pow(<span class="hljs-params">2</span>, <span class="hljs-params">32</span>);
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isArrayIndex</span>(<span class="hljs-params">key</span>) </span>{
+    <span class="hljs-keyword">let</span> numericKey = toUint32(key);
+    <span class="hljs-keyword">return</span> <span class="hljs-params">String</span>(numericKey) == key &amp;&amp; numericKey &lt; (<span class="hljs-params">Math</span>.pow(<span class="hljs-params">2</span>, <span class="hljs-params">32</span>) - <span class="hljs-params">1</span>);
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createMyArray</span>(<span class="hljs-params">length=0</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>({ length }, {
+        set(trapTarget, key, value) {
+
+            <span class="hljs-keyword">let</span> currentLength = <span class="hljs-params">Reflect</span>.get(trapTarget, <span class="hljs-string">"length"</span>);
+
+            <span class="hljs-title">// 特殊情况</span>
+            <span class="hljs-keyword">if</span> (isArrayIndex(key)) {
+                <span class="hljs-keyword">let</span> numericKey = <span class="hljs-params">Number</span>(key);
+
+                <span class="hljs-keyword">if</span> (numericKey &gt;= currentLength) {
+                    <span class="hljs-params">Reflect</span>.set(trapTarget, <span class="hljs-string">"length"</span>, numericKey + <span class="hljs-params">1</span>);
+                }
+            }
+
+            <span class="hljs-title">// 无论键的类型是什么，都要执行这行代码</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.set(trapTarget, key, value);
+        }
+    });
+}
+
+<span class="hljs-keyword">let</span> colors = createMyArray(<span class="hljs-params">3</span>);
+<span class="hljs-params">console</span>.log(colors.length);         <span class="hljs-title">// 3</span>
+
+colors[<span class="hljs-params">0</span>] = <span class="hljs-string">"red"</span>;
+colors[<span class="hljs-params">1</span>] = <span class="hljs-string">"green"</span>;
+colors[<span class="hljs-params">2</span>] = <span class="hljs-string">"blue"</span>;
+
+<span class="hljs-params">console</span>.log(colors.length);         <span class="hljs-title">// 3</span>
+
+colors[<span class="hljs-params">3</span>] = <span class="hljs-string">"black"</span>;
+
+<span class="hljs-params">console</span>.log(colors.length);         <span class="hljs-title">// 4</span>
+<span class="hljs-params">console</span>.log(colors[<span class="hljs-params">3</span>]);             <span class="hljs-title">// "black"</span>
+</code></pre>
+<p class="calibre6">这个例子使用了 <code class="pcalibre3 calibre11 pcalibre4">set</code> 代理陷阱对数组索引的设置操作进行拦截。若该键能够作为数组索引，由于传入的键值始终都是字符串，那么就需要将其转换为一个数值；接下来，如果该数值大于或等于当前的 <code class="pcalibre3 calibre11 pcalibre4">length</code> 属性值，那么要把 <code class="pcalibre3 calibre11 pcalibre4">length</code> 属性值增加到比该数值多 1 （如在索引位置 3 设置一个项，则 <code class="pcalibre3 calibre11 pcalibre4">length</code> 属性必须是 4 ）；最后通过 <code class="pcalibre3 calibre11 pcalibre4">Reflect.set()</code> 来调用属性的默认设置操作，以便让对应属性接收到指定的值。</p>
+<p class="calibre6">使用值为 3 的 <code class="pcalibre3 calibre11 pcalibre4">length</code> 参数调用 <code class="pcalibre3 calibre11 pcalibre4">createMyArray()</code> 函数，初始化了一个定制数组，接下来立刻将三个项添加到该数组内。数组的 <code class="pcalibre3 calibre11 pcalibre4">length</code> 属性一直保持为 3 ，直到 <code class="pcalibre3 calibre11 pcalibre4">"black"</code> 值被赋值到索引 3 的位置，此时 <code class="pcalibre3 calibre11 pcalibre4">length</code> 属性就变成了 4 。</p>
+<p class="calibre6">这样就成功模拟了第一个行为，该继续处理第二个行为了。</p>
+<h4 id="在减少长度属性时移除元素" class="calibre15"><span id="deleting-elements-on-reducing-length" class="calibre13">在减少长度属性时移除元素</span></h4>
+<p class="calibre6">仅当数组索引值大于或等于 <code class="pcalibre3 calibre11 pcalibre4">length</code> 属性值时，所需模拟的第一个数组行为才会被使用。而相反的，在将 <code class="pcalibre3 calibre11 pcalibre4">length</code> 属性值设置得比之前更小的时候，才需要使用第二个行为并移除数组的元素。此时不仅需要修改 <code class="pcalibre3 calibre11 pcalibre4">length</code> 属性的值，还需要移除所有不应再保留的元素。例如，若数组的 <code class="pcalibre3 calibre11 pcalibre4">length</code> 属性从 4 被设置为 2 ，则位置 2 与位置 3 的项就需要被移除。你可以像处理第一个行为那样，在 <code class="pcalibre3 calibre11 pcalibre4">set</code> 代理陷阱中完成这个操作。下面再次使用了前一段代码，并增加了 <code class="pcalibre3 calibre11 pcalibre4">createMyArray</code> 方法：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">toUint32</span>(<span class="hljs-params">value</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-params">Math</span>.floor(<span class="hljs-params">Math</span>.abs(<span class="hljs-params">Number</span>(value))) % <span class="hljs-params">Math</span>.pow(<span class="hljs-params">2</span>, <span class="hljs-params">32</span>);
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isArrayIndex</span>(<span class="hljs-params">key</span>) </span>{
+    <span class="hljs-keyword">let</span> numericKey = toUint32(key);
+    <span class="hljs-keyword">return</span> <span class="hljs-params">String</span>(numericKey) == key &amp;&amp; numericKey &lt; (<span class="hljs-params">Math</span>.pow(<span class="hljs-params">2</span>, <span class="hljs-params">32</span>) - <span class="hljs-params">1</span>);
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createMyArray</span>(<span class="hljs-params">length=0</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>({ length }, {
+        set(trapTarget, key, value) {
+
+            <span class="hljs-keyword">let</span> currentLength = <span class="hljs-params">Reflect</span>.get(trapTarget, <span class="hljs-string">"length"</span>);
+
+            <span class="hljs-title">// 特殊情况</span>
+            <span class="hljs-keyword">if</span> (isArrayIndex(key)) {
+                <span class="hljs-keyword">let</span> numericKey = <span class="hljs-params">Number</span>(key);
+
+                <span class="hljs-keyword">if</span> (numericKey &gt;= currentLength) {
+                    <span class="hljs-params">Reflect</span>.set(trapTarget, <span class="hljs-string">"length"</span>, numericKey + <span class="hljs-params">1</span>);
+                }
+            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (key === <span class="hljs-string">"length"</span>) {
+
+                <span class="hljs-keyword">if</span> (value &lt; currentLength) {
+                    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> index = currentLength - <span class="hljs-params">1</span>; index &gt;= value; index--) {
+                        <span class="hljs-params">Reflect</span>.deleteProperty(trapTarget, index);
+                    }
+                }
+
+            }
+
+            <span class="hljs-title">// 无论键的类型是什么，都要执行这行代码</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.set(trapTarget, key, value);
+        }
+    });
+}
+
+<span class="hljs-keyword">let</span> colors = createMyArray(<span class="hljs-params">3</span>);
+<span class="hljs-params">console</span>.log(colors.length);         <span class="hljs-title">// 3</span>
+
+colors[<span class="hljs-params">0</span>] = <span class="hljs-string">"red"</span>;
+colors[<span class="hljs-params">1</span>] = <span class="hljs-string">"green"</span>;
+colors[<span class="hljs-params">2</span>] = <span class="hljs-string">"blue"</span>;
+colors[<span class="hljs-params">3</span>] = <span class="hljs-string">"black"</span>;
+
+<span class="hljs-params">console</span>.log(colors.length);         <span class="hljs-title">// 4</span>
+
+colors.length = <span class="hljs-params">2</span>;
+
+<span class="hljs-params">console</span>.log(colors.length);         <span class="hljs-title">// 2</span>
+<span class="hljs-params">console</span>.log(colors[<span class="hljs-params">3</span>]);             <span class="hljs-title">// undefined</span>
+<span class="hljs-params">console</span>.log(colors[<span class="hljs-params">2</span>]);             <span class="hljs-title">// undefined</span>
+<span class="hljs-params">console</span>.log(colors[<span class="hljs-params">1</span>]);             <span class="hljs-title">// "green"</span>
+<span class="hljs-params">console</span>.log(colors[<span class="hljs-params">0</span>]);             <span class="hljs-title">// "red"</span>
+</code></pre>
+<p class="calibre6">此代码中的 <code class="pcalibre3 calibre11 pcalibre4">set</code> 陷阱函数会检查键的值是否为 <code class="pcalibre3 calibre11 pcalibre4">"length"</code> ，以便正确地调整对象的剩余项。如果是，则使用 <code class="pcalibre3 calibre11 pcalibre4">Reflect.get()</code> 方法来获取当前的长度值，并与新值作比较。如果新值小于当前值，将会使用一个 <code class="pcalibre3 calibre11 pcalibre4">for</code> 循环来删除对象上所有不应再被保留的属性，该循环从当前数组长度（ <code class="pcalibre3 calibre11 pcalibre4">currentLength</code> ）的位置向前删除每个属性，直到触及新的数组长度（ <code class="pcalibre3 calibre11 pcalibre4">value</code> ）为止。</p>
+<p class="calibre6">该例子先向 <code class="pcalibre3 calibre11 pcalibre4">colors</code> 对象中添加了四个颜色，再将其 <code class="pcalibre3 calibre11 pcalibre4">length</code> 属性设置为 2 ，结果移除了位置 2 与位置 3 的项，这样在试图访问这两个项的时候就会得到 <code class="pcalibre3 calibre11 pcalibre4">undefined</code> 。而位置 0 与位置 1的项仍然可被访问。</p>
+<p class="calibre6">两个行为都实现之后，你就可以轻易创建一个对象来模拟内置数组的行为。然而使用函数来做这些事并不可取，最好将其封装为一个类，因此下一步就是使用类来实现这些功能。</p>
+<h4 id="实现-myarray-类" class="calibre15"><span id="implementing-the-myarray-class" class="calibre13">实现 MyArray 类</span></h4>
+<p class="calibre6">创建一个使用代理的类的最简单方式，就是照常定义一个类但从构造器中返回一个代理。这种方式下，该类被实例化时返回的对象就是代理，而不是该类的实例（实例即构造器内部的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 值）。代理会像实例一样被返回，而实例此时就变成了该代理的目标对象。实例将会是完全私有的，无法被直接访问，不过你可以使用代理去间接访问它。</p>
+<p class="calibre6">这里有一个从类构造器返回代理的简单范例：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="calibre19"><span class="hljs-keyword">class</span> <span class="hljs-title">Thing</span> </span>{
+    <span class="hljs-keyword">constructor</span>() {
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>(<span class="hljs-keyword">this</span>, {});
+    }
+}
+
+<span class="hljs-keyword">let</span> myThing = <span class="hljs-keyword">new</span> Thing();
+<span class="hljs-params">console</span>.log(myThing <span class="hljs-keyword">instanceof</span> Thing);      <span class="hljs-title">// true</span>
+</code></pre>
+<p class="calibre6">在这个例子中， <code class="pcalibre3 calibre11 pcalibre4">Thing</code> 类从它的构造器中返回了一个代理，该代理的目标对象是构造器被调用时其内部的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 。这意味着虽然 <code class="pcalibre3 calibre11 pcalibre4">myThing</code> 对象是调用 <code class="pcalibre3 calibre11 pcalibre4">Thing</code> 构造器创建的，但它实际上是一个代理对象。由于此代理将行为直接传递给它的目标对象， 因而 <code class="pcalibre3 calibre11 pcalibre4">myThing</code> 仍然可以被认定为 <code class="pcalibre3 calibre11 pcalibre4">Thing</code> 类的一个实例，并且让代理在使用 <code class="pcalibre3 calibre11 pcalibre4">Thing</code> 类时完全透明。</p>
+<p class="calibre6">知道了这些，使用代理来创建一个定制的数组类就相当简单了。它的实现代码与“在减少长度属性时移除元素”那个小节的代码非常接近，使用了相同的代理代码，但这次是在类的构造器中使用它。这里有个完整的范例：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">toUint32</span>(<span class="hljs-params">value</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-params">Math</span>.floor(<span class="hljs-params">Math</span>.abs(<span class="hljs-params">Number</span>(value))) % <span class="hljs-params">Math</span>.pow(<span class="hljs-params">2</span>, <span class="hljs-params">32</span>);
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isArrayIndex</span>(<span class="hljs-params">key</span>) </span>{
+    <span class="hljs-keyword">let</span> numericKey = toUint32(key);
+    <span class="hljs-keyword">return</span> <span class="hljs-params">String</span>(numericKey) == key &amp;&amp; numericKey &lt; (<span class="hljs-params">Math</span>.pow(<span class="hljs-params">2</span>, <span class="hljs-params">32</span>) - <span class="hljs-params">1</span>);
+}
+
+<span class="calibre19"><span class="hljs-keyword">class</span> <span class="hljs-title">MyArray</span> </span>{
+    <span class="hljs-keyword">constructor</span>(length=0) {
+        <span class="hljs-keyword">this</span>.length = length;
+
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>(<span class="hljs-keyword">this</span>, {
+            set(trapTarget, key, value) {
+
+                <span class="hljs-keyword">let</span> currentLength = <span class="hljs-params">Reflect</span>.get(trapTarget, <span class="hljs-string">"length"</span>);
+
+                <span class="hljs-title">// 特殊情况</span>
+                <span class="hljs-keyword">if</span> (isArrayIndex(key)) {
+                    <span class="hljs-keyword">let</span> numericKey = <span class="hljs-params">Number</span>(key);
+
+                    <span class="hljs-keyword">if</span> (numericKey &gt;= currentLength) {
+                        <span class="hljs-params">Reflect</span>.set(trapTarget, <span class="hljs-string">"length"</span>, numericKey + <span class="hljs-params">1</span>);
+                    }
+                } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (key === <span class="hljs-string">"length"</span>) {
+
+                    <span class="hljs-keyword">if</span> (value &lt; currentLength) {
+                        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> index = currentLength - <span class="hljs-params">1</span>; index &gt;= value; index--) {
+                            <span class="hljs-params">Reflect</span>.deleteProperty(trapTarget, index);
+                        }
+                    }
+
+                }
+
+                <span class="hljs-title">// 无论键的类型是什么，都要执行这行代码</span>
+                <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.set(trapTarget, key, value);
+            }
+        });
+
+    }
+}
+
+
+<span class="hljs-keyword">let</span> colors = <span class="hljs-keyword">new</span> MyArray(<span class="hljs-params">3</span>);
+<span class="hljs-params">console</span>.log(colors <span class="hljs-keyword">instanceof</span> MyArray);     <span class="hljs-title">// true</span>
+
+<span class="hljs-params">console</span>.log(colors.length);         <span class="hljs-title">// 3</span>
+
+colors[<span class="hljs-params">0</span>] = <span class="hljs-string">"red"</span>;
+colors[<span class="hljs-params">1</span>] = <span class="hljs-string">"green"</span>;
+colors[<span class="hljs-params">2</span>] = <span class="hljs-string">"blue"</span>;
+colors[<span class="hljs-params">3</span>] = <span class="hljs-string">"black"</span>;
+
+<span class="hljs-params">console</span>.log(colors.length);         <span class="hljs-title">// 4</span>
+
+colors.length = <span class="hljs-params">2</span>;
+
+<span class="hljs-params">console</span>.log(colors.length);         <span class="hljs-title">// 2</span>
+<span class="hljs-params">console</span>.log(colors[<span class="hljs-params">3</span>]);             <span class="hljs-title">// undefined</span>
+<span class="hljs-params">console</span>.log(colors[<span class="hljs-params">2</span>]);             <span class="hljs-title">// undefined</span>
+<span class="hljs-params">console</span>.log(colors[<span class="hljs-params">1</span>]);             <span class="hljs-title">// "green"</span>
+<span class="hljs-params">console</span>.log(colors[<span class="hljs-params">0</span>]);             <span class="hljs-title">// "red"</span>
+</code></pre>
+<p class="calibre6">这段代码创建了一个 <code class="pcalibre3 calibre11 pcalibre4">MyArray</code> 类，并从构造器中返回了一个代理。在构造器中，添加了 <code class="pcalibre3 calibre11 pcalibre4">length</code> 属性（使用传入的值进行初始化，或者在值未提供的情况下使用默认的 0 ），然后创建并返回了一个代理。这让 <code class="pcalibre3 calibre11 pcalibre4">colors</code> 变量看起来就像是 <code class="pcalibre3 calibre11 pcalibre4">MyArray</code> 类的一个实例，并且实现了数组的两个关键行为。</p>
+<p class="calibre6">虽然从类构造器中返回一个代理是很容易的，但这意味着每个实例都会创建一个新的代理。不过你可以将代理对象作为原型使用，这样就可以在所有实例上共享一个代理。</p>
+<h3 id="将代理对象作为原型使用" class="calibre15"><span id="using-a-proxy-as-a-prototype" class="calibre13">将代理对象作为原型使用</span></h3>
+<p class="calibre6">代理对象可以被作为原型使用，但这么做会比本章前面的例子更复杂一些。在把代理对象作为原型时，仅当操作的默认行为会按惯例追踪原型时，代理陷阱才会被调用，这就限制了代理对象作为原型时的能力。考虑这个例子：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> target = {};
+<span class="hljs-keyword">let</span> newTarget = <span class="hljs-params">Object</span>.create(<span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>(target, {
+
+    <span class="hljs-title">// 永远不会被调用</span>
+    defineProperty(trapTarget, name, descriptor) {
+
+        <span class="hljs-title">// 如果被调用就会引发错误</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-params">false</span>;
+    }
+}));
+
+<span class="hljs-params">Object</span>.defineProperty(newTarget, <span class="hljs-string">"name"</span>, {
+    value: <span class="hljs-string">"newTarget"</span>
+});
+
+<span class="hljs-params">console</span>.log(newTarget.name);                    <span class="hljs-title">// "newTarget"</span>
+<span class="hljs-params">console</span>.log(newTarget.hasOwnProperty(<span class="hljs-string">"name"</span>));  <span class="hljs-title">// true</span>
+</code></pre>
+<p class="calibre6">一个代理被作为原型创建了 <code class="pcalibre3 calibre11 pcalibre4">newTarget</code> 对象。将 <code class="pcalibre3 calibre11 pcalibre4">target</code> 作为代理的目标对象，有效地让 <code class="pcalibre3 calibre11 pcalibre4">target</code> 成为了 <code class="pcalibre3 calibre11 pcalibre4">newTarget</code> 的原型，因为该代理是透明的。此时，只有当 <code class="pcalibre3 calibre11 pcalibre4">newTarget</code> 将操作传递给 <code class="pcalibre3 calibre11 pcalibre4">target</code> 的时候，代理陷阱才会被调用。</p>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">Object.defineProperty()</code> 方法在 <code class="pcalibre3 calibre11 pcalibre4">newTarget</code> 上被调用，创建了一个自有属性 <code class="pcalibre3 calibre11 pcalibre4">name</code> 。定义对象属性的操作并不会按惯例追踪对象原型，因此代理上的 <code class="pcalibre3 calibre11 pcalibre4">defineProperty</code> 陷阱函数永远不会被调用，于是 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性就被添加到了 <code class="pcalibre3 calibre11 pcalibre4">newTarget</code> 对象上，成为它的一个自有属性。</p>
+<p class="calibre6">尽管在把代理对象作为原型时会受到严重限制，但仍然存在几个很有用的陷阱函数。</p>
+<h4 id="在原型上使用-get-陷阱函数" class="calibre15"><span id="using-the--get--trap-on-a-prototype" class="calibre13">在原型上使用 get 陷阱函数</span></h4>
+<p class="calibre6">当内部方法 <code class="pcalibre3 calibre11 pcalibre4">[[Get]]</code> 被调用以读取属性时，该操作首先会查找对象的自有属性；如果指定名称的属性没有找到，则会继续在对象的原型上进行属性查找；这个流程会一直持续到没有原型可供查找为止。</p>
+<p class="calibre6">得益于这个流程，若你设置了一个 <code class="pcalibre3 calibre11 pcalibre4">get</code> 代理陷阱，则只有在对象不存在指定名称的自有属性时，该陷阱函数才会在对象的原型上被调用。当所访问的属性无法保证存在时，你可以使用 <code class="pcalibre3 calibre11 pcalibre4">get</code> 陷阱函数来阻止预期外的行为。下例创建了一个对象，当你尝试去访问一个不存在的属性时，它会抛出错误：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> target = {};
+<span class="hljs-keyword">let</span> thing = <span class="hljs-params">Object</span>.create(<span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>(target, {
+    get(trapTarget, key, receiver) {
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-params">ReferenceError</span>(<span class="hljs-string">`<span class="calibre19">${key}</span> doesn't exist`</span>);
+    }
+}));
+
+thing.name = <span class="hljs-string">"thing"</span>;
+
+<span class="hljs-params">console</span>.log(thing.name);        <span class="hljs-title">// "thing"</span>
+
+<span class="hljs-title">// 抛出错误</span>
+<span class="hljs-keyword">let</span> unknown = thing.unknown;
+</code></pre>
+<p class="calibre6">这段代码创建了一个将代理作为原型的 <code class="pcalibre3 calibre11 pcalibre4">thing</code> 对象。当 <code class="pcalibre3 calibre11 pcalibre4">thing</code> 对象中不存在指定键的时候， <code class="pcalibre3 calibre11 pcalibre4">get</code> 陷阱函数就会抛出错误。在读取 <code class="pcalibre3 calibre11 pcalibre4">thing.name</code> 时，因为该属性存在于 <code class="pcalibre3 calibre11 pcalibre4">thing</code> 对象中， <code class="pcalibre3 calibre11 pcalibre4">get</code> 陷阱函数没有被调用；而当读取不存在的 <code class="pcalibre3 calibre11 pcalibre4">thing.unknown</code>属性时， <code class="pcalibre3 calibre11 pcalibre4">get</code> 陷阱函数才被调用了。</p>
+<p class="calibre6">当最后一行代码执行时， <code class="pcalibre3 calibre11 pcalibre4">unknown</code> 并不是 <code class="pcalibre3 calibre11 pcalibre4">thing</code> 的自有属性，因此查找操作延续到了它的原型上，于是 <code class="pcalibre3 calibre11 pcalibre4">get</code> 陷阱函数抛出了一个错误。这种自定义行为对 JS 来说是非常有用的，因为它能够让 JS 像其他语言那样、在访问不存在的属性时抛出错误，而不是静默地返回 <code class="pcalibre3 calibre11 pcalibre4">undefined</code> 。</p>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">trapTarget</code> 与 <code class="pcalibre3 calibre11 pcalibre4">receiver</code> 是不同的对象，这对理解本例是非常重要的。当代理被用作原型时， <code class="pcalibre3 calibre11 pcalibre4">trapTarget</code> 是原型对象自身，而 <code class="pcalibre3 calibre11 pcalibre4">receiver</code> 则是实例对象。这意味着在本例中， <code class="pcalibre3 calibre11 pcalibre4">trapTarget</code> 等于 <code class="pcalibre3 calibre11 pcalibre4">target</code> ，而 <code class="pcalibre3 calibre11 pcalibre4">receiver</code> 则等于 <code class="pcalibre3 calibre11 pcalibre4">thing</code> 。这就使得你既能访问代理的原始目标对象，也能访问操作将要涉及的对象。</p>
+<h4 id="在原型上使用-set-陷阱函数" class="calibre15"><span id="using-the--set--trap-on-a-prototype" class="calibre13">在原型上使用 set 陷阱函数</span></h4>
+<p class="calibre6">内部方法 <code class="pcalibre3 calibre11 pcalibre4">[[Set]]</code> 同样会查找对象的自有属性，并在必要时继续对该对象的原型进行查找。当你对一个对象属性进行赋值时，如果指定名称的自有属性存在，值就会被赋在该属性上；而若该自有属性不存在，则会继续检查对象的原型。微妙之处在于：尽管赋值操作在原型上继续进行，但默认情况下它会在对象实例（而非原型）上创建一个新的属性用于赋值，无论同名属性是否存在于原型上。</p>
+<p class="calibre6">为了更好地了解 <code class="pcalibre3 calibre11 pcalibre4">set</code> 陷阱函数何时会在原型上被调用、而何时不会，可研究下面这个展示了默认行为的示例：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> target = {};
+<span class="hljs-keyword">let</span> thing = <span class="hljs-params">Object</span>.create(<span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>(target, {
+    set(trapTarget, key, value, receiver) {
+        <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.set(trapTarget, key, value, receiver);
+    }
+}));
+
+<span class="hljs-params">console</span>.log(thing.hasOwnProperty(<span class="hljs-string">"name"</span>));      <span class="hljs-title">// false</span>
+
+<span class="hljs-title">// 触发了 `set` 代理陷阱</span>
+thing.name = <span class="hljs-string">"thing"</span>;
+
+<span class="hljs-params">console</span>.log(thing.name);                        <span class="hljs-title">// "thing"</span>
+<span class="hljs-params">console</span>.log(thing.hasOwnProperty(<span class="hljs-string">"name"</span>));      <span class="hljs-title">// true</span>
+
+<span class="hljs-title">// 没有触发 `set` 代理陷阱</span>
+thing.name = <span class="hljs-string">"boo"</span>;
+
+<span class="hljs-params">console</span>.log(thing.name);                        <span class="hljs-title">// "boo"</span>
+</code></pre>
+<p class="calibre6">在本例中， <code class="pcalibre3 calibre11 pcalibre4">target</code> 对象起初未拥有任何自有属性。 <code class="pcalibre3 calibre11 pcalibre4">thing</code> 对象把一个代理作为自身的原型，并定义了一个 <code class="pcalibre3 calibre11 pcalibre4">set</code> 陷阱函数来捕获任意创建新属性的操作。当 <code class="pcalibre3 calibre11 pcalibre4">thing.name</code> 被赋值为 <code class="pcalibre3 calibre11 pcalibre4">"thing"</code> 时，因为 <code class="pcalibre3 calibre11 pcalibre4">thing</code> 对象并不存在一个名为 <code class="pcalibre3 calibre11 pcalibre4">name</code> 的自有属性， <code class="pcalibre3 calibre11 pcalibre4">set</code> 代理陷阱就被调用。在 <code class="pcalibre3 calibre11 pcalibre4">set</code> 陷阱函数中， <code class="pcalibre3 calibre11 pcalibre4">trapTarget</code> 参数等于 <code class="pcalibre3 calibre11 pcalibre4">target</code> ，而 <code class="pcalibre3 calibre11 pcalibre4">receiver</code> 参数则等于 <code class="pcalibre3 calibre11 pcalibre4">thing</code> 。你可以将 <code class="pcalibre3 calibre11 pcalibre4">receiver</code> 作为第四个参数传递给 <code class="pcalibre3 calibre11 pcalibre4">Reflect.set()</code> 方法来实现默认的行为，最终一个新的属性就在 <code class="pcalibre3 calibre11 pcalibre4">thing</code> 对象上被创建了。</p>
+<p class="calibre6">一旦 <code class="pcalibre3 calibre11 pcalibre4">thing</code> 对象的 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性被创建完毕，将 <code class="pcalibre3 calibre11 pcalibre4">thing.name</code> 另设为其他值就不会再触发原型上 <code class="pcalibre3 calibre11 pcalibre4">set</code> 代理陷阱，因为此时 <code class="pcalibre3 calibre11 pcalibre4">name</code> 变成了自有属性， <code class="pcalibre3 calibre11 pcalibre4">[[Set]]</code> 操作便不会再继续查找原型了。</p>
+<h4 id="在原型上使用-has-陷阱函数" class="calibre15"><span id="using-the--has--trap-on-a-prototype" class="calibre13">在原型上使用 has 陷阱函数</span></h4>
+<p class="calibre6">可以回忆一下， <code class="pcalibre3 calibre11 pcalibre4">has</code> 陷阱函数会拦截对象上 <code class="pcalibre3 calibre11 pcalibre4">in</code> 运算符的使用。 <code class="pcalibre3 calibre11 pcalibre4">in</code> 运算符首先查找对象上指定名称的自有属性；如果不存在同名自有属性，则会继续查找对象的原型；如果原型上也不存在同名自有属性，那么就会沿着原型链一直查找下去，直到找到该属性、或者没有更多原型可供查找时为止。</p>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">has</code> 陷阱函数只在原型链查找触及原型对象的时候才会被调用。当使用代理作为原型时，这只会在指定名称的自有属性不存在时发生。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> target = {};
+<span class="hljs-keyword">let</span> thing = <span class="hljs-params">Object</span>.create(<span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>(target, {
+    has(trapTarget, key) {
+        <span class="hljs-keyword">return</span> <span class="hljs-params">Reflect</span>.has(trapTarget, key);
+    }
+}));
+
+<span class="hljs-title">// 触发了 `has` 代理陷阱</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-string">"name"</span> <span class="hljs-keyword">in</span> thing);                   <span class="hljs-title">// false</span>
+
+thing.name = <span class="hljs-string">"thing"</span>;
+
+<span class="hljs-title">// 没有触发 `has` 代理陷阱</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-string">"name"</span> <span class="hljs-keyword">in</span> thing);                   <span class="hljs-title">// true</span>
+</code></pre>
+<p class="calibre6">此代码在 <code class="pcalibre3 calibre11 pcalibre4">thing</code> 的原型上创建了一个 <code class="pcalibre3 calibre11 pcalibre4">has</code> 代理陷阱。 <code class="pcalibre3 calibre11 pcalibre4">has</code> 陷阱函数并没有像 <code class="pcalibre3 calibre11 pcalibre4">get</code> 或 <code class="pcalibre3 calibre11 pcalibre4">set</code> 陷阱函数那样传递一个 <code class="pcalibre3 calibre11 pcalibre4">receiver</code> 参数，因为当 <code class="pcalibre3 calibre11 pcalibre4">in</code> 运算符被使用时，对原型的查找是自动的。相反的， <code class="pcalibre3 calibre11 pcalibre4">has</code> 陷阱函数只能对 <code class="pcalibre3 calibre11 pcalibre4">trapTarget</code> 参数进行操作，该参数等于 <code class="pcalibre3 calibre11 pcalibre4">target</code> 。本例中第一次使用 <code class="pcalibre3 calibre11 pcalibre4">in</code> 运算符的时候，由于 <code class="pcalibre3 calibre11 pcalibre4">thing</code> 并不存在自有属性 <code class="pcalibre3 calibre11 pcalibre4">name</code> ，于是 <code class="pcalibre3 calibre11 pcalibre4">has</code> 陷阱函数就被调用了。而当 <code class="pcalibre3 calibre11 pcalibre4">thing.name</code> 被赋值之后，再次使用 <code class="pcalibre3 calibre11 pcalibre4">in</code> 运算符， <code class="pcalibre3 calibre11 pcalibre4">has</code> 陷阱函数则不会被调用，因为操作在找到 <code class="pcalibre3 calibre11 pcalibre4">thing</code> 的自有属性 <code class="pcalibre3 calibre11 pcalibre4">name</code> 后便已停止。</p>
+<p class="calibre6">这里的原型范例都围绕着使用 <code class="pcalibre3 calibre11 pcalibre4">Object.create()</code> 方法创建的对象。然而若你想创建一个以代理为原型的对象，流程会有些不同。</p>
+<h4 id="将代理作为类的原型" class="calibre15"><span id="proxies-as-prototypes-on-classes" class="calibre13">将代理作为类的原型</span></h4>
+<p class="calibre6">类不能直接被修改为将代理用作自身的原型，因为它们的 <code class="pcalibre3 calibre11 pcalibre4">prototype</code> 属性是不可写入的。然而你可以使用一点变通手段，利用继承来创建一个把代理作为自身原型的类。首先你需要使用构造器函数创建一个 ES5 风格的类定义。你可以将原型改写为一个代理，这里有个例子：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">NoSuchProperty</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-title">// empty</span>
+}
+
+NoSuchProperty.prototype = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>({}, {
+    get(trapTarget, key, receiver) {
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-params">ReferenceError</span>(<span class="hljs-string">`<span class="calibre19">${key}</span> doesn't exist`</span>);
+    }
+});
+
+<span class="hljs-keyword">let</span> thing = <span class="hljs-keyword">new</span> NoSuchProperty();
+
+<span class="hljs-title">// 由于 `get` 代理陷阱而抛出了错误</span>
+<span class="hljs-keyword">let</span> result = thing.name;
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">NoSuchProperty</code> 函数代表了将会被用于继承的基础类。此函数的 <code class="pcalibre3 calibre11 pcalibre4">prototype</code> 属性不存在任何限制，因此你可以将其改写为一个代理，其中 <code class="pcalibre3 calibre11 pcalibre4">get</code> 陷阱函数被用于在属性缺失时抛出错误。 <code class="pcalibre3 calibre11 pcalibre4">thing</code> 对象被创建为 <code class="pcalibre3 calibre11 pcalibre4">NoSuchProperty</code> 类的一个实例，当访问不存在的 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性时，错误就被抛出。</p>
+<p class="calibre6">下一步是创建一个继承 <code class="pcalibre3 calibre11 pcalibre4">NoSuchProperty</code> 的类。你可以简单使用第九章介绍过的 <code class="pcalibre3 calibre11 pcalibre4">extends</code> 语法，来将代理引入该类的原型链，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">NoSuchProperty</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-title">// empty</span>
+}
+
+NoSuchProperty.prototype = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>({}, {
+    get(trapTarget, key, receiver) {
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-params">ReferenceError</span>(<span class="hljs-string">`<span class="calibre19">${key}</span> doesn't exist`</span>);
+    }
+});
+
+<span class="calibre19"><span class="hljs-keyword">class</span> <span class="hljs-title">Square</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">NoSuchProperty</span> </span>{
+    <span class="hljs-keyword">constructor</span>(length, width) {
+        <span class="hljs-keyword">super</span>();
+        <span class="hljs-keyword">this</span>.length = length;
+        <span class="hljs-keyword">this</span>.width = width;
+    }
+}
+
+<span class="hljs-keyword">let</span> shape = <span class="hljs-keyword">new</span> Square(<span class="hljs-params">2</span>, <span class="hljs-params">6</span>);
+
+<span class="hljs-keyword">let</span> area1 = shape.length * shape.width;
+<span class="hljs-params">console</span>.log(area1);                         <span class="hljs-title">// 12</span>
+
+<span class="hljs-title">// 由于 "wdth" 不存在而抛出了错误</span>
+<span class="hljs-keyword">let</span> area2 = shape.length * shape.wdth;
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">Square</code> 类继承了 <code class="pcalibre3 calibre11 pcalibre4">NoSuchProperty</code> 类，因此该代理就被加入了 <code class="pcalibre3 calibre11 pcalibre4">Square</code> 类的原型链。随后 <code class="pcalibre3 calibre11 pcalibre4">shape</code> 对象被创建为 <code class="pcalibre3 calibre11 pcalibre4">Square</code> 类的一个实例，让它拥有两个属性： <code class="pcalibre3 calibre11 pcalibre4">length</code> 与 <code class="pcalibre3 calibre11 pcalibre4">width</code> 。由于 <code class="pcalibre3 calibre11 pcalibre4">get</code> 陷阱函数永远不会被调用，因此能够成功读取这两个属性的值。只有访问 <code class="pcalibre3 calibre11 pcalibre4">shape</code> 上不存在的属性时（例如这里的 <code class="pcalibre3 calibre11 pcalibre4">shape.wdth</code> 拼写错误），才触发了 <code class="pcalibre3 calibre11 pcalibre4">get</code> 陷阱函数并导致错误被抛出。</p>
+<p class="calibre6">这证明了该代理存在于 <code class="pcalibre3 calibre11 pcalibre4">shape</code> 的原型链中，但这可能并不明显，因为该代理不是 <code class="pcalibre3 calibre11 pcalibre4">shape</code> 的直接原型。事实上，该代理需要用两步才能从 <code class="pcalibre3 calibre11 pcalibre4">shape</code> 的原型链上被找到。你可以修改前面的例子来更清晰地领会这一点：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">NoSuchProperty</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-title">// empty</span>
+}
+
+<span class="hljs-title">// 对于将要用作原型的代理，存储对其的一个引用</span>
+<span class="hljs-keyword">let</span> proxy = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>({}, {
+    get(trapTarget, key, receiver) {
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-params">ReferenceError</span>(<span class="hljs-string">`<span class="calibre19">${key}</span> doesn't exist`</span>);
+    }
+});
+
+NoSuchProperty.prototype = proxy;
+
+<span class="calibre19"><span class="hljs-keyword">class</span> <span class="hljs-title">Square</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">NoSuchProperty</span> </span>{
+    <span class="hljs-keyword">constructor</span>(length, width) {
+        <span class="hljs-keyword">super</span>();
+        <span class="hljs-keyword">this</span>.length = length;
+        <span class="hljs-keyword">this</span>.width = width;
+    }
+}
+
+<span class="hljs-keyword">let</span> shape = <span class="hljs-keyword">new</span> Square(<span class="hljs-params">2</span>, <span class="hljs-params">6</span>);
+
+<span class="hljs-keyword">let</span> shapeProto = <span class="hljs-params">Object</span>.getPrototypeOf(shape);
+
+<span class="hljs-params">console</span>.log(shapeProto === proxy);                  <span class="hljs-title">// false</span>
+
+<span class="hljs-keyword">let</span> secondLevelProto = <span class="hljs-params">Object</span>.getPrototypeOf(shapeProto);
+
+<span class="hljs-params">console</span>.log(secondLevelProto === proxy);            <span class="hljs-title">// true</span>
+</code></pre>
+<p class="calibre6">这个版本的代码将代理存储在一个名为 <code class="pcalibre3 calibre11 pcalibre4">proxy</code> 的变量中，以便之后可以简单识别。 <code class="pcalibre3 calibre11 pcalibre4">shape</code> 的原型是 <code class="pcalibre3 calibre11 pcalibre4">Shape.prototype</code> ，它并不是一个代理。然而 <code class="pcalibre3 calibre11 pcalibre4">Shape.prototype</code> 的原型却是一个从 <code class="pcalibre3 calibre11 pcalibre4">NoSuchProperty</code> 继承下来的代理。</p>
+<p class="calibre6">继承行为在原型链上增加了一步，明白这一点很重要，因为在 <code class="pcalibre3 calibre11 pcalibre4">proxy</code> 变量上调用 <code class="pcalibre3 calibre11 pcalibre4">get</code> 陷阱函数的操作也需要多进行一步。如果欲使用的属性存在于 <code class="pcalibre3 calibre11 pcalibre4">Shape.prototype</code> 上，那么这就会防止 <code class="pcalibre3 calibre11 pcalibre4">get</code> 代理陷阱被调用，正如此例：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">NoSuchProperty</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-title">// empty</span>
+}
+
+NoSuchProperty.prototype = <span class="hljs-keyword">new</span> <span class="hljs-params">Proxy</span>({}, {
+    get(trapTarget, key, receiver) {
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-params">ReferenceError</span>(<span class="hljs-string">`<span class="calibre19">${key}</span> doesn't exist`</span>);
+    }
+});
+
+<span class="calibre19"><span class="hljs-keyword">class</span> <span class="hljs-title">Square</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">NoSuchProperty</span> </span>{
+    <span class="hljs-keyword">constructor</span>(length, width) {
+        <span class="hljs-keyword">super</span>();
+        <span class="hljs-keyword">this</span>.length = length;
+        <span class="hljs-keyword">this</span>.width = width;
+    }
+
+    getArea() {
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.length * <span class="hljs-keyword">this</span>.width;
+    }
+}
+
+<span class="hljs-keyword">let</span> shape = <span class="hljs-keyword">new</span> Square(<span class="hljs-params">2</span>, <span class="hljs-params">6</span>);
+
+<span class="hljs-keyword">let</span> area1 = shape.length * shape.width;
+<span class="hljs-params">console</span>.log(area1);                         <span class="hljs-title">// 12</span>
+
+<span class="hljs-keyword">let</span> area2 = shape.getArea();
+<span class="hljs-params">console</span>.log(area2);                         <span class="hljs-title">// 12</span>
+
+<span class="hljs-title">// 由于 "wdth" 不存在而抛出了错误</span>
+<span class="hljs-keyword">let</span> area3 = shape.length * shape.wdth;
+</code></pre>
+<p class="calibre6">此处的 <code class="pcalibre3 calibre11 pcalibre4">Square</code> 类拥有一个 <code class="pcalibre3 calibre11 pcalibre4">getArea()</code> 方法，该方法被自动添加到 <code class="pcalibre3 calibre11 pcalibre4">Square.prototype</code> 上，因此当 <code class="pcalibre3 calibre11 pcalibre4">shape.getArea()</code> 被调用时，对于 <code class="pcalibre3 calibre11 pcalibre4">getArea()</code> 方法的查找从 <code class="pcalibre3 calibre11 pcalibre4">shape</code> 实例上开始，并延续到它的原型上。由于在原型上找到了 <code class="pcalibre3 calibre11 pcalibre4">getArea()</code> 方法，查找就停止了，代理也没有被调用。在本例的条件下，这正是你想要的行为，而 <code class="pcalibre3 calibre11 pcalibre4">getArea()</code> 被调用时抛出错误则是不正确的。</p>
+<p class="calibre6">尽管使用了一点额外的代码来创建一个类，才让代理存在于该类的原型链上，但当你确实需要这样的功能时，这种付出仍然是值得的。</p>
+<h3 id="总结" class="calibre15"><span id="summary" class="calibre13">总结</span></h3>
+<p class="calibre6">在 ES6 之前，特定对象（例如数组）会显示出一些非常规的、无法被开发者复制的行为，而代理的出现改变了这种情况。代理允许你为一些 JS 底层操作自行定义非常规行为，因此你就可以通过代理陷阱来复制 JS 内置对象的所有行为。在各种不同操作发生时（例如对于 <code class="pcalibre3 calibre11 pcalibre4">in</code> 运算符的使用），这些代理陷阱会在后台被调用。</p>
+<p class="calibre6">反射接口也是在 ES6 中引入的，允许开发者为每个代理陷阱实现默认的行为。每个代理陷阱在 <code class="pcalibre3 calibre11 pcalibre4">Reflect</code> 对象（ ES6 的另一个新特性）上都有一个同名的对应方法。将代理陷阱与反射接口方法结合使用，就可以在特定条件下让一些操作有不同的表现，有别于默认的内置行为。</p>
+<p class="calibre6">可被撤销的代理是一种特殊的代理，可以使用 <code class="pcalibre3 calibre11 pcalibre4">revoke()</code> 函数去有效禁用。 <code class="pcalibre3 calibre11 pcalibre4">revoke()</code> 函数终结了代理的所有功能，因此在它被调用之后，所有与代理属性交互的意图都会导致抛出错误。第三方开发者可能需要在一定时间内获取特定对象的使用权，在这种场合，可被撤销的代理对应用的安全性来说就非常重要。</p>
+<p class="calibre6">尽管直接使用代理是最有力的使用方式，但你也可以把代理用作另一个对象的原型。但只有很少的代理陷阱能在作为原型的代理上被有效使用，包括 <code class="pcalibre3 calibre11 pcalibre4">get</code> 、 <code class="pcalibre3 calibre11 pcalibre4">set</code> 与 <code class="pcalibre3 calibre11 pcalibre4">has</code> 这几个，这让这方面的用例变得十分有限。</p>
+
+        </div>
+    
+</div>
+
+        
+    
+
+
+</body></html>

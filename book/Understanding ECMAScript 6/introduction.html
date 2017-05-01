@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='utf-8'?>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+  <head>
+    <title>引言</title>
+    <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+    <meta content="" name="description"/>
+    <meta content="GitBook 3.2.2" name="generator"/>
+    <meta content="sagittarius-rev" name="author"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link href="stylesheet.css" rel="stylesheet" type="text/css"/>
+<link href="page_styles.css" rel="stylesheet" type="text/css"/>
+</head>
+  <body class="calibre">
+        
+<div class="page">
+    
+        <h1 class="book-chapter" id="calibre_toc_2">引言</h1>
+        <div class="section">
+            <h2 id="引言" class="calibre12"><span id="introduction" class="calibre13">引言</span></h2>
+<p class="calibre6">The JavaScript core language features are defined in a standard called ECMA-262. The language defined in this standard is called ECMAScript. What you know as JavaScript in browsers and Node.js is actually a superset of ECMAScript. Browsers and Node.js add more functionality through additional objects and methods, but the core of the language remains as defined in ECMAScript. The ongoing development of ECMA-262 is vital to the success of JavaScript as a whole, and this book covers the changes brought about by the most recent major update to the language: ECMAScript 6.</p>
+<ul class="calibre9">
+<li class="calibre10"><a href="#the-road-to-ecmascript-6" class="calibre7 pcalibre pcalibre1 pcalibre2">通往 ES6 之路</a></li>
+<li class="calibre10"><a href="#about-this-book" class="calibre7 pcalibre pcalibre1 pcalibre2">关于本书</a><ul class="calibre14">
+<li class="calibre10"><a href="#browser-and-node-js-compatibility" class="calibre7 pcalibre pcalibre1 pcalibre2">浏览器与 Node.js 的兼容性</a></li>
+<li class="calibre10"><a href="#who-this-book-is-for" class="calibre7 pcalibre pcalibre1 pcalibre2">本书读者对象</a></li>
+<li class="calibre10"><a href="#overview" class="calibre7 pcalibre pcalibre1 pcalibre2">概述</a></li>
+<li class="calibre10"><a href="#conventions-used" class="calibre7 pcalibre pcalibre1 pcalibre2">排版约定</a></li>
+<li class="calibre10"><a href="#help-and-support" class="calibre7 pcalibre pcalibre1 pcalibre2">帮助与支持</a></li>
+</ul>
+</li>
+<li class="calibre10"><a href="#acknowledgments" class="calibre7 pcalibre pcalibre1 pcalibre2">致谢</a></li>
+</ul>
+<h3 id="通往-es6-之路" class="calibre15"><span id="the-road-to-ecmascript-6" class="calibre13">通往 ES6 之路</span></h3>
+<p class="calibre6">In 2007, JavaScript was at a crossroads. The popularity of Ajax was ushering in a new age of dynamic web applications, while JavaScript hadn’t changed since the third edition of ECMA-262 was published in 1999. TC-39, the committee responsible for driving the ECMAScript development process, put together a large draft specification for ECMAScript 4. ECMAScript 4 was massive in scope, introducing changes both small and large to the language. Updated features included new syntax, modules, classes, classical inheritance, private object members, optional type annotations, and more.</p>
+<p class="calibre6">The scope of the ECMAScript 4 changes caused a rift to form in TC-39, with some members feeling that the fourth edition was trying to accomplish too much. A group of leaders from Yahoo, Google, and Microsoft created an alternate proposal for the next version of ECMAScript that they initially called ECMAScript 3.1. The “3.1” was intended to show that this was an incremental change to the existing standard.</p>
+<p class="calibre6">ECMAScript 3.1 introduced very few syntax changes, instead focusing on property attributes, native JSON support, and adding methods to already-existing objects. Although there was an early attempt to reconcile ECMAScript 3.1 and ECMAScript 4, this ultimately failed as the two camps had difficulty with the very different perspectives on how the language should grow.</p>
+<p class="calibre6">In 2008, Brendan Eich, the creator of JavaScript, announced that TC-39 would focus its efforts on standardizing ECMAScript 3.1. They would table the major syntax and feature changes of ECMAScript 4 until after the next version of ECMAScript was standardized, and all members of the committee would work to bring the best pieces of ECMAScript 3.1 and 4 together after that point into an effort initially nicknamed ECMAScript Harmony.</p>
+<p class="calibre6">ECMAScript 3.1 was eventually standardized as the fifth edition of ECMA-262, also described as ECMAScript 5. The committee never released an ECMAScript 4 standard to avoid confusion with the now-defunct effort of the same name. Work then began on ECMAScript Harmony, with ECMAScript 6 being the first standard released in this new “harmonious” spirit.</p>
+<p class="calibre6">ECMAScript 6 reached feature complete status in 2015 and was formally dubbed “ECMAScript 2015.” (But this text still refers to it as ECMAScript 6, the name most familiar to developers.) The features vary widely from completely new objects and patterns to syntax changes to new methods on existing objects. The exciting thing about ECMAScript 6 is that all of its changes are geared toward solving problems that developers actually face.</p>
+<h3 id="关于本书" class="calibre15"><span id="about-this-book" class="calibre13">关于本书</span></h3>
+<p class="calibre6">A good understanding of ECMAScript 6 features is key for all JavaScript developers going forward. The language features introduced in ECMAScript 6 represent the foundation upon which JavaScript applications will be built for the foreseeable future. That’s where this book comes in. My hope is that you’ll read this book to learn about ECMAScript 6 features so that you’ll be ready to start using them as soon as you need to.</p>
+<h4 id="浏览器与-nodejs-的兼容性" class="calibre15"><span id="browser-and-node-js-compatibility" class="calibre13">浏览器与 Node.js 的兼容性</span></h4>
+<p class="calibre6">Many JavaScript environments, such as web browsers and Node.js, are actively working on implementing ECMAScript 6. This book doesn’t attempt to address the inconsistencies between implementations and instead focuses on what the specification defines as the correct behavior. As such, it’s possible that your JavaScript environment may not conform to the behavior described in this book.</p>
+<h4 id="本书读者对象" class="calibre15"><span id="who-this-book-is-for" class="calibre13">本书读者对象</span></h4>
+<p class="calibre6">This book is intended as a guide for those who are already familiar with JavaScript and ECMAScript 5. While a deep understanding of the language isn’t necessary to use this book, it will help you understand the differences between ECMAScript 5 and 6. In particular, this book is aimed at intermediate-to-advanced JavaScript developers programming for a browser or Node.js environment who want to learn about the latest developments in the language.</p>
+<p class="calibre6">This book is not for beginners who have never written JavaScript. You will need to have a good basic understanding of the language to make use of this book.</p>
+<h4 id="概述" class="calibre15"><span id="overview" class="calibre13">概述</span></h4>
+<p class="calibre6">Each of this book’s thirteen chapters covers a different aspect of ECMAScript 6. Many chapters start by discussing problems that ECMAScript 6 changes were made to solve, to give you a broader context for those changes, and all chapters include code examples to help you learn new syntax and concepts.</p>
+<p class="calibre6"><strong class="calibre8">Chapter 1: How Block Bindings Work</strong> talks about <code class="pcalibre3 calibre11 pcalibre4">let</code> and <code class="pcalibre3 calibre11 pcalibre4">const</code>, the block-level replacement for <code class="pcalibre3 calibre11 pcalibre4">var</code>.</p>
+<p class="calibre6"><strong class="calibre8">Chapter 2: Strings and Regular Expressions</strong> covers additional functionality for string manipulation and inspection as well as the introduction of template strings.</p>
+<p class="calibre6"><strong class="calibre8">Chapter 3: Functions in ECMAScript 6</strong> discusses the various changes to functions. This includes the arrow function form, default parameters, rest parameters, and more.</p>
+<p class="calibre6"><strong class="calibre8">Chapter 4: Expanded Object Functionality</strong> explains the changes to how objects are created, modified, and used. Topics include changes to object literal syntax, and new reflection methods.</p>
+<p class="calibre6"><strong class="calibre8">Chapter 5: Destructuring for Easier Data Access</strong> introduces object and array destructuring, which allow you to decompose objects and arrays using a concise syntax.</p>
+<p class="calibre6"><strong class="calibre8">Chapter 6: Symbols and Symbol Properties</strong> introduces the concept of symbols, a new way to define properties. Symbols are a new primitive type that can be used to obscure (but not hide) object properties and methods.</p>
+<p class="calibre6"><strong class="calibre8">Chapter 7: Sets and Maps</strong> details the new collection types of <code class="pcalibre3 calibre11 pcalibre4">Set</code>, <code class="pcalibre3 calibre11 pcalibre4">WeakSet</code>, <code class="pcalibre3 calibre11 pcalibre4">Map</code>, and <code class="pcalibre3 calibre11 pcalibre4">WeakMap</code>. These types expand on the usefulness of arrays by adding semantics, de-duping, and memory management designed specifically for JavaScript.</p>
+<p class="calibre6"><strong class="calibre8">Chapter 8: Iterators and Generators</strong> discusses the addition of iterators and generators to the language. These features allow you to work with collections of data in powerful ways that were not possible in previous versions of JavaScript.</p>
+<p class="calibre6"><strong class="calibre8">Chapter 9: Introducing JavaScript Classes</strong> introduces the first formal concept of classes in JavaScript. Often a point of confusion for those coming from other languages, the addition of class syntax in JavaScript makes the language more approachable to others and more concise for enthusiasts.</p>
+<p class="calibre6"><strong class="calibre8">Chapter 10: Improved Array Capabilities</strong> details the changes to native arrays and the interesting new ways they can be used in JavaScript.</p>
+<p class="calibre6"><strong class="calibre8">Chapter 11: Promises and Asynchronous Programming</strong> introduces promises as a new part of the language. Promises were a grassroots effort that eventually took off and gained in popularity due to extensive library support. ECMAScript 6 formalizes promises and makes them available by default.</p>
+<p class="calibre6"><strong class="calibre8">Chapter 12: Proxies and the Reflection API</strong> introduces the formalized reflection API for JavaScript and the new proxy object that allows you to intercept every operation performed on an object. Proxies give developers unprecedented control over objects and, as such, unlimited possibilities for defining new interaction patterns.</p>
+<p class="calibre6"><strong class="calibre8">Chapter 13: Encapsulating Code with Modules</strong> details the official module format for JavaScript. The intent is that these modules can replace the numerous ad-hoc module definition formats that have appeared over the years.</p>
+<p class="calibre6"><strong class="calibre8">Appendix A: Smaller ECMAScript 6 Changes</strong> covers other changes implemented in ECMAScript 6 that you’ll use less frequently or that didn’t quite fit into the broader major topics covered in each chapter.</p>
+<p class="calibre6"><strong class="calibre8">Appendix B: Understanding ECMAScript 7 (2016)</strong> describes the two additions to the standard that were implemented for ECMAScript 7, which didn’t impact JavaScript nearly as much as ECMAScript 6.</p>
+<h4 id="排版约定" class="calibre15"><span id="conventions-used" class="calibre13">排版约定</span></h4>
+<p class="calibre6">The following typographical conventions are used in this book:</p>
+<ul class="calibre9">
+<li class="calibre10"><strong class="calibre8">Italics</strong> introduces new terms</li>
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">Constant width</code> indicates a piece of code or filename</li>
+</ul>
+<p class="calibre6">Additionally, longer code examples are contained in constant width code blocks such as:</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">doSomething</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-title">// empty</span>
+}
+</code></pre>
+<p class="calibre6">Within a code block, comments to the right of a <code class="pcalibre3 calibre11 pcalibre4">console.log()</code> statement indicate the output you’ll see in the browser or Node.js console when the code is execute, for example:</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-params">console</span>.log(<span class="hljs-string">"Hi"</span>);      <span class="hljs-title">// "Hi"</span>
+</code></pre>
+<p class="calibre6">If a line of code in a code block throws an error, this is also indicated to the right of the code:</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5">doSomething();          <span class="hljs-title">// error!</span>
+</code></pre>
+<h4 id="帮助与支持" class="calibre15"><span id="help-and-support" class="calibre13">帮助与支持</span></h4>
+<p class="calibre6">You can file issues, suggest changes, and open pull requests against this book by visiting: <a href="" class="calibre7 pcalibre pcalibre1 pcalibre2">https://github.com/nzakas/understandinges6</a></p>
+<p class="calibre6">If you have questions as you read this book, please send a message to my mailing list: <a href="" class="calibre7 pcalibre pcalibre1 pcalibre2">http://groups.google.com/group/zakasbooks</a>.</p>
+<h3 id="致谢" class="calibre15"><span id="acknowledgments" class="calibre13">致谢</span></h3>
+<p class="calibre6">Thanks to Jennifer Griffith-Delgado, Alison Law, and everyone at No Starch Press for their support and help with this book. Their understanding and patience as my productivity slowed to a crawl during my extended illness is something I will never forget.</p>
+<p class="calibre6">I’m grateful for the watchful eye of Juriy Zaytsev as tech editor and to Dr. Axel Rauschmayer for his feedback and several conversations that helped to clarify some of the concepts discussed in this book.</p>
+<p class="calibre6">Thanks to everyone who submitted fixes to the version of this book that is hosted on GitHub: ShMcK, Ronen Elster, Rick Waldron, blacktail, Paul Salaets, Lonniebiz, Igor Skuhar, jakub-g, David Chang, Kevin Sweeney, Kyle Simpson, Peter Bakondy, Philip Borisov, Shaun Hickson, Steven Foote, kavun, Dan Kielp, Darren Huskie, Jakub Narębski, Jamund Ferguson, Josh Lubaway, Marián Rusnák, Nikolas Poniros, Robin Pokorný, Roman Lo, Yang Su, alexyans, robertd, 404, Aaron Dandy, AbdulFattah Popoola, Adam Richeimer, Ahmad Ali, Aleksandar Djindjic, Arjunkumar, Ben Regenspan, Carlo Costantini, Dmitri Suvorov, Kyle Pollock, Mallory, Erik Sundahl, Ethan Brown, Eugene Zubarev, Francesco Pongiluppi, Jake Champion, Jeremy Caney, Joe Eames, Juriy Zaytsev, Kale Worsley, Kevin Lozandier, Lewis Ellis, Mohsen Azimi, Navaneeth Kesavan, Nick Bottomley, Niels Dequeker, Pahlevi Fikri Auliya, Prayag Verma, Raj Anand, Ross Gerbasi, Roy Ling, Sarbbottam Bandyopadhyay, and Shidhin.</p>
+<p class="calibre6">Also, thanks to everyone who supported this book on Patreon: Casey Visco.</p>
+
+        </div>
+    
+</div>
+
+        
+    
+
+
+</body></html>

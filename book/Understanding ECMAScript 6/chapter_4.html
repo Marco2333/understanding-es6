@@ -1,0 +1,460 @@
+<?xml version='1.0' encoding='utf-8'?>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+  <head>
+    <title>第四章 扩展的对象功能</title>
+    <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+    <meta content="" name="description"/>
+    <meta content="GitBook 3.2.2" name="generator"/>
+    <meta content="sagittarius-rev" name="author"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link href="stylesheet.css" rel="stylesheet" type="text/css"/>
+<link href="page_styles.css" rel="stylesheet" type="text/css"/>
+</head>
+  <body class="calibre">
+        
+<div class="page">
+    
+        <h1 class="book-chapter" id="calibre_toc_6">第四章 扩展的对象功能</h1>
+        <div class="section">
+            <h2 id="第四章-扩展的对象功能" class="calibre12"><span id="expanded-object-functionality" class="calibre13">第四章 扩展的对象功能</span></h2>
+<p class="calibre6">ES6 注重于提高对象的效用，这是因为在 JS 中几乎所有的值都是某种类型的对象。此外，随着 JS 应用的复杂度增长，在 JS 程序中所使用的对象的平均数也在持续增长，更多的对象就让有效使用它们变得更加必要。</p>
+<p class="calibre6">在对象的许多方面——从简单的语法扩展，到操作与交互—— ES6 都进行了改进。</p>
+<ul class="calibre9">
+<li class="calibre10"><a href="#object-categories" class="calibre7 pcalibre pcalibre1 pcalibre2">对象类别</a></li>
+<li class="calibre10"><a href="#object-literal-syntax-extensions" class="calibre7 pcalibre pcalibre1 pcalibre2">对象字面量语法的扩展</a><ul class="calibre14">
+<li class="calibre10"><a href="#property-initializer-shorthand" class="calibre7 pcalibre pcalibre1 pcalibre2">属性初始化器的速记法</a></li>
+<li class="calibre10"><a href="#concise-methods" class="calibre7 pcalibre pcalibre1 pcalibre2">方法简写</a></li>
+<li class="calibre10"><a href="#computed-property-names" class="calibre7 pcalibre pcalibre1 pcalibre2">需计算属性名</a></li>
+</ul>
+</li>
+<li class="calibre10"><a href="#new-methods" class="calibre7 pcalibre pcalibre1 pcalibre2">新的方法</a><ul class="calibre14">
+<li class="calibre10"><a href="#the-object-is---method" class="calibre7 pcalibre pcalibre1 pcalibre2">Object.is() 方法</a></li>
+<li class="calibre10"><a href="#the-object-assign---method" class="calibre7 pcalibre pcalibre1 pcalibre2">Object.assign() 方法</a></li>
+</ul>
+</li>
+<li class="calibre10"><a href="#duplicate-object-literal-properties" class="calibre7 pcalibre pcalibre1 pcalibre2">重复的对象字面量属性</a></li>
+<li class="calibre10"><a href="#own-property-enumeration-order" class="calibre7 pcalibre pcalibre1 pcalibre2">自有属性的枚举顺序</a></li>
+<li class="calibre10"><a href="#more-powerful-prototypes" class="calibre7 pcalibre pcalibre1 pcalibre2">更强大的原型</a><ul class="calibre14">
+<li class="calibre10"><a href="#changing-an-object-s-prototype" class="calibre7 pcalibre pcalibre1 pcalibre2">修改对象的原型</a></li>
+<li class="calibre10"><a href="#easy-prototype-access-with-super-references" class="calibre7 pcalibre pcalibre1 pcalibre2">使用 super 引用的简单原型访问</a></li>
+</ul>
+</li>
+<li class="calibre10"><a href="#a-formal-method-definition" class="calibre7 pcalibre pcalibre1 pcalibre2">正式的“方法”定义</a></li>
+<li class="calibre10"><a href="#summary" class="calibre7 pcalibre pcalibre1 pcalibre2">总结</a></li>
+</ul>
+<h3 id="对象类别" class="calibre15"><span id="object-categories" class="calibre13">对象类别</span></h3>
+<p class="calibre6">JS 使用混合术语来描述能在标准中找到的对象，而不是那些由运行环境（例如浏览器或 Node.js ）所添加的，并且 ES6 规范还明确定义了对象的每种类别。理解对象术语对于从整体上清楚认识这门语言来说非常重要。对象类别包括：</p>
+<ul class="calibre9">
+<li class="calibre10"><strong class="calibre8">普通对象</strong>：拥有 JS 对象所有默认的内部行为。</li>
+<li class="calibre10"><strong class="calibre8">奇异对象</strong>：其内部行为在某些方面有别于默认行为。</li>
+<li class="calibre10"><strong class="calibre8">标准对象</strong>：在 ES6 中被定义的对象，例如 <code class="pcalibre3 calibre11 pcalibre4">Array</code> 、 <code class="pcalibre3 calibre11 pcalibre4">Date</code> ，等等。标准对象可以是普通的，也可以是奇异的。</li>
+<li class="calibre10"><strong class="calibre8">内置对象</strong>：在脚本开始运行时由 JS 运行环境提供的对象。所有的标准对象都是内置对象。</li>
+</ul>
+<p class="calibre6">我会在整本书中使用这些术语来讲解在 ES6 中定义的各种对象。</p>
+<h3 id="对象字面量语法的扩展" class="calibre15"><span id="object-literal-syntax-extensions" class="calibre13">对象字面量语法的扩展</span></h3>
+<p class="calibre6">对象字面量是 JS 中最流行的模式之一（ JSON 就是基于这种语法），而它还存在于互联网上的几乎所有 JS 文件中。对象字面量如此流行，是因为它是一种创建对象的简洁语法（否则要多写不少代码）。对于开发者来说，幸运的是 ES6 用几种方式扩展了对象字面量，将这种语法变得更加强大、更加简洁。</p>
+<h4 id="属性初始化器的速记法" class="calibre15"><span id="property-initializer-shorthand" class="calibre13">属性初始化器的速记法</span></h4>
+<p class="calibre6">在 ES5 及更早版本中，对象字面量是“键/值对”的简单集合。这意味着在属性值被初始化时可能会有些重复，例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createPerson</span>(<span class="hljs-params">name, age</span>) </span>{
+    <span class="hljs-keyword">return</span> {
+        name: name,
+        age: age
+    };
+}
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">createPerson()</code> 函数创建了一个对象，其属性名与函数的参数名相同。此结果看起来重复了 <code class="pcalibre3 calibre11 pcalibre4">name</code> 与 <code class="pcalibre3 calibre11 pcalibre4">age</code> ，尽管一边是对象属性的名称，而另一边则负责给属性提供值。在所返回的对象中，它的 <code class="pcalibre3 calibre11 pcalibre4">name</code> 键与 <code class="pcalibre3 calibre11 pcalibre4">age</code> 键分别被变量 <code class="pcalibre3 calibre11 pcalibre4">name</code> 与 <code class="pcalibre3 calibre11 pcalibre4">age</code> 变量所赋值。</p>
+<p class="calibre6">在 ES6 中，你可以使用<strong class="calibre8">属性初始化器</strong>的速记法来消除对象名称与本地变量的重复情况。当对象的一个属性名称与本地变量名相同时，你可以简单书写名称而省略冒号与值。例如， <code class="pcalibre3 calibre11 pcalibre4">createPerson()</code> 可以像这样用 ES6 重写：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createPerson</span>(<span class="hljs-params">name, age</span>) </span>{
+    <span class="hljs-keyword">return</span> {
+        name,
+        age
+    };
+}
+</code></pre>
+<p class="calibre6">当对象字面量中的属性只有名称时， JS 引擎会在周边作用域查找同名变量。若找到，该变量的值将会被赋给对象字面量的同名属性。在本例中，局部变量 <code class="pcalibre3 calibre11 pcalibre4">name</code> 的值就被赋给了 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性。</p>
+<p class="calibre6">这个扩展使得对象字面量的初始化更加简洁，也有助于消除命名错误。用局部变量为对象同名属性赋值在 JS 中是极其常见的模式，因此这个扩展自然非常受欢迎。</p>
+<h4 id="方法简写" class="calibre15"><span id="concise-methods" class="calibre13">方法简写</span></h4>
+<p class="calibre6">ES6 同样改进了为对象字面量方法赋值的语法。在 ES5 及更早版本中，你必须指定一个名称并用完整的函数定义来为对象添加方法，如下：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> person = {
+    name: <span class="hljs-string">"Nicholas"</span>,
+    sayName: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-params">console</span>.log(<span class="hljs-keyword">this</span>.name);
+    }
+};
+</code></pre>
+<p class="calibre6">通过省略冒号与 <code class="pcalibre3 calibre11 pcalibre4">function</code> 关键字， ES6 将这个语法变得更简洁，这意味着你可以这样重写上个例子：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> person = {
+    name: <span class="hljs-string">"Nicholas"</span>,
+    sayName() {
+        <span class="hljs-params">console</span>.log(<span class="hljs-keyword">this</span>.name);
+    }
+};
+</code></pre>
+<p class="calibre6">这种速记语法也被称为<strong class="calibre8">方法简写</strong>语法（ <strong class="calibre8">concise method</strong> syntax ），与上例一样在 <code class="pcalibre3 calibre11 pcalibre4">person</code> 对象中创建了一个方法。 <code class="pcalibre3 calibre11 pcalibre4">sayName()</code> 属性被一个匿名函数所赋值，并且具备 ES5 的 <code class="pcalibre3 calibre11 pcalibre4">sayName()</code> 方法的所有特征。而有一点区别是：方法简写能使用 <code class="pcalibre3 calibre11 pcalibre4">super</code> ，而非简写的方法则不能（ <code class="pcalibre3 calibre11 pcalibre4">super</code> 会在后面的“使用 super 引用的简单原型访问”小节中讨论）。</p>
+<blockquote class="calibre20">
+<p class="calibre6">使用方法简写速记法创建的方法，其 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性（名称属性）就是括号之前的名称。上面这个例子中， <code class="pcalibre3 calibre11 pcalibre4">person.sayName()</code> 的名称属性就是 <code class="pcalibre3 calibre11 pcalibre4">"sayName"</code> 。</p>
+</blockquote>
+<h4 id="需计算属性名" class="calibre15"><span id="computed-property-names" class="calibre13">需计算属性名</span></h4>
+<p class="calibre6">在 ES5 及更早版本中，对象实例能使用“需计算的属性名”，只要用方括号表示法来代替小数点表示法即可。方括号允许你将变量或字符串字面量指定为属性名，而在字符串中允许存在作为标识符时会导致语法错误的特殊字符。这里有个范例：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> person = {},
+    lastName = <span class="hljs-string">"last name"</span>;
+
+person[<span class="hljs-string">"first name"</span>] = <span class="hljs-string">"Nicholas"</span>;
+person[lastName] = <span class="hljs-string">"Zakas"</span>;
+
+<span class="hljs-params">console</span>.log(person[<span class="hljs-string">"first name"</span>]);      <span class="hljs-title">// "Nicholas"</span>
+<span class="hljs-params">console</span>.log(person[lastName]);          <span class="hljs-title">// "Zakas"</span>
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">lastName</code> 变量已被赋值为 <code class="pcalibre3 calibre11 pcalibre4">"last name"</code> ，因此该例中两个属性名都包含了空格，这样就无法用小数点表示法来引用它们了。然而，方括号表示法允许将任意字符串用作属性名，这样 <code class="pcalibre3 calibre11 pcalibre4">"first name"</code> 与 <code class="pcalibre3 calibre11 pcalibre4">"last name"</code> 属性就能分别被赋值为 <code class="pcalibre3 calibre11 pcalibre4">"Nicholas"</code> 与 <code class="pcalibre3 calibre11 pcalibre4">"Zakas"</code> 。</p>
+<p class="calibre6">此外，你可以在对象字面量中将字符串字面量直接用作属性，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> person = {
+    <span class="hljs-string">"first name"</span>: <span class="hljs-string">"Nicholas"</span>
+};
+
+<span class="hljs-params">console</span>.log(person[<span class="hljs-string">"first name"</span>]);      <span class="hljs-title">// "Nicholas"</span>
+</code></pre>
+<p class="calibre6">这种模式要求属性名事先已知、并且能用字符串字面量表示。然而，若属性名被包含在变量中（就像前面例子中的 <code class="pcalibre3 calibre11 pcalibre4">"first name"</code> ），或者必须通过计算才能获得，那么在 ES5 的对象字面量中就无法定义这种属性。</p>
+<p class="calibre6">在 ES6 中，需计算属性名是对象字面量语法的一部分，它用的也是方括号表示法，与此前在对象实例上的用法一致。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> lastName = <span class="hljs-string">"last name"</span>;
+
+<span class="hljs-keyword">var</span> person = {
+    <span class="hljs-string">"first name"</span>: <span class="hljs-string">"Nicholas"</span>,
+    [lastName]: <span class="hljs-string">"Zakas"</span>
+};
+
+<span class="hljs-params">console</span>.log(person[<span class="hljs-string">"first name"</span>]);      <span class="hljs-title">// "Nicholas"</span>
+<span class="hljs-params">console</span>.log(person[lastName]);          <span class="hljs-title">// "Zakas"</span>
+</code></pre>
+<p class="calibre6">对象字面量内的方括号表明该属性名需要计算，其结果是一个字符串。这意味着其中可以包含表达式，像下面这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> suffix = <span class="hljs-string">" name"</span>;
+
+<span class="hljs-keyword">var</span> person = {
+    [<span class="hljs-string">"first"</span> + suffix]: <span class="hljs-string">"Nicholas"</span>,
+    [<span class="hljs-string">"last"</span> + suffix]: <span class="hljs-string">"Zakas"</span>
+};
+
+<span class="hljs-params">console</span>.log(person[<span class="hljs-string">"first name"</span>]);      <span class="hljs-title">// "Nicholas"</span>
+<span class="hljs-params">console</span>.log(person[<span class="hljs-string">"last name"</span>]);       <span class="hljs-title">// "Zakas"</span>
+</code></pre>
+<p class="calibre6">这些属性名被计算为 <code class="pcalibre3 calibre11 pcalibre4">"first name"</code> 与 <code class="pcalibre3 calibre11 pcalibre4">"last name"</code> ，而这两个字符串此后可以用来引用对应属性。使用方括号表示法，任何能放在对象实例方括号内的东西，都可以作为需计算属性名用在对象字面量中。</p>
+<h3 id="新的方法" class="calibre15"><span id="new-methods" class="calibre13">新的方法</span></h3>
+<p class="calibre6">ES 从 ES5 开始就有一个设计意图：避免创建新的全局函数，避免在 <code class="pcalibre3 calibre11 pcalibre4">Object</code> 对象的原型上添加新方法，而是尝试寻找哪些对象应该被添加新方法。因此，对其他对象不适用的新方法就被添加到全局的 <code class="pcalibre3 calibre11 pcalibre4">Object</code> 对象上。 ES6 在 <code class="pcalibre3 calibre11 pcalibre4">Object</code> 对象上引入了两个新方法，以便让特定任务更易完成。</p>
+<h4 id="objectis-方法" class="calibre15"><span id="the-object-is---method" class="calibre13">Object.is() 方法</span></h4>
+<p class="calibre6">当在 JS 中要比较两个值时，你可能会使用相等运算符（ <code class="pcalibre3 calibre11 pcalibre4">==</code> ）或严格相等运算符（ <code class="pcalibre3 calibre11 pcalibre4">===</code> ）。为了避免在比较时发生强制类型转换，许多开发者更倾向于使用后者。但严格相等运算符也并不完全准确，例如，它认为 <code class="pcalibre3 calibre11 pcalibre4">+0</code> 与 <code class="pcalibre3 calibre11 pcalibre4">-0</code> 相等，即使这两者在 JS 引擎中有不同的表示；另外 <code class="pcalibre3 calibre11 pcalibre4">NaN === NaN</code> 会返回 <code class="pcalibre3 calibre11 pcalibre4">false</code> ，因此有必要使用 <code class="pcalibre3 calibre11 pcalibre4">isNaN()</code> 函数来正确检测 <code class="pcalibre3 calibre11 pcalibre4">NaN</code> 。</p>
+<p class="calibre6">ES6 引入了 <code class="pcalibre3 calibre11 pcalibre4">Object.is()</code> 方法来弥补严格相等运算符残留的怪异点。此方法接受两个参数，并会在二者的值相等时返回 <code class="pcalibre3 calibre11 pcalibre4">true</code> ，此时要求二者类型相同并且值也相等。这有个例子：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-params">console</span>.log(+<span class="hljs-params">0</span> == <span class="hljs-params">-0</span>);              <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(+<span class="hljs-params">0</span> === <span class="hljs-params">-0</span>);             <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-params">Object</span>.is(+<span class="hljs-params">0</span>, <span class="hljs-params">-0</span>));     <span class="hljs-title">// false</span>
+
+<span class="hljs-params">console</span>.log(<span class="hljs-params">NaN</span> == <span class="hljs-params">NaN</span>);            <span class="hljs-title">// false</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-params">NaN</span> === <span class="hljs-params">NaN</span>);           <span class="hljs-title">// false</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-params">Object</span>.is(<span class="hljs-params">NaN</span>, <span class="hljs-params">NaN</span>));   <span class="hljs-title">// true</span>
+
+<span class="hljs-params">console</span>.log(<span class="hljs-params">5</span> == <span class="hljs-params">5</span>);                <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-params">5</span> == <span class="hljs-string">"5"</span>);              <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-params">5</span> === <span class="hljs-params">5</span>);               <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-params">5</span> === <span class="hljs-string">"5"</span>);             <span class="hljs-title">// false</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-params">Object</span>.is(<span class="hljs-params">5</span>, <span class="hljs-params">5</span>));       <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-params">Object</span>.is(<span class="hljs-params">5</span>, <span class="hljs-string">"5"</span>));     <span class="hljs-title">// false</span>
+</code></pre>
+<p class="calibre6">在许多情况下， <code class="pcalibre3 calibre11 pcalibre4">Object.is()</code> 的结果与 <code class="pcalibre3 calibre11 pcalibre4">===</code> 运算符是相同的，仅有的例外是：它会认为 <code class="pcalibre3 calibre11 pcalibre4">+0</code> 与 <code class="pcalibre3 calibre11 pcalibre4">-0</code> 不相等，而且 <code class="pcalibre3 calibre11 pcalibre4">NaN</code> 等于 <code class="pcalibre3 calibre11 pcalibre4">NaN</code> 。不过仍然没必要停止使用严格相等运算符，选择 <code class="pcalibre3 calibre11 pcalibre4">Object.is()</code> ，还是选择 <code class="pcalibre3 calibre11 pcalibre4">==</code> 或 <code class="pcalibre3 calibre11 pcalibre4">===</code> ，取决于代码的实际情况。</p>
+<h4 id="objectassign-方法" class="calibre15"><span id="the-object-assign---method" class="calibre13">Object.assign() 方法</span></h4>
+<p class="calibre6"><strong class="calibre8">混入</strong>（ <strong class="calibre8">Mixin</strong> ）是在 JS 中组合对象时最流行的模式。在一次混入中，一个对象会从另一个对象中接收属性与方法。很多 JS 的库中都有类似下面的混入方法：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">mixin</span>(<span class="hljs-params">receiver, supplier</span>) </span>{
+    <span class="hljs-params">Object</span>.keys(supplier).forEach(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">key</span>) </span>{
+        receiver[key] = supplier[key];
+    });
+
+    <span class="hljs-keyword">return</span> receiver;
+}
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">mixin()</code> 函数在 <code class="pcalibre3 calibre11 pcalibre4">supplier</code> 对象的自有属性上进行迭代，并将这些属性复制到 <code class="pcalibre3 calibre11 pcalibre4">receiver</code> 对象（浅复制，当属性值为对象时，仅复制其引用）。这样 <code class="pcalibre3 calibre11 pcalibre4">receiver</code> 对象就能获得新的属性而无须使用继承，正如下面代码：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">EventTarget</span>(<span class="hljs-params"></span>) </span>{ <span class="hljs-title">/*...*/</span> }
+EventTarget.prototype = {
+    <span class="hljs-keyword">constructor</span>: EventTarget,
+    emit: function() { <span class="hljs-title">/*...*/</span> },
+    on: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{ <span class="hljs-title">/*...*/</span> }
+};
+
+<span class="hljs-keyword">var</span> myObject = {};
+mixin(myObject, EventTarget.prototype);
+
+myObject.emit(<span class="hljs-string">"somethingChanged"</span>);
+</code></pre>
+<p class="calibre6">此处 <code class="pcalibre3 calibre11 pcalibre4">myObject</code> 对象接收了 <code class="pcalibre3 calibre11 pcalibre4">EventTarget.prototype</code> 对象的行为，这给了它分别使用 <code class="pcalibre3 calibre11 pcalibre4">emit()</code> 与 <code class="pcalibre3 calibre11 pcalibre4">on()</code> 方法来发布事件与订阅事件的能力。</p>
+<p class="calibre6">此模式已经足够流行，于是 ES6 就添加了 <code class="pcalibre3 calibre11 pcalibre4">Object.assign()</code> 方法来完成同样的行为。该方法接受一个接收者，以及任意数量的供应者，并会返回接收者。方法名称从 <code class="pcalibre3 calibre11 pcalibre4">mixin()</code> 变更为 <code class="pcalibre3 calibre11 pcalibre4">assign()</code> 更能反映出实际发生的操作。由于 <code class="pcalibre3 calibre11 pcalibre4">mixin()</code> 函数使用了赋值运算符（ <code class="pcalibre3 calibre11 pcalibre4">=</code> ），它就无法将访问器属性复制到接收者上， <code class="pcalibre3 calibre11 pcalibre4">Object.assign()</code> 体现了这种区别。</p>
+<blockquote class="calibre20">
+<p class="calibre6">各式各样的库中都有相似但名称不同的方法，其基本功能相同，流行的替代方法包括 <code class="pcalibre3 calibre11 pcalibre4">extend()</code> 或 <code class="pcalibre3 calibre11 pcalibre4">mix()</code> 。而 ES6 也曾在 <code class="pcalibre3 calibre11 pcalibre4">Object.assign()</code> 之外短暂存在一个 <code class="pcalibre3 calibre11 pcalibre4">Object.mixin()</code> 方法，二者的主要差异在于 <code class="pcalibre3 calibre11 pcalibre4">Object.mixin()</code> 也会复制访问器属性，但考虑到 <code class="pcalibre3 calibre11 pcalibre4">super</code> 的使用（详见本章的“使用 super 引用的简单原型访问”小节），此方法最终被移除了。</p>
+</blockquote>
+<p class="calibre6">你可以在任意曾使用 <code class="pcalibre3 calibre11 pcalibre4">mixin()</code> 函数的地方使用 <code class="pcalibre3 calibre11 pcalibre4">Object.assign()</code> ，此处有个例子：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">EventTarget</span>(<span class="hljs-params"></span>) </span>{ <span class="hljs-title">/*...*/</span> }
+EventTarget.prototype = {
+    <span class="hljs-keyword">constructor</span>: EventTarget,
+    emit: function() { <span class="hljs-title">/*...*/</span> },
+    on: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{ <span class="hljs-title">/*...*/</span> }
+}
+
+<span class="hljs-keyword">var</span> myObject = {}
+<span class="hljs-params">Object</span>.assign(myObject, EventTarget.prototype);
+
+myObject.emit(<span class="hljs-string">"somethingChanged"</span>);
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">Object.assign()</code> 方法接受任意数量的供应者，而接收者会按照供应者在参数中的顺序来依次接收它们的属性。这意味着在接收者中，第二个供应者的属性可能会覆盖第一个供应者的，这在下面的代码片段中就发生了：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> receiver = {};
+
+<span class="hljs-params">Object</span>.assign(receiver,
+    {
+        type: <span class="hljs-string">"js"</span>,
+        name: <span class="hljs-string">"file.js"</span>
+    },
+    {
+        type: <span class="hljs-string">"css"</span>
+    }
+);
+
+<span class="hljs-params">console</span>.log(receiver.type);     <span class="hljs-title">// "css"</span>
+<span class="hljs-params">console</span>.log(receiver.name);     <span class="hljs-title">// "file.js"</span>
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">receiver.type</code> 的值为 <code class="pcalibre3 calibre11 pcalibre4">"css"</code> ，这是因为第二个供应者覆盖了第一个供应者的值。</p>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">Object.assign()</code> 方法并不是 ES6 的一项重大扩展，但它确实将很多 JS 库中的一个公共方法标准化了。</p>
+<blockquote class="calibre20">
+<p class="calibre6"><strong class="calibre8">操作访问器属性</strong></p>
+<p class="calibre6">需要记住 <code class="pcalibre3 calibre11 pcalibre4">Object.assign()</code> 并未在接收者上创建访问器属性，即使供应者拥有访问器属性。由于 <code class="pcalibre3 calibre11 pcalibre4">Object.assign()</code> 使用赋值运算符，供应者的访问器属性就会转变成接收者的数据属性，例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> receiver = {},
+supplier = {
+  get name() {
+      <span class="hljs-keyword">return</span> <span class="hljs-string">"file.js"</span>
+  }
+};
+
+<span class="hljs-params">Object</span>.assign(receiver, supplier);
+
+<span class="hljs-keyword">var</span> descriptor = <span class="hljs-params">Object</span>.getOwnPropertyDescriptor(receiver, <span class="hljs-string">"name"</span>);
+
+<span class="hljs-params">console</span>.log(descriptor.value);      <span class="hljs-title">// "file.js"</span>
+<span class="hljs-params">console</span>.log(descriptor.get);        <span class="hljs-title">// undefined</span>
+</code></pre>
+<p class="calibre6">此代码中的 <code class="pcalibre3 calibre11 pcalibre4">supplier</code> 对象拥有一个名为 <code class="pcalibre3 calibre11 pcalibre4">name</code> 的访问器属性。在使用了 <code class="pcalibre3 calibre11 pcalibre4">Object.assign()</code> 方法后， <code class="pcalibre3 calibre11 pcalibre4">receiver.name</code> 就作为一个数据属性存在了，其值为 <code class="pcalibre3 calibre11 pcalibre4">"file.js"</code> ，这是因为在调用 <code class="pcalibre3 calibre11 pcalibre4">Object.assign()</code> 时， <code class="pcalibre3 calibre11 pcalibre4">supplier.name</code> 返回的值是 <code class="pcalibre3 calibre11 pcalibre4">"file.js"</code> 。</p>
+</blockquote>
+<h3 id="重复的对象字面量属性" class="calibre15"><span id="duplicate-object-literal-properties" class="calibre13">重复的对象字面量属性</span></h3>
+<p class="calibre6">ES5 严格模式为重复的对象字面量属性引入了一个检查，若找到重复的属性名，就会抛出错误。例如，以下代码就有问题：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="calibre19">"use strict"</span>;
+
+<span class="hljs-keyword">var</span> person = {
+    name: <span class="hljs-string">"Nicholas"</span>,
+    name: <span class="hljs-string">"Greg"</span>        <span class="hljs-title">// 在 ES5 严格模式中是语法错误</span>
+};
+</code></pre>
+<p class="calibre6">在 ES5 严格模式下运行时，第二个 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性会造成语法错误。但 ES6 移除了重复属性的检查，严格模式与非严格模式都不再检查重复的属性。当存在重复属性时，排在后面的属性的值会成为该属性的实际值，如下所示：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="calibre19">"use strict"</span>;
+
+<span class="hljs-keyword">var</span> person = {
+    name: <span class="hljs-string">"Nicholas"</span>,
+    name: <span class="hljs-string">"Greg"</span>        <span class="hljs-title">// 在 ES6 严格模式中不会出错</span>
+};
+
+<span class="hljs-params">console</span>.log(person.name);       <span class="hljs-title">// "Greg"</span>
+</code></pre>
+<p class="calibre6">在本例中， <code class="pcalibre3 calibre11 pcalibre4">person.name</code> 的值为 <code class="pcalibre3 calibre11 pcalibre4">"Greg"</code> ，因为这是赋给该属性的最后一个值。</p>
+<h3 id="自有属性的枚举顺序" class="calibre15"><span id="own-property-enumeration-order" class="calibre13">自有属性的枚举顺序</span></h3>
+<p class="calibre6">ES5 并没有定义对象属性的枚举顺序，而是把该问题留给了 JS 引擎厂商。而 ES6 则严格定义了对象自有属性在被枚举时返回的顺序。这对 <code class="pcalibre3 calibre11 pcalibre4">Object.getOwnPropertyNames()</code> 与 <code class="pcalibre3 calibre11 pcalibre4">Reflect.ownKeys</code> （详见第十二章）如何返回属性造成了影响，还同样影响了 <code class="pcalibre3 calibre11 pcalibre4">Object.assign()</code> 处理属性的顺序。</p>
+<p class="calibre6">自有属性枚举时基本顺序如下：</p>
+<ol class="calibre2">
+<li class="calibre10">所有的数字类型键，按升序排列。</li>
+<li class="calibre10">所有的字符串类型键，按被添加到对象的顺序排列。</li>
+<li class="calibre10">所有的符号类型（详见第六章）键，也按添加顺序排列。</li>
+</ol>
+<p class="calibre6">这里有个示例：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> obj = {
+    a: <span class="hljs-params">1</span>,
+    <span class="hljs-params">0</span>: <span class="hljs-params">1</span>,
+    c: <span class="hljs-params">1</span>,
+    <span class="hljs-params">2</span>: <span class="hljs-params">1</span>,
+    b: <span class="hljs-params">1</span>,
+    <span class="hljs-params">1</span>: <span class="hljs-params">1</span>
+};
+
+obj.d = <span class="hljs-params">1</span>;
+
+<span class="hljs-params">console</span>.log(<span class="hljs-params">Object</span>.getOwnPropertyNames(obj).join(<span class="hljs-string">""</span>));     <span class="hljs-title">// "012acbd"</span>
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">Object.getOwnPropertyNames()</code> 方法按 <code class="pcalibre3 calibre11 pcalibre4">0</code> 、 <code class="pcalibre3 calibre11 pcalibre4">1</code> 、 <code class="pcalibre3 calibre11 pcalibre4">2</code> 、 <code class="pcalibre3 calibre11 pcalibre4">a</code> 、 <code class="pcalibre3 calibre11 pcalibre4">c</code> 、 <code class="pcalibre3 calibre11 pcalibre4">b</code> 、 <code class="pcalibre3 calibre11 pcalibre4">d</code> 的顺序返回了 <code class="pcalibre3 calibre11 pcalibre4">obj</code> 对象的属性。注意，数值类型的键会被合并并排序，即使这未遵循在对象字面量中的顺序。字符串类型的键会跟在数值类型的键之后，按照被添加到 <code class="pcalibre3 calibre11 pcalibre4">obj</code> 对象的顺序，在对象字面量中定义的键会首先出现，接下来是此后动态添加到对象的键。</p>
+<blockquote class="calibre20">
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">for-in</code> 循环的枚举顺序仍未被明确规定，因为并非所有的 JS 引擎都采用相同的方式。而 <code class="pcalibre3 calibre11 pcalibre4">Object.keys()</code> 和 <code class="pcalibre3 calibre11 pcalibre4">JSON.stringify()</code> 也使用了与 <code class="pcalibre3 calibre11 pcalibre4">for-in</code> 一样的枚举顺序。</p>
+</blockquote>
+<p class="calibre6">虽然枚举顺序的变动对 JS 的工作方式影响甚小，但是依赖于特定枚举顺序才能正确运行的程序并不罕见。因此 ES6 通过规定枚举的顺序，以确保依赖枚举操作的 JS 代码都能正常工作，而不用在意其运行环境。</p>
+<h3 id="更强大的原型" class="calibre15"><span id="more-powerful-prototypes" class="calibre13">更强大的原型</span></h3>
+<p class="calibre6">原型是在 JS 中进行继承的基础， ES6 则在继续让原型更强大。早期的 JS 版本对原型的使用有严重限制，然而随着语言的成熟，开发者也越来越熟悉原型的工作机制，因此他们明显希望能对原型有更多控制权，并能更方便地使用它。于是 ES6 就给原型引入了一些改进。</p>
+<h4 id="修改对象的原型" class="calibre15"><span id="changing-an-object-s-prototype" class="calibre13">修改对象的原型</span></h4>
+<p class="calibre6">一般来说，对象的原型会在通过构造器或 <code class="pcalibre3 calibre11 pcalibre4">Object.create()</code> 方法创建该对象时被指定。直到 ES5 为止， JS 编程最重要的假定之一就是对象的原型在初始化完成后会保持不变。尽管 ES5 添加了 <code class="pcalibre3 calibre11 pcalibre4">Object.getPrototypeOf()</code> 方法来从任意指定对象中获取其原型，但仍然缺少在初始化之后更改对象原型的标准方法。</p>
+<p class="calibre6">ES6 通过添加 <code class="pcalibre3 calibre11 pcalibre4">Object.setPrototypeOf()</code> 方法而改变了这种假定，此方法允许你修改任意指定对象的原型。它接受两个参数：需要被修改原型的对象，以及将会成为前者原型的对象。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> person = {
+    getGreeting() {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Hello"</span>;
+    }
+};
+
+<span class="hljs-keyword">let</span> dog = {
+    getGreeting() {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Woof"</span>;
+    }
+};
+
+<span class="hljs-title">// 原型为 person</span>
+<span class="hljs-keyword">let</span> friend = <span class="hljs-params">Object</span>.create(person);
+<span class="hljs-params">console</span>.log(friend.getGreeting());                      <span class="hljs-title">// "Hello"</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-params">Object</span>.getPrototypeOf(friend) === person);  <span class="hljs-title">// true</span>
+
+<span class="hljs-title">// 将原型设置为 dog</span>
+<span class="hljs-params">Object</span>.setPrototypeOf(friend, dog);
+<span class="hljs-params">console</span>.log(friend.getGreeting());                      <span class="hljs-title">// "Woof"</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-params">Object</span>.getPrototypeOf(friend) === dog);     <span class="hljs-title">// true</span>
+</code></pre>
+<p class="calibre6">此代码定义了两个基础对象： <code class="pcalibre3 calibre11 pcalibre4">person</code> 与 <code class="pcalibre3 calibre11 pcalibre4">dog</code> ，二者都拥有一个名为 <code class="pcalibre3 calibre11 pcalibre4">getGreeting()</code> 的方法，用于返回一个字符串。 <code class="pcalibre3 calibre11 pcalibre4">friend</code> 对象起初继承了 <code class="pcalibre3 calibre11 pcalibre4">person</code> 对象，意味着 <code class="pcalibre3 calibre11 pcalibre4">friend.getGreeting()</code> 方法会输出 <code class="pcalibre3 calibre11 pcalibre4">"Hello"</code> ；当它的原型被更改为 <code class="pcalibre3 calibre11 pcalibre4">dog</code> 对象， <code class="pcalibre3 calibre11 pcalibre4">friend.getGreeting()</code> 方法就会改而输出 <code class="pcalibre3 calibre11 pcalibre4">"Woof"</code> ，因为原先与 <code class="pcalibre3 calibre11 pcalibre4">person</code> 的关联已经被破坏了。</p>
+<p class="calibre6">对象原型的实际值被存储在一个内部属性 <code class="pcalibre3 calibre11 pcalibre4">[[Prototype]]</code> 上， <code class="pcalibre3 calibre11 pcalibre4">Object.getPrototypeOf()</code> 方法会返回此属性存储的值，而 <code class="pcalibre3 calibre11 pcalibre4">Object.setPrototypeOf()</code> 方法则能够修改该值。不过，使用 <code class="pcalibre3 calibre11 pcalibre4">[[Prototype]]</code> 属性的方式还不止这些。</p>
+<h4 id="使用-super-引用的简单原型访问" class="calibre15"><span id="easy-prototype-access-with-super-references" class="calibre13">使用 super 引用的简单原型访问</span></h4>
+<p class="calibre6">正如前面提到的，原型对 JS 来说非常重要，而 ES6 也进行了很多工作来让它更易用。关于原型的另一项进步就是引入了 <code class="pcalibre3 calibre11 pcalibre4">super</code> 引用，这让在对象原型上的功能调用变得更容易。例如，若要覆盖对象实例的一个方法、但依然要调用原型上的同名方法，你可能会这么做：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> person = {
+    getGreeting() {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Hello"</span>;
+    }
+};
+
+<span class="hljs-keyword">let</span> dog = {
+    getGreeting() {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Woof"</span>;
+    }
+};
+
+<span class="hljs-keyword">let</span> friend = {
+    getGreeting() {
+        <span class="hljs-keyword">return</span> <span class="hljs-params">Object</span>.getPrototypeOf(<span class="hljs-keyword">this</span>).getGreeting.call(<span class="hljs-keyword">this</span>) + <span class="hljs-string">", hi!"</span>;
+    }
+};
+
+<span class="hljs-title">// 将原型设置为 person</span>
+<span class="hljs-params">Object</span>.setPrototypeOf(friend, person);
+<span class="hljs-params">console</span>.log(friend.getGreeting());                      <span class="hljs-title">// "Hello, hi!"</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-params">Object</span>.getPrototypeOf(friend) === person);  <span class="hljs-title">// true</span>
+
+<span class="hljs-title">// 将原型设置为 dog</span>
+<span class="hljs-params">Object</span>.setPrototypeOf(friend, dog);
+<span class="hljs-params">console</span>.log(friend.getGreeting());                      <span class="hljs-title">// "Woof, hi!"</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-params">Object</span>.getPrototypeOf(friend) === dog);     <span class="hljs-title">// true</span>
+</code></pre>
+<p class="calibre6">本例中 <code class="pcalibre3 calibre11 pcalibre4">friend</code> 上的 <code class="pcalibre3 calibre11 pcalibre4">getGreeting()</code> 调用了对象上的同名方法。 <code class="pcalibre3 calibre11 pcalibre4">Object.getPrototypeOf()</code> 方法确保了能调用正确的原型，并在其返回结果上附加了一个字符串；而附加的 <code class="pcalibre3 calibre11 pcalibre4">call(this)</code> 代码则能确保正确设置原型方法内部的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 值。</p>
+<p class="calibre6">调用原型上的方法时要记住使用 <code class="pcalibre3 calibre11 pcalibre4">Object.getPrototypeOf()</code> 与 <code class="pcalibre3 calibre11 pcalibre4">.call(this)</code> ，这有点复杂难懂，因此 ES6 才引入了 <code class="pcalibre3 calibre11 pcalibre4">super</code> 。简单来说， <code class="pcalibre3 calibre11 pcalibre4">super</code> 是指向当前对象的原型的一个指针，实际上就是 <code class="pcalibre3 calibre11 pcalibre4">Object.getPrototypeOf(this)</code> 的值。知道这些，你就可以像下面这样简化 <code class="pcalibre3 calibre11 pcalibre4">getGreeting()</code> 方法：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> friend = {
+    getGreeting() {
+        <span class="hljs-title">// 这相当于上个例子中的：</span>
+        <span class="hljs-title">// Object.getPrototypeOf(this).getGreeting.call(this)</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">super</span>.getGreeting() + <span class="hljs-string">", hi!"</span>;
+    }
+};
+</code></pre>
+<p class="calibre6">此处调用 <code class="pcalibre3 calibre11 pcalibre4">super.getGreeting()</code> 等同于在上例的环境中使用 <code class="pcalibre3 calibre11 pcalibre4">Object.getPrototypeOf(this).getGreeting.call(this)</code> 。类似的，你能使用 <code class="pcalibre3 calibre11 pcalibre4">super</code> 引用来调用对象原型上的任何方法，只要这个引用是位于简写的方法之内。试图在方法简写之外的情况使用 <code class="pcalibre3 calibre11 pcalibre4">super</code> 会导致语法错误，正如下例：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> friend = {
+    getGreeting: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-title">// 语法错误</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">super</span>.getGreeting() + <span class="hljs-string">", hi!"</span>;
+    }
+};
+</code></pre>
+<p class="calibre6">此例使用了一个函数作为具名方法，于是调用 <code class="pcalibre3 calibre11 pcalibre4">super.getGreeting()</code> 就导致了语法错误，因为在这种上下文中 <code class="pcalibre3 calibre11 pcalibre4">super</code> 是不可用的。</p>
+<p class="calibre6">当使用多级继承时， <code class="pcalibre3 calibre11 pcalibre4">super</code> 引用就是非常强大的，因为这种情况下 <code class="pcalibre3 calibre11 pcalibre4">Object.getPrototypeOf()</code> 不再适用于所有场景，例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> person = {
+    getGreeting() {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Hello"</span>;
+    }
+};
+
+<span class="hljs-title">// 原型为 person</span>
+<span class="hljs-keyword">let</span> friend = {
+    getGreeting() {
+        <span class="hljs-keyword">return</span> <span class="hljs-params">Object</span>.getPrototypeOf(<span class="hljs-keyword">this</span>).getGreeting.call(<span class="hljs-keyword">this</span>) + <span class="hljs-string">", hi!"</span>;
+    }
+};
+<span class="hljs-params">Object</span>.setPrototypeOf(friend, person);
+
+<span class="hljs-title">// 原型为 friend</span>
+<span class="hljs-keyword">let</span> relative = <span class="hljs-params">Object</span>.create(friend);
+
+<span class="hljs-params">console</span>.log(person.getGreeting());                  <span class="hljs-title">// "Hello"</span>
+<span class="hljs-params">console</span>.log(friend.getGreeting());                  <span class="hljs-title">// "Hello, hi!"</span>
+<span class="hljs-params">console</span>.log(relative.getGreeting());                <span class="hljs-title">// error!</span>
+</code></pre>
+<p class="calibre6">调用 <code class="pcalibre3 calibre11 pcalibre4">Object.getPrototypeOf()</code> 时，在调用 <code class="pcalibre3 calibre11 pcalibre4">relative.getGreeting()</code> 处发生了错误。这是因为此时 <code class="pcalibre3 calibre11 pcalibre4">this</code> 的值是 <code class="pcalibre3 calibre11 pcalibre4">relative</code> ，而 <code class="pcalibre3 calibre11 pcalibre4">relative</code> 的原型是 <code class="pcalibre3 calibre11 pcalibre4">friend</code> 对象，这样 <code class="pcalibre3 calibre11 pcalibre4">friend.getGreeting().call()</code> 调用就会导致进程开始反复进行递归调用，直到发生堆栈错误。</p>
+<p class="calibre6">此问题在 ES5 中很难解决，但若使用 ES6 的 <code class="pcalibre3 calibre11 pcalibre4">super</code> ，就很简单了：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> person = {
+    getGreeting() {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Hello"</span>;
+    }
+};
+
+<span class="hljs-title">// 原型为 person</span>
+<span class="hljs-keyword">let</span> friend = {
+    getGreeting() {
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">super</span>.getGreeting() + <span class="hljs-string">", hi!"</span>;
+    }
+};
+<span class="hljs-params">Object</span>.setPrototypeOf(friend, person);
+
+<span class="hljs-title">// 原型为 friend</span>
+<span class="hljs-keyword">let</span> relative = <span class="hljs-params">Object</span>.create(friend);
+
+<span class="hljs-params">console</span>.log(person.getGreeting());                  <span class="hljs-title">// "Hello"</span>
+<span class="hljs-params">console</span>.log(friend.getGreeting());                  <span class="hljs-title">// "Hello, hi!"</span>
+<span class="hljs-params">console</span>.log(relative.getGreeting());                <span class="hljs-title">// "Hello, hi!"</span>
+</code></pre>
+<p class="calibre6">由于 <code class="pcalibre3 calibre11 pcalibre4">super</code> 引用并非是动态的，它总是能指向正确的对象。在本例中， <code class="pcalibre3 calibre11 pcalibre4">super.getGreeting()</code> 总是指向 <code class="pcalibre3 calibre11 pcalibre4">person.getGreeting()</code> ，而不管有多少对象继承了此方法。</p>
+<h3 id="正式的方法定义" class="calibre15"><span id="a-formal-method-definition" class="calibre13">正式的“方法”定义</span></h3>
+<p class="calibre6">在 ES6 之前，“方法”的概念从未被正式定义，它此前仅指对象的函数属性（而非数据属性）。 ES6 则正式做出了定义：方法是一个拥有 <code class="pcalibre3 calibre11 pcalibre4">[[HomeObject]]</code> 内部属性的函数，此内部属性指向该方法所属的对象。研究以下例子：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> person = {
+
+    <span class="hljs-title">// 方法</span>
+    getGreeting() {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Hello"</span>;
+    }
+};
+
+<span class="hljs-title">// 并非方法</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">shareGreeting</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-string">"Hi!"</span>;
+}
+</code></pre>
+<p class="calibre6">此例定义了拥有单个 <code class="pcalibre3 calibre11 pcalibre4">getGreeting()</code> 方法的 <code class="pcalibre3 calibre11 pcalibre4">person</code> 对象。由于 <code class="pcalibre3 calibre11 pcalibre4">getGreeting()</code> 被直接赋给了一个对象，它的 <code class="pcalibre3 calibre11 pcalibre4">[[HomeObject]]</code> 属性值就是 <code class="pcalibre3 calibre11 pcalibre4">person</code> 。 而另一方面， <code class="pcalibre3 calibre11 pcalibre4">shareGreeting()</code> 函数没有被指定 <code class="pcalibre3 calibre11 pcalibre4">[[HomeObject]]</code> 属性，因为它在被创建时并没有赋给一个对象。大多数情况下，这种差异并不重要，然而使用 <code class="pcalibre3 calibre11 pcalibre4">super</code> 引用时就完全不同了。</p>
+<p class="calibre6">任何对 <code class="pcalibre3 calibre11 pcalibre4">super</code> 的引用都会使用 <code class="pcalibre3 calibre11 pcalibre4">[[HomeObject]]</code> 属性来判断要做什么。第一步是在 <code class="pcalibre3 calibre11 pcalibre4">[[HomeObject]]</code> 上调用 <code class="pcalibre3 calibre11 pcalibre4">Object.getPrototypeOf()</code> 来获取对原型的引用；接下来，在该原型上查找同名函数；最后，创建 <code class="pcalibre3 calibre11 pcalibre4">this</code> 绑定并调用该方法。这里有个例子：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> person = {
+    getGreeting() {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Hello"</span>;
+    }
+};
+
+<span class="hljs-title">// 原型为 person</span>
+<span class="hljs-keyword">let</span> friend = {
+    getGreeting() {
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">super</span>.getGreeting() + <span class="hljs-string">", hi!"</span>;
+    }
+};
+<span class="hljs-params">Object</span>.setPrototypeOf(friend, person);
+
+<span class="hljs-params">console</span>.log(friend.getGreeting());  <span class="hljs-title">// "Hello, hi!"</span>
+</code></pre>
+<p class="calibre6">调用 <code class="pcalibre3 calibre11 pcalibre4">friend.getGreeting()</code> 返回了一个字符串，也就是 <code class="pcalibre3 calibre11 pcalibre4">person.getGreeting()</code> 的返回值与 <code class="pcalibre3 calibre11 pcalibre4">", hi!"</code> 的合并结果。此时 <code class="pcalibre3 calibre11 pcalibre4">friend.getGreeting()</code> 的 <code class="pcalibre3 calibre11 pcalibre4">[[HomeObject]]</code> 值是 <code class="pcalibre3 calibre11 pcalibre4">friend</code> ，并且 <code class="pcalibre3 calibre11 pcalibre4">friend</code> 的原型是 <code class="pcalibre3 calibre11 pcalibre4">person</code> ，因此 <code class="pcalibre3 calibre11 pcalibre4">super.getGreeting()</code> 就等价于 <code class="pcalibre3 calibre11 pcalibre4">person.getGreeting.call(this)</code> 。</p>
+<h3 id="总结" class="calibre15"><span id="summary" class="calibre13">总结</span></h3>
+<p class="calibre6">对象是 JS 编程的中心， ES6 对它进行了一些有益改进，让它更易用并且更加强大。</p>
+<p class="calibre6">ES6 为对象字面量做了几个改进。速记法属性定义能够更轻易地将作用域内的变量赋值给对象的同名属性；需计算属性名允许你将非字面量的值指定为属性的名称，就像此前在其他场合的用法那样；方法简写让你在对象字面量中定义方法时能省略冒号和 <code class="pcalibre3 calibre11 pcalibre4">function</code> 关键字，从而减少输入的字符数； ES6 还舍弃了对象字面量中重复属性名的检查，意味着你可以在一个对象字面量中书写两个同名属性，而不会抛出错误。</p>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">Object.assign()</code> 方法使得一次性更改单个对象的多个属性变得更加容易，这在你使用混入模式时非常有用。 <code class="pcalibre3 calibre11 pcalibre4">Object.is()</code> 方法对任何值都会执行严格相等比较，当在处理特殊的 JS 值时，它有效成为了 <code class="pcalibre3 calibre11 pcalibre4">===</code> 的一个更安全的替代品。</p>
+<p class="calibre6">对象自有属性的枚举顺序在 ES6 中被明确定义了。在枚举属性时，数字类型的键总是会首先出现，并按升序排列，此后是字符串类型的键，最后是符号类型的键，后两者都分别按添加顺序排列。</p>
+<p class="calibre6">感谢 ES6 的 <code class="pcalibre3 calibre11 pcalibre4">Object.setPrototypeOf()</code> 方法，现在能够在对象已被创建之后更改它的原型了。</p>
+<p class="calibre6">最后，你能用 <code class="pcalibre3 calibre11 pcalibre4">super</code> 关键字来调用对象原型上的方法，所调用的方法会被设置好其内部的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 绑定，以自动使用该 <code class="pcalibre3 calibre11 pcalibre4">this</code> 值来进行工作。</p>
+
+        </div>
+    
+</div>
+
+        
+    
+
+
+</body></html>

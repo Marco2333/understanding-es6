@@ -1,0 +1,353 @@
+<?xml version='1.0' encoding='utf-8'?>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+  <head>
+    <title>第一章 块级绑定</title>
+    <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+    <meta content="" name="description"/>
+    <meta content="GitBook 3.2.2" name="generator"/>
+    <meta content="sagittarius-rev" name="author"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link href="stylesheet.css" rel="stylesheet" type="text/css"/>
+<link href="page_styles.css" rel="stylesheet" type="text/css"/>
+</head>
+  <body class="calibre">
+        
+<div class="page">
+    
+        <h1 class="book-chapter" id="calibre_toc_3">第一章 块级绑定</h1>
+        <div class="section">
+            <h2 id="第一章-块级绑定" class="calibre12"><span id="block-bindings" class="calibre13">第一章 块级绑定</span></h2>
+<p class="calibre6">变量声明的工作方式历来是 JS 编程中最微妙的部分之一。在大多数类 C 语言中，变量（或<strong class="calibre8">绑定</strong>）总是在它被声明的地方创建。然而 JS 就不是这样，变量实际创建的位置取决于你如何声明它，而 ES6 提供了额外选择以便你能更轻易地控制变量的作用域。本章会演示传统的 <code class="pcalibre3 calibre11 pcalibre4">var</code> 声明为何会令人困惑，并介绍 ES6 的块级绑定，然后再给出相关的一些最佳实践。</p>
+<ul class="calibre9">
+<li class="calibre10"><a href="#var-declarations-and-hoisting" class="calibre7 pcalibre pcalibre1 pcalibre2">var 声明与变量提升</a></li>
+<li class="calibre10"><a href="#block-level-declarations" class="calibre7 pcalibre pcalibre1 pcalibre2">块级声明</a><ul class="calibre14">
+<li class="calibre10"><a href="#let-declarations" class="calibre7 pcalibre pcalibre1 pcalibre2">let 声明</a></li>
+<li class="calibre10"><a href="#no-redeclaration" class="calibre7 pcalibre pcalibre1 pcalibre2">禁止重复声明</a></li>
+<li class="calibre10"><a href="#constant-declarations" class="calibre7 pcalibre pcalibre1 pcalibre2">常量声明</a><ul class="calibre17">
+<li class="calibre10"><a href="#constants-vs-let-declarations" class="calibre7 pcalibre pcalibre1 pcalibre2">对比常量声明与 let 声明</a></li>
+<li class="calibre10"><a href="#declaring-objects-with-const" class="calibre7 pcalibre pcalibre1 pcalibre2">使用 const 声明对象</a></li>
+</ul>
+</li>
+<li class="calibre10"><a href="#the-temporal-dead-zone" class="calibre7 pcalibre pcalibre1 pcalibre2">暂时性死区</a></li>
+</ul>
+</li>
+<li class="calibre10"><a href="#block-binding-in-loops" class="calibre7 pcalibre pcalibre1 pcalibre2">循环中的块级绑定</a><ul class="calibre14">
+<li class="calibre10"><a href="#functions-in-loops" class="calibre7 pcalibre pcalibre1 pcalibre2">循环内的函数</a></li>
+<li class="calibre10"><a href="#let-declarations-in-loops" class="calibre7 pcalibre pcalibre1 pcalibre2">循环内的 let 声明</a></li>
+<li class="calibre10"><a href="#constant-declarations-in-loops" class="calibre7 pcalibre pcalibre1 pcalibre2">循环内的常量声明</a></li>
+</ul>
+</li>
+<li class="calibre10"><a href="#global-block-bindings" class="calibre7 pcalibre pcalibre1 pcalibre2">全局块级绑定</a></li>
+<li class="calibre10"><a href="#emerging-best-practices-for-block-bindings" class="calibre7 pcalibre pcalibre1 pcalibre2">块级绑定新的最佳实践</a></li>
+<li class="calibre10"><a href="#summary" class="calibre7 pcalibre pcalibre1 pcalibre2">总结</a></li>
+</ul>
+<h3 id="var-声明与变量提升" class="calibre15"><span id="var-declarations-and-hoisting" class="calibre13">var 声明与变量提升</span></h3>
+<p class="calibre6">使用 <code class="pcalibre3 calibre11 pcalibre4">var</code> 关键字声明的变量，无论其实际声明位置在何处，都会被视为声明于所在函数的顶部（如果声明不在任意函数内，则视为在全局作用域的顶部）。这就是所谓的<strong class="calibre8">变量提升</strong>（ <strong class="calibre8">hoisting</strong> ）。为了说明变量提升的含义，请参考如下函数定义：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getValue</span>(<span class="hljs-params">condition</span>) </span>{
+
+    <span class="hljs-keyword">if</span> (condition) {
+        <span class="hljs-keyword">var</span> value = <span class="hljs-string">"blue"</span>;
+
+        <span class="hljs-title">// 其他代码</span>
+
+        <span class="hljs-keyword">return</span> value;
+    } <span class="hljs-keyword">else</span> {
+
+        <span class="hljs-title">// value 在此处可访问，值为 undefined</span>
+
+        <span class="hljs-keyword">return</span> <span class="hljs-params">null</span>;
+    }
+
+    <span class="hljs-title">// value 在此处可访问，值为 undefined</span>
+}
+</code></pre>
+<p class="calibre6">如果你不太熟悉 JS ，或许会认为仅当 <code class="pcalibre3 calibre11 pcalibre4">condition</code> 的值为 true 时，变量 <code class="pcalibre3 calibre11 pcalibre4">value</code> 才会被创建。但实际上，value 无论如何都会被创建。 JS 引擎在后台对 <code class="pcalibre3 calibre11 pcalibre4">getValue</code> 函数进行了调整，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getValue</span>(<span class="hljs-params">condition</span>) </span>{
+
+    <span class="hljs-keyword">var</span> value;
+
+    <span class="hljs-keyword">if</span> (condition) {
+        value = <span class="hljs-string">"blue"</span>;
+
+        <span class="hljs-title">// 其他代码</span>
+
+        <span class="hljs-keyword">return</span> value;
+    } <span class="hljs-keyword">else</span> {
+
+        <span class="hljs-keyword">return</span> <span class="hljs-params">null</span>;
+    }
+}
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">value</code> 变量的声明被提升到了顶部，而初始化工作则保留在原处。这意味着在 <code class="pcalibre3 calibre11 pcalibre4">else</code> 分支内 <code class="pcalibre3 calibre11 pcalibre4">value</code> 变量也是可访问的，此处它的值会是 <code class="pcalibre3 calibre11 pcalibre4">undefined</code> ，因为它并没有被初始化。</p>
+<p class="calibre6">JS 的初学者经常需要花点时间才能习惯变量提升，而如果不理解这种特有行为，就可能导致 bug 。正因为如此， ES6 引入了块级作用域，让变量的生命周期更加可控。</p>
+<h3 id="块级声明" class="calibre15"><span id="block-level-declarations" class="calibre13">块级声明</span></h3>
+<p class="calibre6">块级声明也就是让所声明的变量在指定块的作用域外无法被访问。块级作用域（又被称为词法作用域）在如下情况被创建：</p>
+<ol class="calibre2">
+<li class="calibre10">在一个函数内部</li>
+<li class="calibre10">在一个代码块（由一对花括号包裹）内部</li>
+</ol>
+<p class="calibre6">块级作用域是很多类 C 语言的工作机制， ES6 引入块级声明，是为了给 JS 添加灵活性以及与其他语言的一致性。</p>
+<h4 id="let-声明" class="calibre15"><span id="let-declarations" class="calibre13">let 声明</span></h4>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">let</code> 声明的语法与 <code class="pcalibre3 calibre11 pcalibre4">var</code> 的语法一致。你基本上可以用 <code class="pcalibre3 calibre11 pcalibre4">let</code> 来代替 <code class="pcalibre3 calibre11 pcalibre4">var</code> 进行变量声明，但会将变量的作用域限制在当前代码块中（其他细微差别会在稍后讨论）。由于 <code class="pcalibre3 calibre11 pcalibre4">let</code> 声明并不会被提升到当前代码块的顶部，因此你需要手动将 <code class="pcalibre3 calibre11 pcalibre4">let</code> 声明放置到顶部，以便让变量在整个代码块内部可用。这里有个范例：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getValue</span>(<span class="hljs-params">condition</span>) </span>{
+
+    <span class="hljs-keyword">if</span> (condition) {
+        <span class="hljs-keyword">let</span> value = <span class="hljs-string">"blue"</span>;
+
+        <span class="hljs-title">// 其他代码</span>
+
+        <span class="hljs-keyword">return</span> value;
+    } <span class="hljs-keyword">else</span> {
+
+        <span class="hljs-title">// value 在此处不可用</span>
+
+        <span class="hljs-keyword">return</span> <span class="hljs-params">null</span>;
+    }
+
+    <span class="hljs-title">// value 在此处不可用</span>
+}
+</code></pre>
+<p class="calibre6">如你所愿，这种写法的 <code class="pcalibre3 calibre11 pcalibre4">getValue</code> 函数的行为更接近其他类 C 语言。由于变量 <code class="pcalibre3 calibre11 pcalibre4">value</code> 声明使用的是 <code class="pcalibre3 calibre11 pcalibre4">let</code> 而非 <code class="pcalibre3 calibre11 pcalibre4">var</code> ，该声明就没有被提升到函数定义的顶部，因此变量 <code class="pcalibre3 calibre11 pcalibre4">value</code> 在 <code class="pcalibre3 calibre11 pcalibre4">if</code> 代码块外部是无法访问的；并且在 <code class="pcalibre3 calibre11 pcalibre4">condition</code> 的值为 false 时，该变量是永远不会被声明并初始化的。</p>
+<h4 id="禁止重复声明" class="calibre15"><span id="no-redeclaration" class="calibre13">禁止重复声明</span></h4>
+<p class="calibre6">如果一个标识符已经在代码块内部被定义，那么在此代码块内使用同一个标识符进行 <code class="pcalibre3 calibre11 pcalibre4">let</code> 声明就会导致抛出错误。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> count = <span class="hljs-params">30</span>;
+
+<span class="hljs-title">// 语法错误</span>
+<span class="hljs-keyword">let</span> count = <span class="hljs-params">40</span>;
+</code></pre>
+<p class="calibre6">在本例中，<code class="pcalibre3 calibre11 pcalibre4">count</code> 变量被声明了两次：一次使用 <code class="pcalibre3 calibre11 pcalibre4">var</code> ，另一次使用 <code class="pcalibre3 calibre11 pcalibre4">let</code> 。因为 <code class="pcalibre3 calibre11 pcalibre4">let</code> 不能在同一作用域内重复声明一个已有标识符，此处的 <code class="pcalibre3 calibre11 pcalibre4">let</code> 声明就会抛出错误。另一方面，在嵌套的作用域内使用 <code class="pcalibre3 calibre11 pcalibre4">let</code> 声明一个同名的新变量，则不会抛出错误，以下代码对此进行了演示：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> count = <span class="hljs-params">30</span>;
+
+<span class="hljs-title">// 不会抛出错误</span>
+<span class="hljs-keyword">if</span> (condition) {
+
+    <span class="hljs-keyword">let</span> count = <span class="hljs-params">40</span>;
+
+    <span class="hljs-title">// 其他代码</span>
+}
+</code></pre>
+<p class="calibre6">此处的 <code class="pcalibre3 calibre11 pcalibre4">let</code> 声明并没有抛出错误，这是因为它在 <code class="pcalibre3 calibre11 pcalibre4">if</code> 语句内部创建了一个新的 <code class="pcalibre3 calibre11 pcalibre4">count</code> 变量，而不是在同一级别再次创建此变量。在 <code class="pcalibre3 calibre11 pcalibre4">if</code> 代码块内部，这个新变量会屏蔽全局的 <code class="pcalibre3 calibre11 pcalibre4">count</code> 变量，从而在局部阻止对于后者的访问。</p>
+<h4 id="常量声明" class="calibre15"><span id="constant-declarations" class="calibre13">常量声明</span></h4>
+<p class="calibre6">在 ES6 中里也可以使用 <code class="pcalibre3 calibre11 pcalibre4">const</code> 语法进行声明。使用 <code class="pcalibre3 calibre11 pcalibre4">const</code> 声明的变量会被认为是<strong class="calibre8">常量</strong>（ <strong class="calibre8">constant</strong> ），意味着它们的值在被设置完成后就不能再被改变。正因为如此，所有的 <code class="pcalibre3 calibre11 pcalibre4">const</code> 变量都需要在声明时进行初始化，示例如下：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">// 有效的常量</span>
+<span class="hljs-keyword">const</span> maxItems = <span class="hljs-params">30</span>;
+
+<span class="hljs-title">// 语法错误：未进行初始化</span>
+<span class="hljs-keyword">const</span> name;
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">maxItems</code> 变量被初始化了，因此它的 <code class="pcalibre3 calibre11 pcalibre4">const</code> 声明能正常起效。而 <code class="pcalibre3 calibre11 pcalibre4">name</code> 变量没有被初始化，导致在试图运行这段代码时抛出了错误。</p>
+<h5 id="对比常量声明与-let-声明" class="calibre18"><span id="constants-vs-let-declarations" class="calibre19">对比常量声明与 let 声明</span></h5>
+<p class="calibre6">常量声明与 <code class="pcalibre3 calibre11 pcalibre4">let</code> 声明一样，都是块级声明。这意味着常量在声明它们的语句块外部是无法访问的，并且声明也不会被提升，示例如下：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">if</span> (condition) {
+    <span class="hljs-keyword">const</span> maxItems = <span class="hljs-params">5</span>;
+
+    <span class="hljs-title">// 其他代码</span>
+}
+
+<span class="hljs-title">// maxItems 在此处无法访问</span>
+</code></pre>
+<p class="calibre6">此代码中，常量 <code class="pcalibre3 calibre11 pcalibre4">maxItems</code> 在 <code class="pcalibre3 calibre11 pcalibre4">if</code> 语句内被声明。 <code class="pcalibre3 calibre11 pcalibre4">maxItems</code> 在代码块外部无法被访问，因为该语句已结束执行。</p>
+<p class="calibre6">与 <code class="pcalibre3 calibre11 pcalibre4">let</code> 的另一个相似之处，是 <code class="pcalibre3 calibre11 pcalibre4">const</code> 声明会在同一作用域（全局或是函数作用域）内定义一个已有变量时会抛出错误，无论是该变量此前是用 <code class="pcalibre3 calibre11 pcalibre4">var</code> 声明的，还是用 <code class="pcalibre3 calibre11 pcalibre4">let</code> 声明的。例如以下代码：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> message = <span class="hljs-string">"Hello!"</span>;
+<span class="hljs-keyword">let</span> age = <span class="hljs-params">25</span>;
+
+<span class="hljs-title">// 二者均会抛出错误</span>
+<span class="hljs-keyword">const</span> message = <span class="hljs-string">"Goodbye!"</span>;
+<span class="hljs-keyword">const</span> age = <span class="hljs-params">30</span>;
+</code></pre>
+<p class="calibre6">两个 <code class="pcalibre3 calibre11 pcalibre4">const</code> 声明都可以单独使用，但在前面添加了 <code class="pcalibre3 calibre11 pcalibre4">var</code> 与 <code class="pcalibre3 calibre11 pcalibre4">let</code> 声明的情况下，二者都会出问题。</p>
+<p class="calibre6">尽管有上述相似之处，但 <code class="pcalibre3 calibre11 pcalibre4">let</code> 与 <code class="pcalibre3 calibre11 pcalibre4">const</code> 之间仍然有个必须牢记的重大区别：试图对之前用 <code class="pcalibre3 calibre11 pcalibre4">const</code> 声明的常量进行赋值会抛出错误，无论是在严格模式还是非严格模式下：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">const</span> maxItems = <span class="hljs-params">5</span>;
+
+maxItems = <span class="hljs-params">6</span>;      <span class="hljs-title">// 抛出错误</span>
+</code></pre>
+<p class="calibre6">与其他语言的常量类似， <code class="pcalibre3 calibre11 pcalibre4">maxItems</code> 变量不能被再次赋值。然而与其他语言不同， JS 的常量如果是一个对象，它所包含的值是可以被修改的。</p>
+<h5 id="使用-const-声明对象" class="calibre18"><span id="declaring-objects-with-const" class="calibre19">使用 const 声明对象</span></h5>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">const</code> 声明会阻止对于变量绑定与变量自身值的修改，这意味着 <code class="pcalibre3 calibre11 pcalibre4">const</code> 声明并不会阻止对变量成员的修改。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">const</span> person = {
+    name: <span class="hljs-string">"Nicholas"</span>
+};
+
+<span class="hljs-title">// 工作正常</span>
+person.name = <span class="hljs-string">"Greg"</span>;
+
+<span class="hljs-title">// 抛出错误</span>
+person = {
+    name: <span class="hljs-string">"Greg"</span>
+};
+</code></pre>
+<p class="calibre6">此处 <code class="pcalibre3 calibre11 pcalibre4">person</code> 在初始化时被绑定了带有一个属性的对象。修改 <code class="pcalibre3 calibre11 pcalibre4">person.name</code> 是可能的，并不会抛出错误，因为该操作只修改了 <code class="pcalibre3 calibre11 pcalibre4">person</code> 对象的成员，而没有修改 <code class="pcalibre3 calibre11 pcalibre4">person</code> 的绑定值。当代码试图为 <code class="pcalibre3 calibre11 pcalibre4">person</code> 对象自身赋值时（这会改变变量绑定），就会导致错误。 <code class="pcalibre3 calibre11 pcalibre4">const</code> 在变量上的微妙工作机制容易导致误解，但只需记住： <code class="pcalibre3 calibre11 pcalibre4">const</code> 阻止的是对于变量绑定的修改，而不阻止对成员值的修改。</p>
+<h4 id="暂时性死区" class="calibre15"><span id="the-temporal-dead-zone" class="calibre13">暂时性死区</span></h4>
+<p class="calibre6">使用 <code class="pcalibre3 calibre11 pcalibre4">let</code> 或 <code class="pcalibre3 calibre11 pcalibre4">const</code> 声明的变量，在达到声明处之前都是无法访问的，试图访问会导致一个引用错误，即使在通常是安全的操作时（例如使用 <code class="pcalibre3 calibre11 pcalibre4">typeof</code> 运算符），也是如此。示例如下：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">if</span> (condition) {
+    <span class="hljs-params">console</span>.log(<span class="hljs-keyword">typeof</span> value);  <span class="hljs-title">// 引用错误</span>
+    <span class="hljs-keyword">let</span> value = <span class="hljs-string">"blue"</span>;
+}
+</code></pre>
+<p class="calibre6">此处的 <code class="pcalibre3 calibre11 pcalibre4">value</code> 变量使用了 <code class="pcalibre3 calibre11 pcalibre4">let</code> 进行定义与初始化，但该语句永远不会被执行，因为声明之前的那行代码抛出了一个错误。出现该问题是因为： <code class="pcalibre3 calibre11 pcalibre4">value</code> 位于被 JS 社区称为<strong class="calibre8">暂时性死区</strong>（ <strong class="calibre8">temporal dead zone</strong> ， TDZ ）的区域内。该名称并未在 ECMAScript 规范中被明确命名，但经常被用于描述 <code class="pcalibre3 calibre11 pcalibre4">let</code> 或 <code class="pcalibre3 calibre11 pcalibre4">const</code> 声明的变量为何在声明处之前无法被访问。本小节的内容涵盖了暂时性死区所导致的声明位置的微妙之处，尽管这里使用的都是 <code class="pcalibre3 calibre11 pcalibre4">let</code> ，但替换为 <code class="pcalibre3 calibre11 pcalibre4">const</code> 也会有相同情况。</p>
+<p class="calibre6">当 JS 引擎检视接下来的代码块并发现变量声明时，它会在面对 <code class="pcalibre3 calibre11 pcalibre4">var</code> 的情况下将声明提升到函数或全局作用域的顶部，而面对 <code class="pcalibre3 calibre11 pcalibre4">let</code> 或 <code class="pcalibre3 calibre11 pcalibre4">const</code> 时会将声明放在暂时性死区内。任何在暂时性死区内访问变量的企图都会导致“运行时”错误（runtime error）。只有执行到变量的声明语句时，该变量才会从暂时性死区内被移除并可以安全使用。</p>
+<p class="calibre6">使用 <code class="pcalibre3 calibre11 pcalibre4">let</code> 或 <code class="pcalibre3 calibre11 pcalibre4">const</code> 声明的变量，若试图在定义位置之前使用它，无论如何都不能避免暂时性死区。而且正如上例所演示的，这甚至影响了通常安全的 <code class="pcalibre3 calibre11 pcalibre4">typeof</code> 运算符。然而，你可以在变量被定义的代码块之外对该变量使用 <code class="pcalibre3 calibre11 pcalibre4">typeof</code> ，尽管其结果可能并非预期。考虑以下代码：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-params">console</span>.log(<span class="hljs-keyword">typeof</span> value);     <span class="hljs-title">// "undefined"</span>
+
+<span class="hljs-keyword">if</span> (condition) {
+    <span class="hljs-keyword">let</span> value = <span class="hljs-string">"blue"</span>;
+}
+</code></pre>
+<p class="calibre6">当 <code class="pcalibre3 calibre11 pcalibre4">typeof</code> 运算符被使用时， <code class="pcalibre3 calibre11 pcalibre4">value</code> 并没有在暂时性死区内，因为这发生在定义 <code class="pcalibre3 calibre11 pcalibre4">value</code> 变量的代码块外部。这意味着此时并没有绑定 <code class="pcalibre3 calibre11 pcalibre4">value</code> 变量，而 <code class="pcalibre3 calibre11 pcalibre4">typeof</code> 仅单纯返回了 <code class="pcalibre3 calibre11 pcalibre4">"undefined"</code> 。</p>
+<p class="calibre6">暂时性死区只是块级绑定的一个独特表现，而另一个独特表现则是在循环时使用它。</p>
+<h3 id="循环中的块级绑定" class="calibre15"><span id="block-binding-in-loops" class="calibre13">循环中的块级绑定</span></h3>
+<p class="calibre6">开发者最需要使用变量的块级作用域的场景，或许就是在 <code class="pcalibre3 calibre11 pcalibre4">for</code> 循环内，也就是想让一次性的循环计数器仅能在循环内部使用。例如，以下代码在 JS 中并不罕见：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-params">0</span>; i &lt; <span class="hljs-params">10</span>; i++) {
+    process(items[i]);
+}
+
+<span class="hljs-title">// i 在此处仍然可被访问</span>
+<span class="hljs-params">console</span>.log(i);                     <span class="hljs-title">// 10</span>
+</code></pre>
+<p class="calibre6">在其他默认使用块级作用域的语言中，这个例子能够照预期工作，也就是只有 <code class="pcalibre3 calibre11 pcalibre4">for</code> 才能访问变量 <code class="pcalibre3 calibre11 pcalibre4">i</code> 。然而在 JS 中，循环结束后 <code class="pcalibre3 calibre11 pcalibre4">i</code> 仍然可被访问，因为 <code class="pcalibre3 calibre11 pcalibre4">var</code> 声明导致了变量提升。若像如下代码那样换为使用 <code class="pcalibre3 calibre11 pcalibre4">let</code> ，则会看到预期行为：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-params">0</span>; i &lt; <span class="hljs-params">10</span>; i++) {
+    process(items[i]);
+}
+
+<span class="hljs-title">// i 在此处不可访问，抛出错误</span>
+<span class="hljs-params">console</span>.log(i);
+</code></pre>
+<p class="calibre6">本例中的变量 <code class="pcalibre3 calibre11 pcalibre4">i</code> 仅在 <code class="pcalibre3 calibre11 pcalibre4">for</code> 循环内部可用，一旦循环结束，该变量在任意位置都不可访问。</p>
+<h4 id="循环内的函数" class="calibre15"><span id="functions-in-loops" class="calibre13">循环内的函数</span></h4>
+<p class="calibre6">长期以来， <code class="pcalibre3 calibre11 pcalibre4">var</code> 的特点使得循环变量在循环作用域之外仍然可被访问，于是在循环内创建函数就变得很有问题。考虑如下代码：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> funcs = [];
+
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-params">0</span>; i &lt; <span class="hljs-params">10</span>; i++) {
+    funcs.push(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{ <span class="hljs-params">console</span>.log(i); });
+}
+
+funcs.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">func</span>) </span>{
+    func();     <span class="hljs-title">// 输出数值 "10" 十次</span>
+});
+</code></pre>
+<p class="calibre6">你原本可能预期这段代码会输出 0 到 9 的数值，但它却在同一行将数值 10 输出了十次。这是因为变量 <code class="pcalibre3 calibre11 pcalibre4">i</code> 在循环的每次迭代中都被共享了，意味着循环内创建的那些函数都拥有对于同一变量的引用。在循环结束后，变量 <code class="pcalibre3 calibre11 pcalibre4">i</code> 的值会是 <code class="pcalibre3 calibre11 pcalibre4">10</code> ，因此当 <code class="pcalibre3 calibre11 pcalibre4">console.log(i)</code> 被调用时，每次都打印出 <code class="pcalibre3 calibre11 pcalibre4">10</code> 。</p>
+<p class="calibre6">为了修正这个问题，开发者在循环内使用立即调用函数表达式（IIFEs），以便在每次迭代中强制创建变量的一个新副本，示例如下：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> funcs = [];
+
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-params">0</span>; i &lt; <span class="hljs-params">10</span>; i++) {
+    funcs.push((<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">value</span>) </span>{
+        <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+            <span class="hljs-params">console</span>.log(value);
+        }
+    }(i)));
+}
+
+funcs.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">func</span>) </span>{
+    func();     <span class="hljs-title">// 从 0 到 9 依次输出</span>
+});
+</code></pre>
+<p class="calibre6">这种写法在循环内使用了 IIFE 。变量 <code class="pcalibre3 calibre11 pcalibre4">i</code> 被传递给 IIFE ，从而创建了 <code class="pcalibre3 calibre11 pcalibre4">value</code> 变量作为自身副本并将值存储于其中。 <code class="pcalibre3 calibre11 pcalibre4">value</code> 变量的值被迭代中的函数所使用，因此在循环从 0 到 9 的过程中调用每个函数都返回了预期的值。幸运的是，使用 <code class="pcalibre3 calibre11 pcalibre4">let</code> 与 <code class="pcalibre3 calibre11 pcalibre4">const</code> 的块级绑定可以在 ES6 中为你简化这个循环。</p>
+<h4 id="循环内的-let-声明" class="calibre15"><span id="let-declarations-in-loops" class="calibre13">循环内的 let 声明</span></h4>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">let</code> 声明通过有效模仿上例中 IIFE 的作用而简化了循环。在每次迭代中，都会创建一个新的同名变量并对其进行初始化。这意味着你可以完全省略 IIFE 而获得预期的结果，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> funcs = [];
+
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-params">0</span>; i &lt; <span class="hljs-params">10</span>; i++) {
+    funcs.push(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-params">console</span>.log(i);
+    });
+}
+
+funcs.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">func</span>) </span>{
+    func();     <span class="hljs-title">// 从 0 到 9 依次输出</span>
+})
+</code></pre>
+<p class="calibre6">与使用 <code class="pcalibre3 calibre11 pcalibre4">var</code> 声明以及 IIFE 相比，这里代码能达到相同效果，但无疑更加简洁。在循环中 <code class="pcalibre3 calibre11 pcalibre4">let</code> 声明每次都创建了一个新的 <code class="pcalibre3 calibre11 pcalibre4">i</code> 变量，因此在循环内部创建的函数获得了各自的 <code class="pcalibre3 calibre11 pcalibre4">i</code> 副本，而每个 <code class="pcalibre3 calibre11 pcalibre4">i</code> 副本的值都在每次循环迭代声明变量的时候被确定了。这种方式在 <code class="pcalibre3 calibre11 pcalibre4">for-in</code> 和 <code class="pcalibre3 calibre11 pcalibre4">for-of</code> 循环中同样适用，如下所示：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> funcs = [],
+    object = {
+        a: <span class="hljs-params">true</span>,
+        b: <span class="hljs-params">true</span>,
+        c: <span class="hljs-params">true</span>
+    };
+
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> key <span class="hljs-keyword">in</span> object) {
+    funcs.push(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-params">console</span>.log(key);
+    });
+}
+
+funcs.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">func</span>) </span>{
+    func();     <span class="hljs-title">// 依次输出 "a"、 "b"、 "c"</span>
+});
+</code></pre>
+<p class="calibre6">本例中的 <code class="pcalibre3 calibre11 pcalibre4">for-in</code> 循环体现出了与 <code class="pcalibre3 calibre11 pcalibre4">for</code> 循环相同的行为。每次循环，一个新的 <code class="pcalibre3 calibre11 pcalibre4">key</code> 变量绑定就被创建，因此每个函数都能够拥有它自身的 <code class="pcalibre3 calibre11 pcalibre4">key</code> 变量副本，结果每个函数都输出了一个不同的值。而如果使用 <code class="pcalibre3 calibre11 pcalibre4">var</code> 来声明 <code class="pcalibre3 calibre11 pcalibre4">key</code> ，则所有函数都只会输出 <code class="pcalibre3 calibre11 pcalibre4">"c"</code> 。</p>
+<blockquote class="calibre20">
+<p class="calibre6">需要重点了解的是： <code class="pcalibre3 calibre11 pcalibre4">let</code> 声明在循环内部的行为是在规范中特别定义的，而与不提升变量声明的特征没有必然联系。事实上，在早期 <code class="pcalibre3 calibre11 pcalibre4">let</code> 的实现中并没有这种行为，它是后来才添加的。</p>
+</blockquote>
+<h4 id="循环内的常量声明" class="calibre15"><span id="constant-declarations-in-loops" class="calibre13">循环内的常量声明</span></h4>
+<p class="calibre6">ES6 规范没有明确禁止在循环中使用 <code class="pcalibre3 calibre11 pcalibre4">const</code> 声明，然而它会根据循环方式的不同而有不同行为。在常规的 <code class="pcalibre3 calibre11 pcalibre4">for</code> 循环中，你可以在初始化时使用 <code class="pcalibre3 calibre11 pcalibre4">const</code> ，但循环会在你试图改变该变量的值时抛出错误。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> funcs = [];
+
+<span class="hljs-title">// 在一次迭代后抛出错误</span>
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> i = <span class="hljs-params">0</span>; i &lt; <span class="hljs-params">10</span>; i++) {
+    funcs.push(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-params">console</span>.log(i);
+    });
+}
+</code></pre>
+<p class="calibre6">在此代码中， <code class="pcalibre3 calibre11 pcalibre4">i</code> 被声明为一个常量。循环的第一次迭代成功执行，此时 <code class="pcalibre3 calibre11 pcalibre4">i</code> 的值为 0 。在 <code class="pcalibre3 calibre11 pcalibre4">i++</code> 执行时，一个错误会被抛出，因为该语句试图更改常量的值。因此，在循环中你只能使用 <code class="pcalibre3 calibre11 pcalibre4">const</code> 来声明一个不会被更改的变量。</p>
+<p class="calibre6">而另一方面， <code class="pcalibre3 calibre11 pcalibre4">const</code> 变量在 <code class="pcalibre3 calibre11 pcalibre4">for-in</code> 或 <code class="pcalibre3 calibre11 pcalibre4">for-of</code> 循环中使用时，与 <code class="pcalibre3 calibre11 pcalibre4">let</code> 变量效果相同。因此下面代码不会导致出错：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> funcs = [],
+    object = {
+        a: <span class="hljs-params">true</span>,
+        b: <span class="hljs-params">true</span>,
+        c: <span class="hljs-params">true</span>
+    };
+
+<span class="hljs-title">// 不会导致错误</span>
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> key <span class="hljs-keyword">in</span> object) {
+    funcs.push(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-params">console</span>.log(key);
+    });
+}
+
+funcs.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">func</span>) </span>{
+    func();     <span class="hljs-title">// 依次输出 "a"、 "b"、 "c"</span>
+});
+</code></pre>
+<p class="calibre6">这段代码与“循环内的 let 声明”小节的第二个例子几乎完全一样，唯一的区别是 <code class="pcalibre3 calibre11 pcalibre4">key</code> 的值在循环内不能被更改。 <code class="pcalibre3 calibre11 pcalibre4">const</code> 能够在 <code class="pcalibre3 calibre11 pcalibre4">for-in</code> 与 <code class="pcalibre3 calibre11 pcalibre4">for-of</code> 循环内工作，是因为循环为每次迭代创建了一个新的变量绑定，而不是试图去修改已绑定的变量的值（就像使用了 <code class="pcalibre3 calibre11 pcalibre4">for</code> 而不是 <code class="pcalibre3 calibre11 pcalibre4">for-in</code> 的上个例子那样）。</p>
+<h3 id="全局块级绑定" class="calibre15"><span id="global-block-bindings" class="calibre13">全局块级绑定</span></h3>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">let</code> 与 <code class="pcalibre3 calibre11 pcalibre4">const</code> 不同于 <code class="pcalibre3 calibre11 pcalibre4">var</code> 的另一个方面是在全局作用域上的表现。当在全局作用域上使用 <code class="pcalibre3 calibre11 pcalibre4">var</code> 时，它会创建一个新的全局变量，并成为全局对象（在浏览器中是 <code class="pcalibre3 calibre11 pcalibre4">window</code> ）的一个属性。这意味着使用 <code class="pcalibre3 calibre11 pcalibre4">var</code> 可能会无意覆盖一个已有的全局属性，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">// 在浏览器中</span>
+<span class="hljs-keyword">var</span> <span class="hljs-params">RegExp</span> = <span class="hljs-string">"Hello!"</span>;
+<span class="hljs-params">console</span>.log(<span class="hljs-params">window</span>.RegExp);     <span class="hljs-title">// "Hello!"</span>
+
+<span class="hljs-keyword">var</span> ncz = <span class="hljs-string">"Hi!"</span>;
+<span class="hljs-params">console</span>.log(<span class="hljs-params">window</span>.ncz);        <span class="hljs-title">// "Hi!"</span>
+</code></pre>
+<p class="calibre6">尽管全局的 <code class="pcalibre3 calibre11 pcalibre4">RegExp</code> 是定义在 <code class="pcalibre3 calibre11 pcalibre4">window</code> 上的，它仍然不能防止被 <code class="pcalibre3 calibre11 pcalibre4">var</code> 重写。这个例子声明了一个新的全局变量 <code class="pcalibre3 calibre11 pcalibre4">RegExp</code> 而覆盖了原有对象。类似的， <code class="pcalibre3 calibre11 pcalibre4">ncz</code> 定义为全局变量后就立即成为了 <code class="pcalibre3 calibre11 pcalibre4">window</code> 的一个属性。这就是 JS 通常的工作方式。</p>
+<p class="calibre6">然而若你在全局作用域上使用 <code class="pcalibre3 calibre11 pcalibre4">let</code> 或 <code class="pcalibre3 calibre11 pcalibre4">const</code> ，虽然在全局作用域上会创建新的绑定，但不会有任何属性被添加到全局对象上。这也就意味着你不能使用 <code class="pcalibre3 calibre11 pcalibre4">let</code> 或 <code class="pcalibre3 calibre11 pcalibre4">const</code> 来覆盖一个全局变量，你只能将其屏蔽。这里有个范例：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">// 在浏览器中</span>
+<span class="hljs-keyword">let</span> <span class="hljs-params">RegExp</span> = <span class="hljs-string">"Hello!"</span>;
+<span class="hljs-params">console</span>.log(<span class="hljs-params">RegExp</span>);                    <span class="hljs-title">// "Hello!"</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-params">window</span>.RegExp === <span class="hljs-params">RegExp</span>);  <span class="hljs-title">// false</span>
+
+<span class="hljs-keyword">const</span> ncz = <span class="hljs-string">"Hi!"</span>;
+<span class="hljs-params">console</span>.log(ncz);                       <span class="hljs-title">// "Hi!"</span>
+<span class="hljs-params">console</span>.log(<span class="hljs-string">"ncz"</span> <span class="hljs-keyword">in</span> <span class="hljs-params">window</span>);           <span class="hljs-title">// false</span>
+</code></pre>
+<p class="calibre6">此代码的 <code class="pcalibre3 calibre11 pcalibre4">let</code> 声明创建了 <code class="pcalibre3 calibre11 pcalibre4">RegExp</code> 的一个绑定，并屏蔽了全局的 <code class="pcalibre3 calibre11 pcalibre4">RegExp</code> 。这表示  <code class="pcalibre3 calibre11 pcalibre4">window.RegExp</code> 与 <code class="pcalibre3 calibre11 pcalibre4">RegExp</code> 是不同的，因此全局作用域没有被污染。同样， <code class="pcalibre3 calibre11 pcalibre4">const</code> 声明创建了 <code class="pcalibre3 calibre11 pcalibre4">ncz</code> 的一个绑定，但并未在全局对象上创建属性。当你不想在全局对象上创建属性时，这种特性会让 <code class="pcalibre3 calibre11 pcalibre4">let</code> 与 <code class="pcalibre3 calibre11 pcalibre4">const</code> 在全局作用域中更安全。</p>
+<blockquote class="calibre20">
+<p class="calibre6">若想让代码能从全局对象中被访问，你仍然需要使用 <code class="pcalibre3 calibre11 pcalibre4">var</code> 。在浏览器中跨越帧或窗口去访问代码时，这种做法非常普遍。</p>
+</blockquote>
+<h3 id="块级绑定新的最佳实践" class="calibre15"><span id="emerging-best-practices-for-block-bindings" class="calibre13">块级绑定新的最佳实践</span></h3>
+<p class="calibre6">在 ES6 的发展阶段，被广泛认可的变量声明方式是：默认情况下应当使用 <code class="pcalibre3 calibre11 pcalibre4">let</code> 而不是 <code class="pcalibre3 calibre11 pcalibre4">var</code> 。对于多数 JS 开发者来说， <code class="pcalibre3 calibre11 pcalibre4">let</code> 的行为方式正是 <code class="pcalibre3 calibre11 pcalibre4">var</code> 本应有的方式，因此直接用 <code class="pcalibre3 calibre11 pcalibre4">let</code> 替代 <code class="pcalibre3 calibre11 pcalibre4">var</code> 更符合逻辑。在这种情况下，你应当对需要受到保护的变量使用 <code class="pcalibre3 calibre11 pcalibre4">const</code> 。</p>
+<p class="calibre6">然而，随着更多的开发者迁移到 ES6 上，一种替代方案变得更为流行，那就是在默认情况下使用 <code class="pcalibre3 calibre11 pcalibre4">const</code> 、并且只在知道变量值需要被更改的情况下才使用 <code class="pcalibre3 calibre11 pcalibre4">let</code> 。其理论依据是大部分变量在初始化之后都不应当被修改，因为预期外的改动是 bug 的源头之一。这种理念有着足够强大的吸引力，在你采用 ES6 之后是值得在代码中照此进行探索实践的。</p>
+<h3 id="总结" class="calibre15"><span id="summary" class="calibre13">总结</span></h3>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">let</code> 与 <code class="pcalibre3 calibre11 pcalibre4">const</code> 块级绑定将词法作用域引入了 JS 。这两种声明方式都不会进行提升，并且只会在声明它们的代码块内部存在。由于变量能够在必要位置被准确声明，其表现更加接近其他语言，并且能减少无心错误的产生。作为一个副作用，你不能在变量声明位置之前访问它们，即便使用的是 <code class="pcalibre3 calibre11 pcalibre4">typeof</code> 这样的安全运算符。由于块级绑定存在暂时性死区（ TDZ ），试图在声明位置之前访问它就会导致错误。</p>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">let</code> 与 <code class="pcalibre3 calibre11 pcalibre4">const</code> 的表现在很多情况下都相似于 <code class="pcalibre3 calibre11 pcalibre4">var</code>，然而在循环中就不是这样。在 <code class="pcalibre3 calibre11 pcalibre4">for-in</code> 与 <code class="pcalibre3 calibre11 pcalibre4">for-of</code> 循环中， <code class="pcalibre3 calibre11 pcalibre4">let</code> 与 <code class="pcalibre3 calibre11 pcalibre4">const</code> 都能在每一次迭代时创建一个新的绑定，这意味着在循环体内创建的函数可以使用当前迭代所绑定的循环变量值（而不是像使用 <code class="pcalibre3 calibre11 pcalibre4">var</code> 那样，统一使用循环结束时的变量值）。这一点在 <code class="pcalibre3 calibre11 pcalibre4">for</code> 循环中使用 <code class="pcalibre3 calibre11 pcalibre4">let</code> 声明时也成立，不过在 <code class="pcalibre3 calibre11 pcalibre4">for</code> 循环中使用 <code class="pcalibre3 calibre11 pcalibre4">const</code> 声明则会导致错误。</p>
+<p class="calibre6">块级绑定当前的最佳实践就是：在默认情况下使用 <code class="pcalibre3 calibre11 pcalibre4">const</code> ，而只在你知道变量值需要被更改的情况下才使用 <code class="pcalibre3 calibre11 pcalibre4">let</code> 。这在代码中能确保基本层次的不可变性，有助于防止某些类型的错误。</p>
+
+        </div>
+    
+</div>
+
+        
+    
+
+
+</body></html>

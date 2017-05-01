@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1" xml:lang="zh">
+  <head>
+    <meta content="c195e316-f96f-45ea-841f-7b778bf7eceb" name="dtb:uid"/>
+    <meta content="2" name="dtb:depth"/>
+    <meta content="calibre (2.57.1)" name="dtb:generator"/>
+    <meta content="0" name="dtb:totalPageCount"/>
+    <meta content="0" name="dtb:maxPageNumber"/>
+  </head>
+  <docTitle>
+    <text>《Understanding ECMAScript 6》中文翻译</text>
+  </docTitle>
+  <navMap>
+    <navPoint id="ul4VMBnLJWGJhKBzOyzmLuB" playOrder="1">
+      <navLabel>
+        <text>关于</text>
+      </navLabel>
+      <content src="index.html"/>
+    </navPoint>
+    <navPoint id="u6RBC6LeGVCROqqAjzYaKvB" playOrder="2">
+      <navLabel>
+        <text>引言</text>
+      </navLabel>
+      <content src="introduction.html"/>
+    </navPoint>
+    <navPoint id="ujOmfTMwSOQ7ydfyGwWgxTG" playOrder="3">
+      <navLabel>
+        <text>第一章 块级绑定</text>
+      </navLabel>
+      <content src="chapter_1.html"/>
+    </navPoint>
+    <navPoint id="uMZYccYyfKzQyzVieVwcpRB" playOrder="4">
+      <navLabel>
+        <text>第二章 字符串与正则表达式</text>
+      </navLabel>
+      <content src="chapter_2.html"/>
+    </navPoint>
+    <navPoint id="ufkl42fPgbCdpvw53qOtue2" playOrder="5">
+      <navLabel>
+        <text>第三章 函数</text>
+      </navLabel>
+      <content src="chapter_3.html"/>
+    </navPoint>
+    <navPoint id="u2ghtbvFUd9vZx7gHbztqMA" playOrder="6">
+      <navLabel>
+        <text>第四章 扩展的对象功能</text>
+      </navLabel>
+      <content src="chapter_4.html"/>
+    </navPoint>
+    <navPoint id="uewRKsPfz3kQpydfEV6xkP6" playOrder="7">
+      <navLabel>
+        <text>第五章 解构：更方便的数据访问</text>
+      </navLabel>
+      <content src="chapter_5.html"/>
+    </navPoint>
+    <navPoint id="uKZSHbzPCjVM9bWvqNatgaA" playOrder="8">
+      <navLabel>
+        <text>第六章 符号与符号属性</text>
+      </navLabel>
+      <content src="chapter_6.html"/>
+    </navPoint>
+    <navPoint id="uHI89GHVAsvoMQ4HrqelgU2" playOrder="9">
+      <navLabel>
+        <text>第七章 Set与Map</text>
+      </navLabel>
+      <content src="chapter_7.html"/>
+    </navPoint>
+    <navPoint id="uRuLdDHqYo5NZgVbANwgkg4" playOrder="10">
+      <navLabel>
+        <text>第八章 迭代器与生成器</text>
+      </navLabel>
+      <content src="chapter_8.html"/>
+    </navPoint>
+    <navPoint id="uJMDzGaP9AlXJYyDlXlvVUD" playOrder="11">
+      <navLabel>
+        <text>第九章 JS的类</text>
+      </navLabel>
+      <content src="chapter_9.html"/>
+    </navPoint>
+    <navPoint id="uUBlwJwpM4GwZBwAmk3l6Z7" playOrder="12">
+      <navLabel>
+        <text>第十章 增强的数组功能</text>
+      </navLabel>
+      <content src="chapter_10.html"/>
+    </navPoint>
+    <navPoint id="uQ3lU3aF7XmyDiCMkvSUVHF" playOrder="13">
+      <navLabel>
+        <text>第十一章 Promise与异步编程</text>
+      </navLabel>
+      <content src="chapter_11.html"/>
+    </navPoint>
+    <navPoint id="uyRVCXSRGitW6mWU8SlFeyA" playOrder="14">
+      <navLabel>
+        <text>第十二章 代理与反射接口</text>
+      </navLabel>
+      <content src="chapter_12.html"/>
+    </navPoint>
+    <navPoint id="uIjoK8RVaTRwz6hkeQ8KH7H" playOrder="15">
+      <navLabel>
+        <text>第十三章 用模块封装代码</text>
+      </navLabel>
+      <content src="chapter_13.html"/>
+    </navPoint>
+    <navPoint id="uUB5meRaeQkBZkwwGw9GdKA" playOrder="16">
+      <navLabel>
+        <text>附录A：较小的改进</text>
+      </navLabel>
+      <content src="chapter_Appendix_A.html"/>
+    </navPoint>
+    <navPoint id="urbr6piluffkVHLzZPuZpkE" playOrder="17">
+      <navLabel>
+        <text>附录B：理解ES7(ES2016)</text>
+      </navLabel>
+      <content src="chapter_Appendix_B.html"/>
+    </navPoint>
+  </navMap>
+</ncx>

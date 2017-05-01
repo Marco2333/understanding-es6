@@ -1,0 +1,432 @@
+<?xml version='1.0' encoding='utf-8'?>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+  <head>
+    <title>第十三章 用模块封装代码</title>
+    <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+    <meta content="" name="description"/>
+    <meta content="GitBook 3.2.2" name="generator"/>
+    <meta content="sagittarius-rev" name="author"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link href="stylesheet.css" rel="stylesheet" type="text/css"/>
+<link href="page_styles.css" rel="stylesheet" type="text/css"/>
+</head>
+  <body class="calibre">
+        
+<div class="page">
+    
+        <h1 class="book-chapter" id="calibre_toc_15">第十三章 用模块封装代码</h1>
+        <div class="section">
+            <h2 id="第十三章-用模块封装代码" class="calibre12"><span id="encapsulating-code-with-modules" class="calibre13">第十三章 用模块封装代码</span></h2>
+<p class="calibre6">JS “共享一切”的代码加载方式是该语言混乱且最易出错的方面之一。其他语言使用包（ package ）之类的概念来定义代码的作用域，然而在 ES6 之前，一个应用的每个 JS 文件所定义的所有内容都由全局作用域共享。当 web 应用变得更加复杂、需要使用越来越多的 JS 代码时，这种方式导致了诸多问题，例如命名冲突、安全问题等。 ES6 的设计目标之一就是要解决作用域问题，并让 JS 应用变得更有条理。这便是模块的切入点。</p>
+<ul class="calibre9">
+<li class="calibre10"><a href="#what-are-modules-" class="calibre7 pcalibre pcalibre1 pcalibre2">何为模块？</a></li>
+<li class="calibre10"><a href="#basic-exporting" class="calibre7 pcalibre pcalibre1 pcalibre2">基本的导出</a></li>
+<li class="calibre10"><a href="#basic-importing" class="calibre7 pcalibre pcalibre1 pcalibre2">基本的导入</a><ul class="calibre14">
+<li class="calibre10"><a href="#importing-a-single-binding" class="calibre7 pcalibre pcalibre1 pcalibre2">导入单个绑定</a></li>
+<li class="calibre10"><a href="#importing-multiple-bindings" class="calibre7 pcalibre pcalibre1 pcalibre2">导入多个绑定</a></li>
+<li class="calibre10"><a href="#importing-all-of-a-module" class="calibre7 pcalibre pcalibre1 pcalibre2">完全导入一个模块</a></li>
+<li class="calibre10"><a href="#a-subtle-quirk-of-imported-bindings" class="calibre7 pcalibre pcalibre1 pcalibre2">导入绑定的一个微妙怪异点</a></li>
+</ul>
+</li>
+<li class="calibre10"><a href="#renaming-exports-and-imports" class="calibre7 pcalibre pcalibre1 pcalibre2">重命名导出与导入</a></li>
+<li class="calibre10"><a href="#default-values-in-modules" class="calibre7 pcalibre pcalibre1 pcalibre2">模块的默认值</a><ul class="calibre14">
+<li class="calibre10"><a href="#exporting-default-values" class="calibre7 pcalibre pcalibre1 pcalibre2">导出默认值</a></li>
+<li class="calibre10"><a href="#importing-default-values" class="calibre7 pcalibre pcalibre1 pcalibre2">导入默认值</a></li>
+</ul>
+</li>
+<li class="calibre10"><a href="#re-exporting-a-binding" class="calibre7 pcalibre pcalibre1 pcalibre2">绑定的再导出</a></li>
+<li class="calibre10"><a href="#importing-without-bindings" class="calibre7 pcalibre pcalibre1 pcalibre2">无绑定的导入</a></li>
+<li class="calibre10"><a href="#loading-modules" class="calibre7 pcalibre pcalibre1 pcalibre2">加载模块</a><ul class="calibre14">
+<li class="calibre10"><a href="#using-modules-in-web-browsers" class="calibre7 pcalibre pcalibre1 pcalibre2">在 Web 浏览器中使用模块</a><ul class="calibre17">
+<li class="calibre10"><a href="#using-modules-with---script--" class="calibre7 pcalibre pcalibre1 pcalibre2">在 script 标签中使用模块</a></li>
+<li class="calibre10"><a href="#module-loading-sequence-in-web-browsers" class="calibre7 pcalibre pcalibre1 pcalibre2">Web 浏览器中的模块加载次序</a></li>
+<li class="calibre10"><a href="#asynchronous-module-loading-in-web-browsers" class="calibre7 pcalibre pcalibre1 pcalibre2">Web 浏览器中的异步模块加载</a></li>
+<li class="calibre10"><a href="#loading-modules-as-workers" class="calibre7 pcalibre pcalibre1 pcalibre2">将模块作为 Worker 加载</a></li>
+</ul>
+</li>
+<li class="calibre10"><a href="#browser-module-specifier-resolution" class="calibre7 pcalibre pcalibre1 pcalibre2">浏览器模块说明符方案</a></li>
+</ul>
+</li>
+<li class="calibre10"><a href="#summary" class="calibre7 pcalibre pcalibre1 pcalibre2">总结</a></li>
+</ul>
+<h3 id="何为模块？" class="calibre15"><span id="what-are-modules-" class="calibre13">何为模块？</span></h3>
+<p class="calibre6"><strong class="calibre8">模块</strong>（ <strong class="calibre8">Modules</strong> ）是使用不同方式加载的 JS 文件（与 JS 原先的<strong class="calibre8">脚本</strong>加载方式相对）。这种不同模式很有必要，因为它与脚本（ <strong class="calibre8">script</strong> ）有大大不同的语义：</p>
+<ol class="calibre2">
+<li class="calibre10">模块代码自动运行在严格模式下，并且没有任何办法跳出严格模式；</li>
+<li class="calibre10">在模块的顶级作用域创建的变量，不会被自动添加到共享的全局作用域，它们只会在模块顶级作用域的内部存在；</li>
+<li class="calibre10">模块顶级作用域的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 值为 <code class="pcalibre3 calibre11 pcalibre4">undefined</code> ；</li>
+<li class="calibre10">模块不允许在代码中使用 HTML 风格的注释（这是 JS 来自于早期浏览器的历史遗留特性）；</li>
+<li class="calibre10">对于需要让模块外部代码访问的内容，模块必须导出它们；</li>
+<li class="calibre10">允许模块从其他模块导入绑定。</li>
+</ol>
+<p class="calibre6">这些差异乍一看似乎很小，但它们代表了 JS 代码加载与执行方面的显著改变，我将在整章中对其进行论述。模块的真实力量是按需导出与导入代码的能力，而不用将所有内容放在同一个文件内。对于导出与导入的清楚理解，是辨别模块与脚本差异的基础。</p>
+<h3 id="基本的导出" class="calibre15"><span id="basic-exporting" class="calibre13">基本的导出</span></h3>
+<p class="calibre6">你可以使用 <code class="pcalibre3 calibre11 pcalibre4">export</code> 关键字将已发布代码部分公开给其他模块。最简单方法就是将 <code class="pcalibre3 calibre11 pcalibre4">export</code> 放置在任意变量、函数或类声明之前，从模块中将它们公开出去，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">// 导出数据</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">var</span> color = <span class="hljs-string">"red"</span>;
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">let</span> name = <span class="hljs-string">"Nicholas"</span>;
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> magicNumber = <span class="hljs-params">7</span>;
+
+<span class="hljs-title">// 导出函数</span>
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sum</span>(<span class="hljs-params">num1, num2</span>) </span>{
+    <span class="hljs-keyword">return</span> num1 + num1;
+}
+
+<span class="hljs-title">// 导出类</span>
+<span class="hljs-keyword">export</span> <span class="calibre19"><span class="hljs-keyword">class</span> <span class="hljs-title">Rectangle</span> </span>{
+    <span class="hljs-keyword">constructor</span>(length, width) {
+        <span class="hljs-keyword">this</span>.length = length;
+        <span class="hljs-keyword">this</span>.width = width;
+    }
+}
+
+<span class="hljs-title">// 此函数为模块私有</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">subtract</span>(<span class="hljs-params">num1, num2</span>) </span>{
+    <span class="hljs-keyword">return</span> num1 - num2;
+}
+
+<span class="hljs-title">// 定义一个函数……</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">multiply</span>(<span class="hljs-params">num1, num2</span>) </span>{
+    <span class="hljs-keyword">return</span> num1 * num2;
+}
+
+<span class="hljs-title">// ……稍后将其导出</span>
+<span class="hljs-keyword">export</span> { multiply };
+</code></pre>
+<p class="calibre6">此例中有几点需要注意。首先，除了 <code class="pcalibre3 calibre11 pcalibre4">export</code> 关键字之外，每个声明都与正常形式完全一样。每个被导出的函数或类都有名称，这是因为导出的函数声明与类声明必须要有名称。你不能使用这种语法来导出匿名函数或匿名类，除非使用了 <code class="pcalibre3 calibre11 pcalibre4">default</code> 关键字（在“模块的默认值”一节会论述）。</p>
+<p class="calibre6">其次，细看一下 <code class="pcalibre3 calibre11 pcalibre4">multiply()</code> 函数，它并没有在定义时被导出。这是因为你不仅能导出声明，还可以导出引用（即代码最后一行）。</p>
+<p class="calibre6">最后请注意，此例并未导出 <code class="pcalibre3 calibre11 pcalibre4">subtract()</code> 函数。此函数在模块外部不可访问，因为任意没有被显式导出的变量、函数或类都会在模块内保持私有。</p>
+<h3 id="基本的导入" class="calibre15"><span id="basic-importing" class="calibre13">基本的导入</span></h3>
+<p class="calibre6">一旦你有了包含导出的模块，就能在其他模块内使用 <code class="pcalibre3 calibre11 pcalibre4">import</code> 关键字来访问已被导出的功能。 <code class="pcalibre3 calibre11 pcalibre4">import</code> 语句有两个部分，一是需要导入的标识符，二是需导入的标识符的来源模块。此处是导入语句的基本形式：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">import</span> { identifier1, identifier2 } <span class="hljs-keyword">from</span> <span class="hljs-string">"./example.js"</span>;
+</code></pre>
+<p class="calibre6">在 <code class="pcalibre3 calibre11 pcalibre4">import</code> 之后的花括号指明了从给定模块导入对应的绑定， <code class="pcalibre3 calibre11 pcalibre4">from</code> 关键字则指明了需要导入的模块。模块由一个表示模块路径的字符串（被称为<strong class="calibre8">模块说明符</strong>， <strong class="calibre8">module specifier</strong> ）来指定。在浏览器环境中导入模块，使用与 <code class="pcalibre3 calibre11 pcalibre4">&lt;script&gt;</code> 元素相同的路径格式，这表示你必须在其中包含文件扩展名。而另一方面 Node.js 则遵循了它的传统惯例，基于文件系统前缀来分辨本地文件与包（ package ），例如， <code class="pcalibre3 calibre11 pcalibre4">example</code> 代表一个包，而 <code class="pcalibre3 calibre11 pcalibre4">./example.js</code> 则代表一个本地文件。</p>
+<p class="calibre6">导入绑定的列表看起来与对象解构相似，但实则并无关联。</p>
+<p class="calibre6">当从模块导入了一个绑定时，该绑定表现得就像使用了 <code class="pcalibre3 calibre11 pcalibre4">const</code> 的定义。这意味着你不能再定义另一个同名变量（包括导入另一个同名绑定），也不能在对应的 <code class="pcalibre3 calibre11 pcalibre4">import</code> 语句之前使用此标识符（也就是要受暂时性死区限制），更不能修改它的值。</p>
+<h4 id="导入单个绑定" class="calibre15"><span id="importing-a-single-binding" class="calibre13">导入单个绑定</span></h4>
+<p class="calibre6">对于“基本的导入”小节的第一个例子，先假设它位于一个文件名为 <code class="pcalibre3 calibre11 pcalibre4">example.js</code> 的模块内。你能用多种方式来导入并使用来自该模块的绑定。例如，你可以仅导入一个标识符：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">// 单个导入</span>
+<span class="hljs-keyword">import</span> { sum } <span class="hljs-keyword">from</span> <span class="hljs-string">"./example.js"</span>;
+
+<span class="hljs-params">console</span>.log(sum(<span class="hljs-params">1</span>, <span class="hljs-params">2</span>));     <span class="hljs-title">// 3</span>
+
+sum = <span class="hljs-params">1</span>;        <span class="hljs-title">// 出错</span>
+</code></pre>
+<p class="calibre6">尽管 <code class="pcalibre3 calibre11 pcalibre4">example.js</code> 并非只导出了一个 <code class="pcalibre3 calibre11 pcalibre4">sum()</code> 函数，但本例仅仅导入了此函数。假若你尝试给 <code class="pcalibre3 calibre11 pcalibre4">sum</code> 赋一个新值，由于不允许对已导入的绑定重新赋值，于是就会导致错误。</p>
+<blockquote class="calibre20">
+<p class="calibre6">要确保在导入的文件名前面使用 <code class="pcalibre3 calibre11 pcalibre4">/</code> 、 <code class="pcalibre3 calibre11 pcalibre4">./</code> 或 <code class="pcalibre3 calibre11 pcalibre4">../</code> ，以便在浏览器与 Node.js 之间保持良好兼容性。</p>
+</blockquote>
+<h4 id="导入多个绑定" class="calibre15"><span id="importing-multiple-bindings" class="calibre13">导入多个绑定</span></h4>
+<p class="calibre6">如果你想从 example 模块导入多个绑定，你可以像下面这样显式的列出它们：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">// 多个导入</span>
+<span class="hljs-keyword">import</span> { sum, multiply, magicNumber } <span class="hljs-keyword">from</span> <span class="hljs-string">"./example.js"</span>;
+<span class="hljs-params">console</span>.log(sum(<span class="hljs-params">1</span>, magicNumber));   <span class="hljs-title">// 8</span>
+<span class="hljs-params">console</span>.log(multiply(<span class="hljs-params">1</span>, <span class="hljs-params">2</span>));        <span class="hljs-title">// 2</span>
+</code></pre>
+<p class="calibre6">此处从 example 模块导入了三个绑定： <code class="pcalibre3 calibre11 pcalibre4">sum</code> 、 <code class="pcalibre3 calibre11 pcalibre4">multiply</code> 与 <code class="pcalibre3 calibre11 pcalibre4">magicNumber</code> ，之后便可以使用它们，仿佛它们是在当前模块中被定义的。</p>
+<h4 id="完全导入一个模块" class="calibre15"><span id="importing-all-of-a-module" class="calibre13">完全导入一个模块</span></h4>
+<p class="calibre6">还有一种特殊情况，即允许你将整个模块当作单一对象进行导入，该模块的所有导出都会作为对象的属性存在。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">// 完全导入</span>
+<span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> example <span class="hljs-keyword">from</span> <span class="hljs-string">"./example.js"</span>;
+<span class="hljs-params">console</span>.log(example.sum(<span class="hljs-params">1</span>,
+        example.magicNumber));          <span class="hljs-title">// 8</span>
+<span class="hljs-params">console</span>.log(example.multiply(<span class="hljs-params">1</span>, <span class="hljs-params">2</span>));    <span class="hljs-title">// 2</span>
+</code></pre>
+<p class="calibre6">在此代码中， <code class="pcalibre3 calibre11 pcalibre4">example.js</code> 中所有导出的绑定都被加载到一个名为 <code class="pcalibre3 calibre11 pcalibre4">example</code> 的对象中，具名导出（ <code class="pcalibre3 calibre11 pcalibre4">sum()</code> 函数、 <code class="pcalibre3 calibre11 pcalibre4">multiple()</code> 函数与 <code class="pcalibre3 calibre11 pcalibre4">magicNumber</code> ）都成为 <code class="pcalibre3 calibre11 pcalibre4">example</code> 的可用属性。这种导入格式被称为<strong class="calibre8">命名空间导入</strong>（ <strong class="calibre8">namespace import</strong> ），这是因为该 <code class="pcalibre3 calibre11 pcalibre4">example</code> 对象并不存在于 <code class="pcalibre3 calibre11 pcalibre4">example.js</code> 文件中，而是作为一个命名空间对象被创建使用，其中包含了 <code class="pcalibre3 calibre11 pcalibre4">example.js</code> 的所有导出成员。</p>
+<p class="calibre6">然而要记住，无论你对同一个模块使用了多少次 <code class="pcalibre3 calibre11 pcalibre4">import</code> 语句，该模块都只会被执行一次。在导出模块的代码执行之后，已被实例化的模块就被保留在内存中，并随时都能被其他 <code class="pcalibre3 calibre11 pcalibre4">import</code> 所引用。研究以下例子：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">import</span> { sum } <span class="hljs-keyword">from</span> <span class="hljs-string">"./example.js"</span>;
+<span class="hljs-keyword">import</span> { multiply } <span class="hljs-keyword">from</span> <span class="hljs-string">"./example.js"</span>;
+<span class="hljs-keyword">import</span> { magicNumber } <span class="hljs-keyword">from</span> <span class="hljs-string">"./example.js"</span>;
+</code></pre>
+<p class="calibre6">尽管此处的模块使用了三个 <code class="pcalibre3 calibre11 pcalibre4">import</code> 语句，但 <code class="pcalibre3 calibre11 pcalibre4">example.js</code> 只会被执行一次。若同一个应用中的其他模块打算从 <code class="pcalibre3 calibre11 pcalibre4">example.js</code> 导入绑定，则那些模块都会使用这段代码中所用的同一个模块实例。</p>
+<blockquote class="calibre20">
+<p class="calibre6">模块语法的限制（Module Syntax Limitations）</p>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">export</code> 与 <code class="pcalibre3 calibre11 pcalibre4">import</code> 都有一个重要的限制，那就是它们必须被用在其他语句或表达式的外部。例如，以下代码有语法错误：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">if</span> (flag) {
+  <span class="hljs-keyword">export</span> flag;    <span class="hljs-title">// 语法错误</span>
+}
+</code></pre>
+<p class="calibre6">此处的 <code class="pcalibre3 calibre11 pcalibre4">export</code> 语句位于一个 <code class="pcalibre3 calibre11 pcalibre4">if</code> 语句内部，这是不被许可的。导出语句不能是有条件的，也不能以任何方式动态使用。原因之一是模块语法需要让 JS 能静态判断需要导出什么，正因为此，你只能在模块的顶级作用域使用 <code class="pcalibre3 calibre11 pcalibre4">export</code> 。</p>
+<p class="calibre6">类似的，你不能在一个语句内部使用 <code class="pcalibre3 calibre11 pcalibre4">import</code> ，也只能将其用在顶级作用域。这意味着以下代码也有语法错误：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">tryImport</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">import</span> flag <span class="hljs-keyword">from</span> <span class="hljs-string">"./example.js"</span>;    <span class="hljs-title">// 语法错误</span>
+}
+</code></pre>
+<p class="calibre6">出于与不能动态导出绑定相同的原因，你也不能动态导入绑定。 <code class="pcalibre3 calibre11 pcalibre4">export</code> 与 <code class="pcalibre3 calibre11 pcalibre4">import</code> 关键字被设计为静态的，以便让诸如文本编辑器之类的工具能轻易判断模块有哪些信息可用。</p>
+</blockquote>
+<h4 id="导入绑定的一个微妙怪异点" class="calibre15"><span id="a-subtle-quirk-of-imported-bindings" class="calibre13">导入绑定的一个微妙怪异点</span></h4>
+<p class="calibre6">ES6 的 <code class="pcalibre3 calibre11 pcalibre4">import</code> 语句为变量、函数与类创建了只读绑定，而不像普通变量那样简单引用了原始绑定。尽管导入绑定的模块无法修改绑定的值，但负责导出的模块却能做到这一点。例如，假设你想要使用以下模块：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">export</span> <span class="hljs-keyword">var</span> name = <span class="hljs-string">"Nicholas"</span>;
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">setName</span>(<span class="hljs-params">newName</span>) </span>{
+    name = newName;
+}
+</code></pre>
+<p class="calibre6">当你导入了这两个绑定后， <code class="pcalibre3 calibre11 pcalibre4">setName()</code> 函数还可以改变 <code class="pcalibre3 calibre11 pcalibre4">name</code> 的值：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">import</span> { name, setName } <span class="hljs-keyword">from</span> <span class="hljs-string">"./example.js"</span>;
+
+<span class="hljs-params">console</span>.log(name);       <span class="hljs-title">// "Nicholas"</span>
+setName(<span class="hljs-string">"Greg"</span>);
+<span class="hljs-params">console</span>.log(name);       <span class="hljs-title">// "Greg"</span>
+
+name = <span class="hljs-string">"Nicholas"</span>;       <span class="hljs-title">// error</span>
+</code></pre>
+<p class="calibre6">调用 <code class="pcalibre3 calibre11 pcalibre4">setName("Greg")</code> 会回到导出 <code class="pcalibre3 calibre11 pcalibre4">setName()</code> 的模块内部，并在那里执行，从而将 <code class="pcalibre3 calibre11 pcalibre4">name</code> 设置为 <code class="pcalibre3 calibre11 pcalibre4">"Greg"</code> 。注意这个变化会自动反映到所导入的 <code class="pcalibre3 calibre11 pcalibre4">name</code> 绑定上，这是因为绑定的 <code class="pcalibre3 calibre11 pcalibre4">name</code> 是导出的 <code class="pcalibre3 calibre11 pcalibre4">name</code> 标识符的本地名称，二者并非同一个事物。</p>
+<blockquote class="calibre20">
+<p class="calibre6">译注：对本小节内容进行补充说明</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> a = <span class="hljs-params">1</span>;
+<span class="hljs-keyword">let</span> b = a;
+<span class="hljs-params">console</span>.log(a);       <span class="hljs-title">// 1</span>
+<span class="hljs-params">console</span>.log(b);       <span class="hljs-title">// 1</span>
+a = <span class="hljs-params">2</span>;
+<span class="hljs-params">console</span>.log(a);       <span class="hljs-title">// 2</span>
+<span class="hljs-params">console</span>.log(b);       <span class="hljs-title">// 1</span>
+</code></pre>
+<p class="calibre6">在此代码中，变量 <code class="pcalibre3 calibre11 pcalibre4">b</code> 开始时对变量 <code class="pcalibre3 calibre11 pcalibre4">a</code> 进行了一个“引用”，但只是将 <code class="pcalibre3 calibre11 pcalibre4">a</code> 的值拷贝了一份。如果对变量 <code class="pcalibre3 calibre11 pcalibre4">a</code> 的值进行修改，变量 <code class="pcalibre3 calibre11 pcalibre4">b</code> 的值是不会随着变化的。</p>
+<p class="calibre6">而在范例中的模块导入与导出，外部模块导入的 <code class="pcalibre3 calibre11 pcalibre4">name</code> 变量与在 <code class="pcalibre3 calibre11 pcalibre4">example.js</code> 模块内部的 <code class="pcalibre3 calibre11 pcalibre4">name</code> 变量对比，前者是对于后者的只读引用，会始终反映出后者的变化。就算后者的值在负责导出的模块中发生了变化，这种绑定关系也不会被破坏。模块导出与导入的绑定机制，与写在一个文件或模块内的代码是不同的。</p>
+</blockquote>
+<h3 id="重命名导出与导入" class="calibre15"><span id="renaming-exports-and-imports" class="calibre13">重命名导出与导入</span></h3>
+<p class="calibre6">有时，你可能并不想使用从模块中导出的变量、函数或类的原始名称。幸好，你可以更改导出的名称，无论在导出过程中，还是导入过程中，都可以。</p>
+<p class="calibre6">前一种情况下，假设你想用不同的名称来导出一个函数，你可以使用 <code class="pcalibre3 calibre11 pcalibre4">as</code> 关键字来指定新的名称，以便在模块外部用此名称指代目标函数：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sum</span>(<span class="hljs-params">num1, num2</span>) </span>{
+    <span class="hljs-keyword">return</span> num1 + num2;
+}
+
+<span class="hljs-keyword">export</span> { sum <span class="hljs-keyword">as</span> add };
+</code></pre>
+<p class="calibre6">此处的 <code class="pcalibre3 calibre11 pcalibre4">sum()</code> 函数被作为 <code class="pcalibre3 calibre11 pcalibre4">add()</code> 导出，前者是<strong class="calibre8">本地名称</strong>（ <strong class="calibre8">local name</strong> ），后者则是<strong class="calibre8">导出名称</strong>（ <strong class="calibre8">exported name</strong> ）。这意味着当另一个模块要导入此函数时，它必须改用 <code class="pcalibre3 calibre11 pcalibre4">add</code> 这个名称：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">import</span> { add } <span class="hljs-keyword">from</span> <span class="hljs-string">"./example.js"</span>;
+</code></pre>
+<p class="calibre6">假若模块导入函数时想使用另一个名称，同样也可以用 <code class="pcalibre3 calibre11 pcalibre4">as</code> 关键字：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">import</span> { add <span class="hljs-keyword">as</span> sum } <span class="hljs-keyword">from</span> <span class="hljs-string">"./example.js"</span>;
+<span class="hljs-params">console</span>.log(<span class="hljs-keyword">typeof</span> add);            <span class="hljs-title">// "undefined"</span>
+<span class="hljs-params">console</span>.log(sum(<span class="hljs-params">1</span>, <span class="hljs-params">2</span>));             <span class="hljs-title">// 3</span>
+</code></pre>
+<p class="calibre6">此代码导入了 <code class="pcalibre3 calibre11 pcalibre4">add()</code> 函数，并使用了<strong class="calibre8">导入名称</strong>（ <strong class="calibre8">import name</strong> ）将其重命名为 <code class="pcalibre3 calibre11 pcalibre4">sum()</code> （本地名称）。这意味着在此模块中并不存在名为 <code class="pcalibre3 calibre11 pcalibre4">add</code> 的标识符。</p>
+<h3 id="模块的默认值" class="calibre15"><span id="default-values-in-modules" class="calibre13">模块的默认值</span></h3>
+<p class="calibre6">模块语法确实为从模块中导出或导入默认值进行了优化，而这一模式在其他模块系统中非常普遍，例如在 CommonJS （在浏览器之外运行 JS 的另一种模块规范）中。模块的<strong class="calibre8">默认值</strong>（ <strong class="calibre8">default value</strong> ）是使用 <code class="pcalibre3 calibre11 pcalibre4">default</code> 关键字所指定的单个变量、函数或类，而你在每个模块中只能设置一个默认导出，将 <code class="pcalibre3 calibre11 pcalibre4">default</code> 关键字用于多个导出会是语法错误。</p>
+<h4 id="导出默认值" class="calibre15"><span id="exporting-default-values" class="calibre13">导出默认值</span></h4>
+<p class="calibre6">以下是使用 <code class="pcalibre3 calibre11 pcalibre4">default</code> 关键字的一个简单例子：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">num1, num2</span>) </span>{
+    <span class="hljs-keyword">return</span> num1 + num2;
+}
+</code></pre>
+<p class="calibre6">此模块将一个函数作为默认值进行了导出， <code class="pcalibre3 calibre11 pcalibre4">default</code> 关键字标明了这是一个默认导出。此函数并不需要有名称，因为它就代表这个模块自身。</p>
+<p class="calibre6">你也能在 <code class="pcalibre3 calibre11 pcalibre4">export default</code> 后面放置一个标识符，以指定默认的导出，正如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sum</span>(<span class="hljs-params">num1, num2</span>) </span>{
+    <span class="hljs-keyword">return</span> num1 + num2;
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> sum;
+</code></pre>
+<p class="calibre6">此处 <code class="pcalibre3 calibre11 pcalibre4">sum()</code> 函数先被定义了，随后它作为模块的默认值被导出。若默认值需要计算才能得出，你或许会选择这种方式。</p>
+<p class="calibre6">将标识符作为默认导出来指定的第三种方式，是使用重命名语法，如下：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sum</span>(<span class="hljs-params">num1, num2</span>) </span>{
+    <span class="hljs-keyword">return</span> num1 + num2;
+}
+
+<span class="hljs-keyword">export</span> { sum <span class="hljs-keyword">as</span> <span class="hljs-keyword">default</span> };
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">default</code> 标识符有特别含义，既作为重命名导出，又标明了模块需要使用的默认值。由于 <code class="pcalibre3 calibre11 pcalibre4">default</code> 在 JS 中是一个关键字，它就不能被用作变量、函数或类的名称（但它可以被用作属性名称）。因此使用 <code class="pcalibre3 calibre11 pcalibre4">default</code> 来重命名一个导出是个特例，与非默认导出的语法保持了一致性。若你想用单个语句一次性进行多个导出，并要求包含默认导出，这种语法就非常有用。</p>
+<h4 id="导入默认值" class="calibre15"><span id="importing-default-values" class="calibre13">导入默认值</span></h4>
+<p class="calibre6">你可以使用如下语法来从一个模块中导入默认值：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">// 导入默认值</span>
+<span class="hljs-keyword">import</span> sum <span class="hljs-keyword">from</span> <span class="hljs-string">"./example.js"</span>;
+
+<span class="hljs-params">console</span>.log(sum(<span class="hljs-params">1</span>, <span class="hljs-params">2</span>));     <span class="hljs-title">// 3</span>
+</code></pre>
+<p class="calibre6">这个导入语句从 <code class="pcalibre3 calibre11 pcalibre4">example.js</code> 模块导入了其默认值。注意此处并未使用花括号，与之前在非默认的导入中看到的不同。本地名称 <code class="pcalibre3 calibre11 pcalibre4">sum</code> 被用于代表目标模块所默认导出的函数。这种语法是最简洁的，而 ES6 的标准制定者也期待它成为在网络上进行导入的主要形式，这样你就能导入已存在的对象。</p>
+<p class="calibre6">对于既导出了默认值、又导出了一个或更多非默认的绑定的模块，你可以使用单个语句来导入它的所有导出绑定。例如，假设你有这么一个模块：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">export</span> <span class="hljs-keyword">let</span> color = <span class="hljs-string">"red"</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">num1, num2</span>) </span>{
+    <span class="hljs-keyword">return</span> num1 + num2;
+}
+</code></pre>
+<p class="calibre6">你可以像下面这样使用 <code class="pcalibre3 calibre11 pcalibre4">import</code> 语句，来同时导入 <code class="pcalibre3 calibre11 pcalibre4">color</code> 以及作为默认值的函数：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">import</span> sum, { color } <span class="hljs-keyword">from</span> <span class="hljs-string">"./example.js"</span>;
+
+<span class="hljs-params">console</span>.log(sum(<span class="hljs-params">1</span>, <span class="hljs-params">2</span>));     <span class="hljs-title">// 3</span>
+<span class="hljs-params">console</span>.log(color);         <span class="hljs-title">// "red"</span>
+</code></pre>
+<p class="calibre6">逗号将默认的本地名称与非默认的名称分隔开，后者仍旧被花括号所包裹。要记住在 <code class="pcalibre3 calibre11 pcalibre4">import</code> 语句中默认名称必须位于非默认名称之前。</p>
+<p class="calibre6">如同导出默认值，你也能使用重命名语法进行默认值的导入：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">// 等价于上个例子</span>
+<span class="hljs-keyword">import</span> { <span class="hljs-keyword">default</span> <span class="hljs-keyword">as</span> sum, color } <span class="hljs-keyword">from</span> <span class="hljs-string">"example"</span>;
+
+<span class="hljs-params">console</span>.log(sum(<span class="hljs-params">1</span>, <span class="hljs-params">2</span>));     <span class="hljs-title">// 3</span>
+<span class="hljs-params">console</span>.log(color);         <span class="hljs-title">// "red"</span>
+</code></pre>
+<p class="calibre6">在此代码中，默认的导出（ <code class="pcalibre3 calibre11 pcalibre4">default</code> ）被重命名为 <code class="pcalibre3 calibre11 pcalibre4">sum</code> ，并且附加的 <code class="pcalibre3 calibre11 pcalibre4">color</code> 导出也被一并导入了。此例与前面的例子是等效的。</p>
+<h3 id="绑定的再导出" class="calibre15"><span id="re-exporting-a-binding" class="calibre13">绑定的再导出</span></h3>
+<p class="calibre6">也许有时你会想将当前模块已导入的内容重新再导出（例如，假设要用几个小模块来创建一个库）。你能使用本章已描述过的模式来将已导入的值再导出，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">import</span> { sum } <span class="hljs-keyword">from</span> <span class="hljs-string">"./example.js"</span>;
+<span class="hljs-keyword">export</span> { sum }
+</code></pre>
+<p class="calibre6">此方法能奏效，但还可以使用单个语句来完成相同任务：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">export</span> { sum } <span class="hljs-keyword">from</span> <span class="hljs-string">"./example.js"</span>;
+</code></pre>
+<p class="calibre6">这种形式的 <code class="pcalibre3 calibre11 pcalibre4">export</code> 会进入指定模块查看 <code class="pcalibre3 calibre11 pcalibre4">sum</code> 的定义，随后将其导出。当然，你也可以选择将一个值用不同名称导出：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">export</span> { sum <span class="hljs-keyword">as</span> add } <span class="hljs-keyword">from</span> <span class="hljs-string">"./example.js"</span>;
+</code></pre>
+<p class="calibre6">此处，从 <code class="pcalibre3 calibre11 pcalibre4">"./example.js"</code> 导入的 <code class="pcalibre3 calibre11 pcalibre4">sum</code> 随后以 <code class="pcalibre3 calibre11 pcalibre4">add</code> 的名称被导出了。</p>
+<p class="calibre6">若你想将来自另一个模块的所有值完全导出，可以使用星号（ <code class="pcalibre3 calibre11 pcalibre4">*</code> ）模式：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">export</span> * <span class="hljs-keyword">from</span> <span class="hljs-string">"./example.js"</span>;
+</code></pre>
+<p class="calibre6">使用完全导出，就可以导出目标模块的默认值及其所有具名导出，但这可能影响你从当前模块所能导出的值。例如，假设 <code class="pcalibre3 calibre11 pcalibre4">example.js</code> 具有一个默认导出，当你使用这种语法时，你就无法为当前模块另外再定义一个默认导出。</p>
+<h3 id="无绑定的导入" class="calibre15"><span id="importing-without-bindings" class="calibre13">无绑定的导入</span></h3>
+<p class="calibre6">有些模块也许没有进行任何导出，相反只是修改全局作用域的对象。尽管这种模块的顶级变量、函数或类最终并不会自动被加入全局作用域，但这并不意味着该模块无法访问全局作用域。诸如 <code class="pcalibre3 calibre11 pcalibre4">Array</code> 与 <code class="pcalibre3 calibre11 pcalibre4">Object</code> 之类的内置对象的共享定义在模块内部是可访问的，并且对于这些对象的修改会反映到其他模块中。</p>
+<p class="calibre6">例如，若你想为所有数组添加一个 <code class="pcalibre3 calibre11 pcalibre4">pushAll()</code> 方法，你可以像下面这样定义一个模块：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">// 没有导出与导入的模块</span>
+<span class="hljs-params">Array</span>.prototype.pushAll = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">items</span>) </span>{
+
+    <span class="hljs-title">// items 必须是一个数组</span>
+    <span class="hljs-keyword">if</span> (!<span class="hljs-params">Array</span>.isArray(items)) {
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-params">TypeError</span>(<span class="hljs-string">"Argument must be an array."</span>);
+    }
+
+    <span class="hljs-title">// 使用内置的 push() 与扩展运算符</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.push(...items);
+};
+</code></pre>
+<p class="calibre6">这是一个有效的模块，尽管此处没有任何导出与导入。此代码可以作为模块或脚本来使用。由于它没有导出任何东西，你可以使用简化的导入语法来执行此模块的代码，而无须导入任何绑定：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">import</span> <span class="hljs-string">"./example.js"</span>;
+
+<span class="hljs-keyword">let</span> colors = [<span class="hljs-string">"red"</span>, <span class="hljs-string">"green"</span>, <span class="hljs-string">"blue"</span>];
+<span class="hljs-keyword">let</span> items = [];
+
+items.pushAll(colors);
+</code></pre>
+<p class="calibre6">此代码导入并执行了包含 <code class="pcalibre3 calibre11 pcalibre4">pushAll()</code> 的模块，于是 <code class="pcalibre3 calibre11 pcalibre4">pushAll()</code> 就被添加到数组的原型上。这意味着现在 <code class="pcalibre3 calibre11 pcalibre4">pushAll()</code> 在当前模块内的所有数组上都可用。</p>
+<p class="calibre6">无绑定的导入最有可能被用于创建 polyfill 与 shim （为新语法在旧环境中运行提供向下兼容的两种方式）。</p>
+<h3 id="加载模块" class="calibre15"><span id="loading-modules" class="calibre13">加载模块</span></h3>
+<p class="calibre6">尽管 ES6 定义了模块的语法，但并未定义如何加载它们。这是规范复杂性的一部分，这种复杂性对于实现环境来说是无法预知的。 ES6 未选择给所有 JS 环境努力创建一个有效的单一规范，而只对一个未定义的内部操作 <code class="pcalibre3 calibre11 pcalibre4">HostResolveImportedModule</code> 指定了语法以及抽象的加载机制。 web 浏览器与 Node.js 可以自行决定用什么方式实现 <code class="pcalibre3 calibre11 pcalibre4">HostResolveImportedModule</code> ，以便更好契合各自的环境。</p>
+<h4 id="在-web-浏览器中使用模块" class="calibre15"><span id="using-modules-in-web-browsers" class="calibre13">在 Web 浏览器中使用模块</span></h4>
+<p class="calibre6">即使在 ES6 之前， web 浏览器都有多种方式在 web 应用中加载 JS 。这些可能的脚本加载选择是：</p>
+<ol class="calibre2">
+<li class="calibre10">使用 <code class="pcalibre3 calibre11 pcalibre4">&lt;script&gt;</code> 元素以及 <code class="pcalibre3 calibre11 pcalibre4">src</code> 属性来指定代码加载的位置，以便加载 JS 代码文件；</li>
+<li class="calibre10">使用 <code class="pcalibre3 calibre11 pcalibre4">&lt;script&gt;</code> 元素但不使用 <code class="pcalibre3 calibre11 pcalibre4">src</code> 属性，来嵌入内联的 JS 代码；</li>
+<li class="calibre10">加载 JS 代码文件并作为 Worker （例如 Web Worker 或 Service Worker ）来执行。</li>
+</ol>
+<p class="calibre6">为了完全支持模块， web 浏览器必须更新这些机制。相关细节被定义在 HTML 规范中，我将会在本节对其进行概述。</p>
+<h5 id="在-script-标签中使用模块" class="calibre18"><span id="using-modules-with---script--" class="calibre19">在 script 标签中使用模块</span></h5>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">&lt;script&gt;</code> 元素默认以脚本方式（而非模块）来加载 JS 文件，只要 <code class="pcalibre3 calibre11 pcalibre4">type</code> 属性缺失，或者 <code class="pcalibre3 calibre11 pcalibre4">type</code> 属性含有与 JS 对应的内容类型（例如 <code class="pcalibre3 calibre11 pcalibre4">"text/javascript"</code> ）。 <code class="pcalibre3 calibre11 pcalibre4">&lt;script&gt;</code> 元素能够执行内联脚本，也能加载在 <code class="pcalibre3 calibre11 pcalibre4">src</code> 中指定的文件。为了支持模块，添加了 <code class="pcalibre3 calibre11 pcalibre4">"module"</code> 值作为 <code class="pcalibre3 calibre11 pcalibre4">type</code> 的选项。将 <code class="pcalibre3 calibre11 pcalibre4">type</code> 设置为 <code class="pcalibre3 calibre11 pcalibre4">"module"</code> ，就告诉浏览器要将内联代码或是指定文件中的代码当作模块，而不是当作脚本。此处有个简单范例：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">&lt;!-- load a module JavaScript file --&gt;</span>
+<span class="hljs-regexp">&lt;<span class="calibre19">script</span> <span class="calibre19">type</span>=<span class="hljs-string">"module"</span> <span class="calibre19">src</span>=<span class="hljs-string">"module.js"</span>&gt;</span><span class="calibre19"></span><span class="hljs-regexp">&lt;/<span class="calibre19">script</span>&gt;</span>
+
+<span class="hljs-title">&lt;!-- include a module inline --&gt;</span>
+<span class="hljs-regexp">&lt;<span class="calibre19">script</span> <span class="calibre19">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="calibre19">
+
+<span class="hljs-keyword">import</span> { sum } <span class="hljs-keyword">from</span> <span class="hljs-string">"./example.js"</span>;
+
+<span class="hljs-keyword">let</span> result = sum(<span class="hljs-params">1</span>, <span class="hljs-params">2</span>);
+
+</span><span class="hljs-regexp">&lt;/<span class="calibre19">script</span>&gt;</span>
+</code></pre>
+<p class="calibre6">此例中第一个 <code class="pcalibre3 calibre11 pcalibre4">&lt;script&gt;</code> 元素使用 <code class="pcalibre3 calibre11 pcalibre4">src</code> 加载了外部模块文件，与加载脚本唯一的区别是将 <code class="pcalibre3 calibre11 pcalibre4">type</code> 指定为 <code class="pcalibre3 calibre11 pcalibre4">"module"</code> 。第二个 <code class="pcalibre3 calibre11 pcalibre4">&lt;script&gt;</code> 元素则包含了一个直接嵌入到网页内的模块， <code class="pcalibre3 calibre11 pcalibre4">result</code> 变量并未被暴露到全局，因为它只在使用 <code class="pcalibre3 calibre11 pcalibre4">&lt;script&gt;</code> 元素定义的这个模块内部存在，因此也没有被添加为 <code class="pcalibre3 calibre11 pcalibre4">window</code> 对象的属性。</p>
+<p class="calibre6">正如你所见，在网页中包含模块十分简单，并且类似于包含脚本。然而，在如何加载模块方面有一些区别。</p>
+<blockquote class="calibre20">
+<p class="calibre6">你可能已经注意到 <code class="pcalibre3 calibre11 pcalibre4">"module"</code> 并不是与 <code class="pcalibre3 calibre11 pcalibre4">"text/javascript"</code> 相似的内容类型。模块 JS 文件的内容类型与脚本 JS 文件相同，因此不可能依据文件的内容类型将它们完全区别开来。此外，当 <code class="pcalibre3 calibre11 pcalibre4">type</code> 属性无法辨认时，浏览器就会忽略 <code class="pcalibre3 calibre11 pcalibre4">&lt;script&gt;</code> 元素，因此不支持模块的浏览器也就会自动忽略 <code class="pcalibre3 calibre11 pcalibre4">&lt;script type="module"&gt;</code> 声明，从而提供良好的向下兼容性。</p>
+</blockquote>
+<h5 id="web-浏览器中的模块加载次序" class="calibre18"><span id="module-loading-sequence-in-web-browsers" class="calibre19">Web 浏览器中的模块加载次序</span></h5>
+<p class="calibre6">模块相对脚本的独特之处在于：它们能使用 <code class="pcalibre3 calibre11 pcalibre4">import</code> 来指定必须要加载的其他文件，以保证正确执行。为了支持此功能， <code class="pcalibre3 calibre11 pcalibre4">&lt;script type="module"&gt;</code> 总是表现得像是已经应用了 <code class="pcalibre3 calibre11 pcalibre4">defer</code> 属性。</p>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">defer</code> 属性是加载脚本文件时的可选项，但在加载模块文件时总是自动应用的。当 HTML 解析到拥有 <code class="pcalibre3 calibre11 pcalibre4">src</code> 属性的 <code class="pcalibre3 calibre11 pcalibre4">&lt;script type="module"&gt;</code> 标签时，就会立即开始下载模块文件，但并不会执行它，直到整个网页文档全部解析完为止。模块也会按照它们在 HTML 文件中出现的顺序依次执行，这意味着第一个 <code class="pcalibre3 calibre11 pcalibre4">&lt;script type="module"&gt;</code> 总是保证在第二个之前执行，即使其中有些模块不是用 <code class="pcalibre3 calibre11 pcalibre4">src</code> 指定而是包含了内联脚本。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">&lt;!-- this will execute first --&gt;</span>
+<span class="hljs-regexp">&lt;<span class="calibre19">script</span> <span class="calibre19">type</span>=<span class="hljs-string">"module"</span> <span class="calibre19">src</span>=<span class="hljs-string">"module1.js"</span>&gt;</span><span class="calibre19"></span><span class="hljs-regexp">&lt;/<span class="calibre19">script</span>&gt;</span>
+
+<span class="hljs-title">&lt;!-- this will execute second --&gt;</span>
+<span class="hljs-regexp">&lt;<span class="calibre19">script</span> <span class="calibre19">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="calibre19">
+<span class="hljs-keyword">import</span> { sum } <span class="hljs-keyword">from</span> <span class="hljs-string">"./example.js"</span>;
+
+<span class="hljs-keyword">let</span> result = sum(<span class="hljs-params">1</span>, <span class="hljs-params">2</span>);
+</span><span class="hljs-regexp">&lt;/<span class="calibre19">script</span>&gt;</span>
+
+<span class="hljs-title">&lt;!-- this will execute third --&gt;</span>
+<span class="hljs-regexp">&lt;<span class="calibre19">script</span> <span class="calibre19">type</span>=<span class="hljs-string">"module"</span> <span class="calibre19">src</span>=<span class="hljs-string">"module2.js"</span>&gt;</span><span class="calibre19"></span><span class="hljs-regexp">&lt;/<span class="calibre19">script</span>&gt;</span>
+</code></pre>
+<p class="calibre6">这三个 <code class="pcalibre3 calibre11 pcalibre4">&lt;script&gt;</code> 元素依照它们被指定的顺序执行，因此 <code class="pcalibre3 calibre11 pcalibre4">module1.js</code> 保证在内联模块之前执行，而内联模块又保证在 <code class="pcalibre3 calibre11 pcalibre4">module2.js</code> 之前执行。</p>
+<p class="calibre6">每个模块可能都用 <code class="pcalibre3 calibre11 pcalibre4">import</code> 导入了一个或多个其他模块，这就让事情变复杂了。这也就是模块为何首先需要被解析，因为这样才能识别所有的 <code class="pcalibre3 calibre11 pcalibre4">import</code> 语句。每个 <code class="pcalibre3 calibre11 pcalibre4">import</code> 语句又会触发一次 fetch （无论是从网络还是从缓存中获取），并且在所有用 <code class="pcalibre3 calibre11 pcalibre4">import</code> 导入的资源被加载与执行完毕之前，没有任何模块会被执行。</p>
+<p class="calibre6">所有模块，无论是用 <code class="pcalibre3 calibre11 pcalibre4">&lt;script type="module"&gt;</code> 显式包含的，还是用 <code class="pcalibre3 calibre11 pcalibre4">import</code> 隠式包含的，都会依照次序加载与执行。在前面的范例中，完整的加载次序是：</p>
+<ol class="calibre2">
+<li class="calibre10">下载并解析 <code class="pcalibre3 calibre11 pcalibre4">module1.js</code> ；</li>
+<li class="calibre10">递归下载并解析在 <code class="pcalibre3 calibre11 pcalibre4">module1.js</code> 中使用 <code class="pcalibre3 calibre11 pcalibre4">import</code> 导入的资源；</li>
+<li class="calibre10">解析内联模块；</li>
+<li class="calibre10">递归下载并解析在内联模块中使用 <code class="pcalibre3 calibre11 pcalibre4">import</code> 导入的资源；</li>
+<li class="calibre10">下载并解析 <code class="pcalibre3 calibre11 pcalibre4">module2.js</code>；</li>
+<li class="calibre10">递归下载并解析在 <code class="pcalibre3 calibre11 pcalibre4">module2.js</code> 中使用 <code class="pcalibre3 calibre11 pcalibre4">import</code> 导入的资源。</li>
+</ol>
+<p class="calibre6">一旦加载完毕，直到页面文档被完整解析之前，都不会有任何代码被执行。在文档解析完毕后，会发生下列行为：</p>
+<ol class="calibre2">
+<li class="calibre10">递归执行 <code class="pcalibre3 calibre11 pcalibre4">module1.js</code> 导入的资源；</li>
+<li class="calibre10">执行 <code class="pcalibre3 calibre11 pcalibre4">module1.js</code> ；</li>
+<li class="calibre10">递归执行内联模块导入的资源；</li>
+<li class="calibre10">执行内联模块；</li>
+<li class="calibre10">递归执行 <code class="pcalibre3 calibre11 pcalibre4">module2.js</code> 导入的资源；</li>
+<li class="calibre10">执行 <code class="pcalibre3 calibre11 pcalibre4">module2.js</code> 。</li>
+</ol>
+<p class="calibre6">注意内联模块除了不必先下载代码之外，与其他两个模块的行为一致，加载 <code class="pcalibre3 calibre11 pcalibre4">import</code> 的资源与执行模块的次序都是完全一样的。</p>
+<blockquote class="calibre20">
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">&lt;script type="module"&gt;</code> 上的 <code class="pcalibre3 calibre11 pcalibre4">defer</code> 属性总是会被忽略，因为它已经应用了该属性。</p>
+</blockquote>
+<h5 id="web-浏览器中的异步模块加载" class="calibre18"><span id="asynchronous-module-loading-in-web-browsers" class="calibre19">Web 浏览器中的异步模块加载</span></h5>
+<p class="calibre6">你或许已熟悉了 <code class="pcalibre3 calibre11 pcalibre4">&lt;script&gt;</code> 元素上的 <code class="pcalibre3 calibre11 pcalibre4">async</code> 属性。当配合脚本使用时， <code class="pcalibre3 calibre11 pcalibre4">async</code> 会导致脚本文件在下载并解析完毕后就立即执行。但带有 <code class="pcalibre3 calibre11 pcalibre4">async</code> 的脚本在文档中的顺序却并不会影响脚本执行的次序，脚本总是会在下载完成后就立即执行，而无须等待包含它的文档解析完毕。</p>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">async</code> 属性也能同样被应用到模块上。在 <code class="pcalibre3 calibre11 pcalibre4">&lt;script type="module"&gt;</code> 上使用 <code class="pcalibre3 calibre11 pcalibre4">async</code> 会导致模块的执行行为与脚本相似。唯一区别是模块中所有 <code class="pcalibre3 calibre11 pcalibre4">import</code> 导入的资源会在模块自身被执行前先下载。这保证了模块中所有需要的资源会在模块执行前被下载，你只是不能保证模块<strong class="calibre8">何时</strong>会执行。研究以下代码：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">&lt;!-- no guarantee which one of these will execute first --&gt;</span>
+<span class="hljs-regexp">&lt;<span class="calibre19">script</span> <span class="calibre19">type</span>=<span class="hljs-string">"module"</span> <span class="calibre19">async</span> <span class="calibre19">src</span>=<span class="hljs-string">"module1.js"</span>&gt;</span><span class="calibre19"></span><span class="hljs-regexp">&lt;/<span class="calibre19">script</span>&gt;</span>
+<span class="hljs-regexp">&lt;<span class="calibre19">script</span> <span class="calibre19">type</span>=<span class="hljs-string">"module"</span> <span class="calibre19">async</span> <span class="calibre19">src</span>=<span class="hljs-string">"module2.js"</span>&gt;</span><span class="calibre19"></span><span class="hljs-regexp">&lt;/<span class="calibre19">script</span>&gt;</span>
+</code></pre>
+<p class="calibre6">此例中两个模块文件被异步加载了。仅查看代码就判断出那个模块会被先执行，这是不可能的。若 <code class="pcalibre3 calibre11 pcalibre4">module1.js</code> 首先结束下载（包括它的所有导入资源），那么它就会首先执行。而对于 <code class="pcalibre3 calibre11 pcalibre4">module2.js</code> 来说也是一样。</p>
+<h5 id="将模块作为-worker-加载" class="calibre18"><span id="loading-modules-as-workers" class="calibre19">将模块作为 Worker 加载</span></h5>
+<p class="calibre6">诸如 Web Worker 与 Service Worker 之类的 worker ，会在网页上下文外部执行 JS 代码。创建一个新的 worker 调用，也就会创建 <code class="pcalibre3 calibre11 pcalibre4">Worker</code> （或其他 worker 类）的一个实例，并会向其传入 JS 文件的位置。其默认的加载机制是将文件当作脚本来下载，例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">// 用脚本方式加载 script.js</span>
+<span class="hljs-keyword">let</span> worker = <span class="hljs-keyword">new</span> Worker(<span class="hljs-string">"script.js"</span>);
+</code></pre>
+<p class="calibre6">为了支持模块加载， HTML 标准的开发者为这些 worker 构造器添加了第二个参数，此参数是一个有 <code class="pcalibre3 calibre11 pcalibre4">type</code> 属性的对象，该属性的默认值是 <code class="pcalibre3 calibre11 pcalibre4">"script"</code> 。你也可以将 <code class="pcalibre3 calibre11 pcalibre4">type</code> 设置为 <code class="pcalibre3 calibre11 pcalibre4">"module"</code> 以便加载模块文件：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">// 用模块方式加载 module.js</span>
+<span class="hljs-keyword">let</span> worker = <span class="hljs-keyword">new</span> Worker(<span class="hljs-string">"module.js"</span>, { type: <span class="hljs-string">"module"</span> });
+</code></pre>
+<p class="calibre6">此例通过传递 <code class="pcalibre3 calibre11 pcalibre4">type</code> 属性值为 <code class="pcalibre3 calibre11 pcalibre4">"module"</code> 的第二个参数，将 <code class="pcalibre3 calibre11 pcalibre4">module.js</code> 作为模块而不是脚本进行了加载（ <code class="pcalibre3 calibre11 pcalibre4">type</code> 属性也就是模拟了 <code class="pcalibre3 calibre11 pcalibre4">&lt;script&gt;</code> 标签在模块与脚本之间的 <code class="pcalibre3 calibre11 pcalibre4">type</code> 区别）。这第二个参数在浏览器中的所有的 worker 类型中都得到了支持。</p>
+<p class="calibre6">worker 模块通常与 worker 脚本一致，但存在两点例外。首先， worker 脚本被限制只能从同源的网页进行加载，而 worker 模块可以不受此限制。尽管 worker 模块具有相同的默认限制，但当响应头中包含恰当的跨域资源共享（ Cross-Origin Resource Sharing ， CORS ）时，就允许跨域加载文件。其次， worker 脚本可以使用 <code class="pcalibre3 calibre11 pcalibre4">self.importScripts()</code> 方法来将额外脚本引入 worker ，而 worker 模块上的 <code class="pcalibre3 calibre11 pcalibre4">self.importScripts()</code> 却总会失败，因为应当换用 <code class="pcalibre3 calibre11 pcalibre4">import</code> 。</p>
+<h4 id="浏览器模块说明符方案" class="calibre15"><span id="browser-module-specifier-resolution" class="calibre13">浏览器模块说明符方案</span></h4>
+<p class="calibre6">本章至今的所有范例都使用了相对的模块说明符，例如 <code class="pcalibre3 calibre11 pcalibre4">"./example.js"</code> 。浏览器要求模块说明符应当为下列格式之一：</p>
+<ul class="calibre9">
+<li class="calibre10">以 <code class="pcalibre3 calibre11 pcalibre4">/</code> 为起始，表示从根目录开始解析；</li>
+<li class="calibre10">以 <code class="pcalibre3 calibre11 pcalibre4">./</code> 为起始，表示从当前目录开始解析；</li>
+<li class="calibre10">以 <code class="pcalibre3 calibre11 pcalibre4">../</code> 为起始，表示从父级目录开始解析；</li>
+<li class="calibre10">URL 格式。</li>
+</ul>
+<p class="calibre6">例如，假设你拥有一个位于 <code class="pcalibre3 calibre11 pcalibre4">https://www.example.com/modules/module.js</code> 的模块文件，包含了以下代码：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">// 从 https://www.example.com/modules/example1.js 导入</span>
+<span class="hljs-keyword">import</span> { first } <span class="hljs-keyword">from</span> <span class="hljs-string">"./example1.js"</span>;
+
+<span class="hljs-title">// 从 from https://www.example.com/example2.js 导入</span>
+<span class="hljs-keyword">import</span> { second } <span class="hljs-keyword">from</span> <span class="hljs-string">"../example2.js"</span>;
+
+<span class="hljs-title">// 从 from https://www.example.com/example3.js 导入</span>
+<span class="hljs-keyword">import</span> { third } <span class="hljs-keyword">from</span> <span class="hljs-string">"/example3.js"</span>;
+
+<span class="hljs-title">// 从 from https://www2.example.com/example4.js 导入</span>
+<span class="hljs-keyword">import</span> { fourth } <span class="hljs-keyword">from</span> <span class="hljs-string">"https://www2.example.com/example4.js"</span>;
+</code></pre>
+<p class="calibre6">此例中每一个模块说明符在浏览器中使用时都是有效的，包括最后一行的完整 URL （你无须确保 <code class="pcalibre3 calibre11 pcalibre4">ww2.example.com</code> 已经正确配置了它的 CORS 响应头来允许跨域加载，这会影响是否能跨域加载，却不会影响语法的有效性）。这些是浏览器默认情况下仅能使用的模块说明符格式（不过未完成的模块加载器规范将会提供对其他格式的支持）。这意味着某些看似正常的模块说明符实际上在浏览器中是无效的，并且会导致错误，正如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-title">// 无效：没有以 / 、 ./ 或 ../ 开始</span>
+<span class="hljs-keyword">import</span> { first } <span class="hljs-keyword">from</span> <span class="hljs-string">"example.js"</span>;
+
+<span class="hljs-title">// 无效：没有以 / 、 ./ 或 ../ 开始</span>
+<span class="hljs-keyword">import</span> { second } <span class="hljs-keyword">from</span> <span class="hljs-string">"example/index.js"</span>;
+</code></pre>
+<p class="calibre6">此处的模块说明符都不能被浏览器加载。这两个模块说明符都用了无效的格式（缺失了正确的起始字符），尽管在 <code class="pcalibre3 calibre11 pcalibre4">&lt;script&gt;</code> 标签中作为 <code class="pcalibre3 calibre11 pcalibre4">src</code> 来使用是有效的。这是在 <code class="pcalibre3 calibre11 pcalibre4">&lt;script&gt;</code> 与 <code class="pcalibre3 calibre11 pcalibre4">import</code> 之间有意制造的行为差异。</p>
+<h3 id="总结" class="calibre15"><span id="summary" class="calibre13">总结</span></h3>
+<p class="calibre6">ES6 为 JS 语言添加了模块，作为打包与封装功能的方式。模块的行为异于脚本，它们不会用自身顶级作用域的变量、函数或类去修改全局作用域，而模块的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 值为 <code class="pcalibre3 calibre11 pcalibre4">undefined</code> 。为了实现这些行为，模块在被加载时使用了一种不同的方式。</p>
+<p class="calibre6">你必须将模块中需要向外提供的任何功能都导出，变量、函数与类都可以，并且每个模块允许存在一个默认导出。在导出之后，另一个模块就能导入该模块所导出的一个或多个名称了。这些导入的名称就像是被 <code class="pcalibre3 calibre11 pcalibre4">let</code> 所定义的，会被当作块级绑定，并且不允在同一模块内重复声明。</p>
+<p class="calibre6">如果模块只是要在全局作用域上进行操纵，那么无须导出任何绑定。你实际上可以导入这样一个模块，而不会在当前模块作用域中引入任何绑定。</p>
+<p class="calibre6">由于模块必须用与脚本不同的方式运行，浏览器就引入了 <code class="pcalibre3 calibre11 pcalibre4">&lt;script type="module"&gt;</code> ，以表示资源文件或内联代码需要作为模块来执行。使用 <code class="pcalibre3 calibre11 pcalibre4">&lt;script type="module"&gt;</code> 加载的模块文件会默认应用 <code class="pcalibre3 calibre11 pcalibre4">defer</code> 属性。一旦包含模块的页面文档完全被解析，模块就会按照它们在文档中的出现顺序依次执行。</p>
+
+        </div>
+    
+</div>
+
+        
+    
+
+
+</body></html>

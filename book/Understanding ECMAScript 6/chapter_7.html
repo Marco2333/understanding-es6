@@ -1,0 +1,533 @@
+<?xml version='1.0' encoding='utf-8'?>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+  <head>
+    <title>第七章 Set与Map</title>
+    <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+    <meta content="" name="description"/>
+    <meta content="GitBook 3.2.2" name="generator"/>
+    <meta content="sagittarius-rev" name="author"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link href="stylesheet.css" rel="stylesheet" type="text/css"/>
+<link href="page_styles.css" rel="stylesheet" type="text/css"/>
+</head>
+  <body class="calibre">
+        
+<div class="page">
+    
+        <h1 class="book-chapter" id="calibre_toc_9">第七章 Set与Map</h1>
+        <div class="section">
+            <h2 id="第七章-set与map" class="calibre12"><span id="sets-and-maps" class="calibre13">第七章 Set与Map</span></h2>
+<p class="calibre6">JS 的大部分历史时期都只存在一种集合类型，也就是数组类型（尽管有人会争论说，所有非数组的对象都是键值对的集合，它们曾被用于与数组完全不同的用途）。数组在 JS 中的使用正如其它语言的数组一样，但缺少更多类型的集合导致数组也经常被当作队列与栈来使用。数组只使用了数值型的索引，而如果非数值型的索引是必要的，开发者便会使用非数组的对象。这种技巧引出了非数组对象的定制实现，即 Set 与 Map 。</p>
+<p class="calibre6"><strong class="calibre8">Set</strong> 是不包含重复值的列表。你一般不会像对待数组那样来访问 Set 中的某个项；相反更常见的是，只在 Set 中检查某个值是否存在。 <strong class="calibre8">Map</strong> 则是键与相对应的值的集合。因此， Map 中的每个项都存储了两块数据，通过指定所需读取的键即可检索对应的值。 Map 常被用作缓存，存储数据以便此后快速检索。由于 Set 与 Map 并不正式存在于 ES5 中，开发者就只能使用非数组的对象。</p>
+<p class="calibre6">ES6 向 JS 添加了 Set 与 Map ，本章将论述这两种集合类型你所需了解的全部内容。</p>
+<p class="calibre6">首先，我会论述在 ES6 之前开发者为了实现 Set 与 Map 而采用的变通方法，并且这些方法为何是有问题的。在论述这些重要的背景之后，我会介绍 Set 与 Map 在 ES6 中如何工作。</p>
+<ul class="calibre9">
+<li class="calibre10"><a href="#sets-and-maps-in-ecmascript-5" class="calibre7 pcalibre pcalibre1 pcalibre2">ES5 中的 Set 与 Map</a></li>
+<li class="calibre10"><a href="#problems-with-workarounds" class="calibre7 pcalibre pcalibre1 pcalibre2">变通方法的问题</a></li>
+<li class="calibre10"><a href="#sets-in-ecmascript-6" class="calibre7 pcalibre pcalibre1 pcalibre2">ES6 的 Set</a><ul class="calibre14">
+<li class="calibre10"><a href="#creating-sets-and-adding-items" class="calibre7 pcalibre pcalibre1 pcalibre2">创建 Set 并添加项目</a></li>
+<li class="calibre10"><a href="#removing-values" class="calibre7 pcalibre pcalibre1 pcalibre2">移除值</a></li>
+<li class="calibre10"><a href="#the-foreach---method-for-sets" class="calibre7 pcalibre pcalibre1 pcalibre2">Set 上的 forEach() 方法</a></li>
+<li class="calibre10"><a href="#converting-a-set-to-an-array" class="calibre7 pcalibre pcalibre1 pcalibre2">将 Set 转换为数组</a></li>
+<li class="calibre10"><a href="#weak-sets" class="calibre7 pcalibre pcalibre1 pcalibre2">Weak Set</a><ul class="calibre17">
+<li class="calibre10"><a href="#creating-a-weak-set" class="calibre7 pcalibre pcalibre1 pcalibre2">创建 Weak Set</a></li>
+<li class="calibre10"><a href="#key-differences-between-set-types" class="calibre7 pcalibre pcalibre1 pcalibre2">Set 类型之间的关键差异</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="calibre10"><a href="#maps-in-ecmascript-6" class="calibre7 pcalibre pcalibre1 pcalibre2">ES6 的 Map</a><ul class="calibre14">
+<li class="calibre10"><a href="#map-methods" class="calibre7 pcalibre pcalibre1 pcalibre2">Map 的方法</a></li>
+<li class="calibre10"><a href="#map-initialization" class="calibre7 pcalibre pcalibre1 pcalibre2">Map 的初始化</a></li>
+<li class="calibre10"><a href="#the-foreach-method-on-maps" class="calibre7 pcalibre pcalibre1 pcalibre2">Map 上的 forEach 方法</a></li>
+<li class="calibre10"><a href="#weak-maps" class="calibre7 pcalibre pcalibre1 pcalibre2">Weak Map</a><ul class="calibre17">
+<li class="calibre10"><a href="#using-weak-maps" class="calibre7 pcalibre pcalibre1 pcalibre2">使用 Weak Map</a></li>
+<li class="calibre10"><a href="#weak-map-initialization" class="calibre7 pcalibre pcalibre1 pcalibre2">Weak Map 的初始化</a></li>
+<li class="calibre10"><a href="#weak-map-methods" class="calibre7 pcalibre pcalibre1 pcalibre2">Weak Map 的方法</a></li>
+<li class="calibre10"><a href="#private-object-data" class="calibre7 pcalibre pcalibre1 pcalibre2">对象的私有数据</a></li>
+<li class="calibre10"><a href="#weak-map-uses-and-limitations" class="calibre7 pcalibre pcalibre1 pcalibre2">Weak Map 的用法与局限性</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="calibre10"><a href="#summary" class="calibre7 pcalibre pcalibre1 pcalibre2">总结</a></li>
+</ul>
+<h3 id="es5-中的-set-与-map" class="calibre15"><span id="sets-and-maps-in-ecmascript-5" class="calibre13">ES5 中的 Set 与 Map</span></h3>
+<p class="calibre6">在 ES5 中，开发者使用对象属性来模拟 Set 与 Map ，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> set = <span class="hljs-params">Object</span>.create(<span class="hljs-params">null</span>);
+
+set.foo = <span class="hljs-params">true</span>;
+
+<span class="hljs-title">// 检查属性的存在性</span>
+<span class="hljs-keyword">if</span> (set.foo) {
+
+    <span class="hljs-title">// 一些操作</span>
+}
+</code></pre>
+<p class="calibre6">本例中的 <code class="pcalibre3 calibre11 pcalibre4">set</code> 变量是一个原型为 <code class="pcalibre3 calibre11 pcalibre4">null</code> 的对象，确保在此对象上没有继承属性。使用对象的属性作为需要检查的唯一值在 ES5 中是很常用的方法。当一个属性被添加到 <code class="pcalibre3 calibre11 pcalibre4">set</code> 对象时，它的值也被设为 <code class="pcalibre3 calibre11 pcalibre4">true</code> ，因此条件判断语句（例如本例中的 <code class="pcalibre3 calibre11 pcalibre4">if</code> 语句）就可以简单判断出该值是否存在。</p>
+<p class="calibre6">使用对象模拟 Set 与模拟 Map 之间唯一真正的区别是所存储的值。例如，以下例子将对象作为 Map 使用：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> map = <span class="hljs-params">Object</span>.create(<span class="hljs-params">null</span>);
+
+map.foo = <span class="hljs-string">"bar"</span>;
+
+<span class="hljs-title">// 提取一个值</span>
+<span class="hljs-keyword">let</span> value = map.foo;
+
+<span class="hljs-params">console</span>.log(value);         <span class="hljs-title">// "bar"</span>
+</code></pre>
+<p class="calibre6">此代码将字符串值 <code class="pcalibre3 calibre11 pcalibre4">"bar"</code> 存储在 <code class="pcalibre3 calibre11 pcalibre4">foo</code> 键上。与 Set 不同， Map 多数被用来提取数据，而不是仅检查键的存在性。</p>
+<h3 id="变通方法的问题" class="calibre15"><span id="problems-with-workarounds" class="calibre13">变通方法的问题</span></h3>
+<p class="calibre6">尽管在简单情况下将对象作为 Set 与 Map 来使用都是可行的，但一旦接触到对象属性的局限性，此方式就会遇到更多麻烦。例如，由于对象属性的类型必须为字符串，你就必须保证任意两个键不能被转换为相同的字符串。研究以下代码：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> map = <span class="hljs-params">Object</span>.create(<span class="hljs-params">null</span>);
+
+map[<span class="hljs-params">5</span>] = <span class="hljs-string">"foo"</span>;
+
+<span class="hljs-params">console</span>.log(map[<span class="hljs-string">"5"</span>]);      <span class="hljs-title">// "foo"</span>
+</code></pre>
+<p class="calibre6">本例将字符串值 <code class="pcalibre3 calibre11 pcalibre4">"foo"</code> 赋值到数值类型的键 <code class="pcalibre3 calibre11 pcalibre4">5</code> 上，而数值类型的键会在内部被转换为字符串，因此 <code class="pcalibre3 calibre11 pcalibre4">map["5"]</code> 与 <code class="pcalibre3 calibre11 pcalibre4">map[5]</code> 实际上引用了同一个属性。当你想将数值与字符串都作为键来使用时，这种内部转换会引起问题。而若使用对象作为键，就会出现另一个问题，例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> map = <span class="hljs-params">Object</span>.create(<span class="hljs-params">null</span>),
+    key1 = {},
+    key2 = {};
+
+map[key1] = <span class="hljs-string">"foo"</span>;
+
+<span class="hljs-params">console</span>.log(map[key2]);     <span class="hljs-title">// "foo"</span>
+</code></pre>
+<p class="calibre6">此处的 <code class="pcalibre3 calibre11 pcalibre4">map[key2]</code> 与 <code class="pcalibre3 calibre11 pcalibre4">map[key1]</code> 引用了同一个值。由于对象的属性只能是字符串， <code class="pcalibre3 calibre11 pcalibre4">key1</code> 与 <code class="pcalibre3 calibre11 pcalibre4">key2</code> 对象就均被转换为字符串；又因为对象默认的字符串类型表达形式是 <code class="pcalibre3 calibre11 pcalibre4">"[object Object]"</code> ， <code class="pcalibre3 calibre11 pcalibre4">key1</code> 与 <code class="pcalibre3 calibre11 pcalibre4">key2</code> 就被转换为了同一个字符串。这种行为导致的错误可能不太显眼，因为貌似合乎逻辑的假设是：键如果使用了不同对象，它们就应当是不同的键。</p>
+<p class="calibre6">将对象转换为默认的字符串表现形式，使得对象很难被当作 Map 的键来使用（此问题同样存在于将对象作为 Set 来使用的尝试上）。</p>
+<p class="calibre6">当键的值为假值时， Map 也遇到了自身的特殊问题。在需要布尔值的位置（例如在 <code class="pcalibre3 calibre11 pcalibre4">if</code> 语句内），任何假值都会被自动转换为 false 。这种转换单独说来并不是问题——只要对如何使用值的问题足够小心。例如，查看以下代码：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> map = <span class="hljs-params">Object</span>.create(<span class="hljs-params">null</span>);
+
+map.count = <span class="hljs-params">1</span>;
+
+<span class="hljs-title">// 是想检查 "count" 属性的存在性，还是想检查非零值？</span>
+<span class="hljs-keyword">if</span> (map.count) {
+    <span class="hljs-title">// ...</span>
+}
+</code></pre>
+<p class="calibre6">此例中 <code class="pcalibre3 calibre11 pcalibre4">map.count</code> 的用法存在歧义。此处的 <code class="pcalibre3 calibre11 pcalibre4">if</code> 语句是想检查 <code class="pcalibre3 calibre11 pcalibre4">map.count</code> 属性的存在性，还是想检查非零值？该 <code class="pcalibre3 calibre11 pcalibre4">if</code> 语句内的代码会被执行是因为 1 是真值。然而若 <code class="pcalibre3 calibre11 pcalibre4">map.count</code> 的值为 0 ，或者该属性不存在，则 <code class="pcalibre3 calibre11 pcalibre4">if</code> 语句内的代码都将不会被执行。</p>
+<p class="calibre6">在大型应用中，这类问题都是难以确认、难以调试的，这也是 ES6 新增 Set 与 Map 类型的首要原因。</p>
+<blockquote class="calibre20">
+<p class="calibre6">JS 存在 <code class="pcalibre3 calibre11 pcalibre4">in</code> 运算符，若属性存在于对象中，就会返回 <code class="pcalibre3 calibre11 pcalibre4">true</code> 而无须读取对象的属性值。不过， <code class="pcalibre3 calibre11 pcalibre4">in</code> 运算符会搜索对象的原型，这使得它只有在处理原型为 <code class="pcalibre3 calibre11 pcalibre4">null</code> 的对象时才是安全的。但即使原型没问题，许多开发者仍然错误地使用与上例类似的代码，而不使用 <code class="pcalibre3 calibre11 pcalibre4">in</code> 运算符。</p>
+</blockquote>
+<h3 id="es6-的-set" class="calibre15"><span id="sets-in-ecmascript-6" class="calibre13">ES6 的 Set</span></h3>
+<p class="calibre6">ES6 新增了 <code class="pcalibre3 calibre11 pcalibre4">Set</code> 类型，这是一种无重复值的有序列表。 Set 允许对它包含的数据进行快速访问，从而增加了一个追踪离散值的更有效方式。</p>
+<h4 id="创建-set-并添加项目" class="calibre15"><span id="creating-sets-and-adding-items" class="calibre13">创建 Set 并添加项目</span></h4>
+<p class="calibre6">Set 使用 <code class="pcalibre3 calibre11 pcalibre4">new Set()</code> 来创建，而调用 <code class="pcalibre3 calibre11 pcalibre4">add()</code> 方法就能向 Set 中添加项目，检查 <code class="pcalibre3 calibre11 pcalibre4">size</code> 属性还能查看其中包含有多少项：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> set = <span class="hljs-keyword">new</span> <span class="hljs-params">Set</span>();
+set.add(<span class="hljs-params">5</span>);
+set.add(<span class="hljs-string">"5"</span>);
+
+<span class="hljs-params">console</span>.log(set.size);    <span class="hljs-title">// 2</span>
+</code></pre>
+<p class="calibre6">Set 不会使用强制类型转换来判断值是否重复。这意味着 Set 可以同时包含数值 <code class="pcalibre3 calibre11 pcalibre4">5</code> 与 字符串 <code class="pcalibre3 calibre11 pcalibre4">"5"</code> ，将它们都作为相对独立的项（在 Set 内部的比较使用了第四章讨论过的 <code class="pcalibre3 calibre11 pcalibre4">Object.is()</code> 方法，来判断两个值是否相等）。你还可以向 Set 添加多个对象，它们不会被合并为同一项：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> set = <span class="hljs-keyword">new</span> <span class="hljs-params">Set</span>(),
+    key1 = {},
+    key2 = {};
+
+set.add(key1);
+set.add(key2);
+
+<span class="hljs-params">console</span>.log(set.size);    <span class="hljs-title">// 2</span>
+</code></pre>
+<p class="calibre6">由于 <code class="pcalibre3 calibre11 pcalibre4">key1</code> 与 <code class="pcalibre3 calibre11 pcalibre4">key2</code> 并不会被转换为字符串，所以它们在这个 Set 内部被认为是两个不同的项（记住：如果它们被转换为字符串，那么都会等于 <code class="pcalibre3 calibre11 pcalibre4">"[object Object]"</code> ）。</p>
+<p class="calibre6">如果 <code class="pcalibre3 calibre11 pcalibre4">add()</code> 方法用相同值进行了多次调用，那么在第一次之后的调用实际上会被忽略：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> set = <span class="hljs-keyword">new</span> <span class="hljs-params">Set</span>();
+set.add(<span class="hljs-params">5</span>);
+set.add(<span class="hljs-string">"5"</span>);
+set.add(<span class="hljs-params">5</span>);     <span class="hljs-title">// 重复了，该调用被忽略</span>
+
+<span class="hljs-params">console</span>.log(set.size);    <span class="hljs-title">// 2</span>
+</code></pre>
+<p class="calibre6">你可以使用数组来初始化一个 Set ，并且 <code class="pcalibre3 calibre11 pcalibre4">Set</code> 构造器会确保不重复地使用这些值。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> set = <span class="hljs-keyword">new</span> <span class="hljs-params">Set</span>([<span class="hljs-params">1</span>, <span class="hljs-params">2</span>, <span class="hljs-params">3</span>, <span class="hljs-params">4</span>, <span class="hljs-params">5</span>, <span class="hljs-params">5</span>, <span class="hljs-params">5</span>, <span class="hljs-params">5</span>]);
+<span class="hljs-params">console</span>.log(set.size);    <span class="hljs-title">// 5</span>
+</code></pre>
+<p class="calibre6">在此例中，带有重复值的数组被用来初始化这个 Set 。虽然数值 5 在数组中出现了四次，但 Set 中却只有一个 5 。若要把已存在的代码或 JSON 结构转换为 Set 来使用，这种特性会让转换更轻松。</p>
+<blockquote class="calibre20">
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">Set</code> 构造器实际上可以接收任意可迭代对象作为参数。能使用数组是因为它们默认就是可迭代的， Set 与 Map 也是一样。 <code class="pcalibre3 calibre11 pcalibre4">Set</code> 构造器会使用迭代器来提取参数中的值。（可迭代对象与迭代器详见第八章）</p>
+</blockquote>
+<p class="calibre6">你可以使用 <code class="pcalibre3 calibre11 pcalibre4">has()</code> 方法来测试某个值是否存在于 Set 中，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> set = <span class="hljs-keyword">new</span> <span class="hljs-params">Set</span>();
+set.add(<span class="hljs-params">5</span>);
+set.add(<span class="hljs-string">"5"</span>);
+
+<span class="hljs-params">console</span>.log(set.has(<span class="hljs-params">5</span>));    <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(set.has(<span class="hljs-params">6</span>));    <span class="hljs-title">// false</span>
+</code></pre>
+<p class="calibre6">此处的 Set 不包含 6 这个值，因此 <code class="pcalibre3 calibre11 pcalibre4">set.has(6)</code> 会返回 false 。</p>
+<h4 id="移除值" class="calibre15"><span id="removing-values" class="calibre13">移除值</span></h4>
+<p class="calibre6">也可以从 Set 中将值移除。你可以使用 <code class="pcalibre3 calibre11 pcalibre4">delete()</code> 方法来移除单个值，或调用 <code class="pcalibre3 calibre11 pcalibre4">clear()</code> 方法来将所有值从 Set 中移除。以下代码展示了二者的作用：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> set = <span class="hljs-keyword">new</span> <span class="hljs-params">Set</span>();
+set.add(<span class="hljs-params">5</span>);
+set.add(<span class="hljs-string">"5"</span>);
+
+<span class="hljs-params">console</span>.log(set.has(<span class="hljs-params">5</span>));    <span class="hljs-title">// true</span>
+
+set.delete(<span class="hljs-params">5</span>);
+
+<span class="hljs-params">console</span>.log(set.has(<span class="hljs-params">5</span>));    <span class="hljs-title">// false</span>
+<span class="hljs-params">console</span>.log(set.size);      <span class="hljs-title">// 1</span>
+
+set.clear();
+
+<span class="hljs-params">console</span>.log(set.has(<span class="hljs-string">"5"</span>));  <span class="hljs-title">// false</span>
+<span class="hljs-params">console</span>.log(set.size);      <span class="hljs-title">// 0</span>
+</code></pre>
+<p class="calibre6">在调用 <code class="pcalibre3 calibre11 pcalibre4">delete()</code> 之后，只有 <code class="pcalibre3 calibre11 pcalibre4">5</code> 被移走；而执行 <code class="pcalibre3 calibre11 pcalibre4">clear()</code> 方法后， <code class="pcalibre3 calibre11 pcalibre4">set</code> 就被清空了。</p>
+<p class="calibre6">所有这些方法都提供了一个非常简单的机制来追踪有序的唯一值。不过，在给 Set 添加项之后，要如何对每个项执行一些操作呢？此时 <code class="pcalibre3 calibre11 pcalibre4">forEcah()</code> 方法就派上用场了。</p>
+<h4 id="set-上的-foreach-方法" class="calibre15"><span id="the-foreach---method-for-sets" class="calibre13">Set 上的 forEach() 方法</span></h4>
+<p class="calibre6">若你曾处理过数组，可能就已经熟悉了 <code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 方法。 ES5 给数组添加了 <code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 方法，使得更易处理数组中的每一项，而无须建立 <code class="pcalibre3 calibre11 pcalibre4">for</code> 循环。该方法被开发者普遍使用，于是 Set 类型也添加了相同方法，其工作方式也一样。</p>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 方法会被传递一个回调函数，该回调接受三个参数：</p>
+<ol class="calibre2">
+<li class="calibre10">Set 中下个位置的值；</li>
+<li class="calibre10">与第一个参数相同的值；</li>
+<li class="calibre10">目标 Set 自身。</li>
+</ol>
+<p class="calibre6">Set 版本的 <code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 方法与数组版本有个奇怪差异：前者传给回调函数的第一个与第二个参数是相同的。虽然看起来像是错误，但这种行为却有个正当理由。</p>
+<p class="calibre6">具有 <code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 方法的其它对象（即数组与 Map ）都会给回调函数传递三个参数，前两个参数都分别是下个位置的值与键（给数组使用的键是数值索引）。</p>
+<p class="calibre6">然而 Set 却没有键。 ES6 标准的制定者本可以将 Set 版本的 <code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 方法的回调函数设定为只接受两个参数，但这会让它不同于另外两个版本的方法。不过他们找到了一种方式让这些回调函数保持参数相同：将 Set 中的每一项同时认定为键与值。于是为了让 Set 的 <code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 方法与数组及 Map 版本的保持一致，该回调函数的前两个参数就始终相同了。</p>
+<p class="calibre6">除了参数特点的差异外，在 Set 上使用 <code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 方法与在数组上基本相同。这里有些代码展示了该方法如何工作：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> set = <span class="hljs-keyword">new</span> <span class="hljs-params">Set</span>([<span class="hljs-params">1</span>, <span class="hljs-params">2</span>]);
+
+set.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">value, key, ownerSet</span>) </span>{
+    <span class="hljs-params">console</span>.log(key + <span class="hljs-string">" "</span> + value);
+    <span class="hljs-params">console</span>.log(ownerSet === set);
+});
+</code></pre>
+<p class="calibre6">此代码在 Set 的每一项上进行迭代，并对传递给 <code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 的回调函数的值进行了输出。回调函数每次执行时， <code class="pcalibre3 calibre11 pcalibre4">key</code> 与 <code class="pcalibre3 calibre11 pcalibre4">value</code> 总是相同的，同时 <code class="pcalibre3 calibre11 pcalibre4">ownerSet</code> 也始终等于 <code class="pcalibre3 calibre11 pcalibre4">set</code> 。此代码输出：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5">1 1
+true
+2 2
+true
+</code></pre><p class="calibre6">与使用数组相同，如果想在回调函数中使用 <code class="pcalibre3 calibre11 pcalibre4">this</code> ，你可以给 <code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 传入一个 <code class="pcalibre3 calibre11 pcalibre4">this</code> 值作为第二个参数：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> set = <span class="hljs-keyword">new</span> <span class="hljs-params">Set</span>([<span class="hljs-params">1</span>, <span class="hljs-params">2</span>]);
+
+<span class="hljs-keyword">let</span> processor = {
+    output(value) {
+        <span class="hljs-params">console</span>.log(value);
+    },
+    process(dataSet) {
+        dataSet.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">value</span>) </span>{
+            <span class="hljs-keyword">this</span>.output(value);
+        }, <span class="hljs-keyword">this</span>);
+    }
+};
+
+processor.process(set);
+</code></pre>
+<p class="calibre6">本例中 <code class="pcalibre3 calibre11 pcalibre4">processor.process()</code> 方法在 Set 上调用了 <code class="pcalibre3 calibre11 pcalibre4">forEach()</code> ，并传递了当前 <code class="pcalibre3 calibre11 pcalibre4">this</code> 作为回调函数的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 值。 这个传递十分必要，这样 <code class="pcalibre3 calibre11 pcalibre4">this.output()</code> 就能正确地解析到 <code class="pcalibre3 calibre11 pcalibre4">processor.output()</code> 方法。此处 <code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 的回调函数仅使用了第一个参数 <code class="pcalibre3 calibre11 pcalibre4">value</code> ，其余参数则被省略了。你也可以使用箭头函数来达到相同效果，而无须传入第二个参数，就像这样：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> set = <span class="hljs-keyword">new</span> <span class="hljs-params">Set</span>([<span class="hljs-params">1</span>, <span class="hljs-params">2</span>]);
+
+<span class="hljs-keyword">let</span> processor = {
+    output(value) {
+        <span class="hljs-params">console</span>.log(value);
+    },
+    process(dataSet) {
+        dataSet.forEach((value) =&gt; <span class="hljs-keyword">this</span>.output(value));
+    }
+};
+
+processor.process(set);
+</code></pre>
+<p class="calibre6">本例中的箭头函数读取了包含它的 <code class="pcalibre3 calibre11 pcalibre4">process()</code> 函数的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 值，因此就能正确地将 <code class="pcalibre3 calibre11 pcalibre4">this.output()</code> 解析为调用 <code class="pcalibre3 calibre11 pcalibre4">processor.output()</code> 。</p>
+<p class="calibre6">要记住，虽然 Set 能非常好地追踪值，并且 <code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 可以让你按顺序处理每一项，但是却无法像数组那样用索引来直接访问某个值。如果你想这么做，最好的选择是将 Set 转换为数组。</p>
+<h4 id="将-set-转换为数组" class="calibre15"><span id="converting-a-set-to-an-array" class="calibre13">将 Set 转换为数组</span></h4>
+<p class="calibre6">将数组转换为 Set 相当容易，因为可以将数组传递给 <code class="pcalibre3 calibre11 pcalibre4">Set</code> 构造器；而使用扩展运算符也能简单地将 Set 转换回数组。第三章介绍的扩展运算符（ <code class="pcalibre3 calibre11 pcalibre4">...</code> ），能将数组中的项分割开并作为函数的分离参数。你同样能将扩展运算符用于可迭代对象（例如 Set ），将它们转换为数组。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> set = <span class="hljs-keyword">new</span> <span class="hljs-params">Set</span>([<span class="hljs-params">1</span>, <span class="hljs-params">2</span>, <span class="hljs-params">3</span>, <span class="hljs-params">3</span>, <span class="hljs-params">3</span>, <span class="hljs-params">4</span>, <span class="hljs-params">5</span>]),
+    array = [...set];
+
+<span class="hljs-params">console</span>.log(array);             <span class="hljs-title">// [1,2,3,4,5]</span>
+</code></pre>
+<p class="calibre6">此处的 Set 在初始化时载入了一个包含重复值的数组。 Set 清除了重复值之后，又使用了扩展运算符将自身的项放到一个新数组中。而这个 Set 仍然包含在创建时所接收的项（ <code class="pcalibre3 calibre11 pcalibre4">1</code> 、 <code class="pcalibre3 calibre11 pcalibre4">2</code> 、 <code class="pcalibre3 calibre11 pcalibre4">3</code> 、 <code class="pcalibre3 calibre11 pcalibre4">4</code> 与 <code class="pcalibre3 calibre11 pcalibre4">5</code> ），这些项只是被复制到了新数组中，而并未从 Set 中消失。</p>
+<p class="calibre6">当已经存在一个数组，而你想用它创建一个无重复值的新数组时，该方法十分有用。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">eliminateDuplicates</span>(<span class="hljs-params">items</span>) </span>{
+    <span class="hljs-keyword">return</span> [...new <span class="hljs-params">Set</span>(items)];
+}
+
+<span class="hljs-keyword">let</span> numbers = [<span class="hljs-params">1</span>, <span class="hljs-params">2</span>, <span class="hljs-params">3</span>, <span class="hljs-params">3</span>, <span class="hljs-params">3</span>, <span class="hljs-params">4</span>, <span class="hljs-params">5</span>],
+    noDuplicates = eliminateDuplicates(numbers);
+
+<span class="hljs-params">console</span>.log(noDuplicates);      <span class="hljs-title">// [1,2,3,4,5]</span>
+</code></pre>
+<p class="calibre6">在 <code class="pcalibre3 calibre11 pcalibre4">eliminateDuplicates()</code> 函数中， Set 只是一个临时的中介物，以便在创建一个无重复的数组之前将重复值过滤掉。</p>
+<h4 id="weak-set" class="calibre15"><span id="weak-sets" class="calibre13">Weak Set</span></h4>
+<p class="calibre6">由于 <code class="pcalibre3 calibre11 pcalibre4">Set</code> 类型存储对象引用的方式，它也可以被称为 Strong Set 。对象存储在 <code class="pcalibre3 calibre11 pcalibre4">Set</code> 的一个实例中时，实际上相当于把对象存储在变量中。只要对于 <code class="pcalibre3 calibre11 pcalibre4">Set</code> 实例的引用仍然存在，所存储的对象就无法被垃圾回收机制回收，从而无法释放内存。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> set = <span class="hljs-keyword">new</span> <span class="hljs-params">Set</span>(),
+    key = {};
+
+set.add(key);
+<span class="hljs-params">console</span>.log(set.size);      <span class="hljs-title">// 1</span>
+
+<span class="hljs-title">// 取消原始引用</span>
+key = <span class="hljs-params">null</span>;
+
+<span class="hljs-params">console</span>.log(set.size);      <span class="hljs-title">// 1</span>
+
+<span class="hljs-title">// 重新获得原始引用</span>
+key = [...set][<span class="hljs-params">0</span>];
+</code></pre>
+<p class="calibre6">在本例中，将 <code class="pcalibre3 calibre11 pcalibre4">key</code> 设置为 <code class="pcalibre3 calibre11 pcalibre4">null</code> 清除了对 <code class="pcalibre3 calibre11 pcalibre4">key</code> 对象的一个引用，但是另一个引用还存于 <code class="pcalibre3 calibre11 pcalibre4">set</code> 内部。你仍然可以使用扩展运算符将 Set 转换为数组，然后访问数组的第一项， <code class="pcalibre3 calibre11 pcalibre4">key</code> 变量就取回了原先的对象。这种结果在大部分程序中是没问题的，但有时，当其它引用消失之后若 Set 内部的引用也能消失，那就更好。例如，当 JS 代码在网页中运行，同时你想保持与 DOM 元素的联系，在该元素可能被其他脚本移除的情况下，你应当不希望自己的代码保留对该 DOM 元素的最后一个引用（这种情况被称为<strong class="calibre8">内存泄漏</strong>）。</p>
+<p class="calibre6">为了缓解这个问题， ES6 也包含了 <strong class="calibre8">Weak Set</strong> ，该类型只允许存储对象弱引用，而不能存储基本类型的值。对象的<strong class="calibre8">弱引用</strong>在它自己成为该对象的唯一引用时，不会阻止垃圾回收，</p>
+<h5 id="创建-weak-set" class="calibre18"><span id="creating-a-weak-set" class="calibre19">创建 Weak Set</span></h5>
+<p class="calibre6">Weak Set 使用 <code class="pcalibre3 calibre11 pcalibre4">WeakSet</code> 构造器来创建，并包含 <code class="pcalibre3 calibre11 pcalibre4">add()</code> 方法、 <code class="pcalibre3 calibre11 pcalibre4">has()</code> 方法以及 <code class="pcalibre3 calibre11 pcalibre4">delete()</code> 方法。以下例子使用了这三个方法：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> set = <span class="hljs-keyword">new</span> <span class="hljs-params">WeakSet</span>(),
+    key = {};
+
+<span class="hljs-title">// 将对象加入 set</span>
+set.add(key);
+
+<span class="hljs-params">console</span>.log(set.has(key));      <span class="hljs-title">// true</span>
+
+set.delete(key);
+
+<span class="hljs-params">console</span>.log(set.has(key));      <span class="hljs-title">// false</span>
+</code></pre>
+<p class="calibre6">使用 Weak Set 很像在使用正规的 Set 。你可以在 Weak Set 上添加、移除或检查引用，也可以给构造器传入一个可迭代对象来初始化 Weak Set 的值：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> key1 = {},
+    key2 = {},
+    set = <span class="hljs-keyword">new</span> <span class="hljs-params">WeakSet</span>([key1, key2]);
+
+<span class="hljs-params">console</span>.log(set.has(key1));     <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(set.has(key2));     <span class="hljs-title">// true</span>
+</code></pre>
+<p class="calibre6">在本例中，一个数组被传给了 <code class="pcalibre3 calibre11 pcalibre4">WeakSet</code> 构造器。由于该数组包含了两个对象，这些对象就被添加到了 Weak Set 中。要记住若数组中包含了非对象的值，就会抛出错误，因为 <code class="pcalibre3 calibre11 pcalibre4">WeakSet</code> 构造器不接受基本类型的值。</p>
+<h5 id="set-类型之间的关键差异" class="calibre18"><span id="key-differences-between-set-types" class="calibre19">Set 类型之间的关键差异</span></h5>
+<p class="calibre6">Weak Set 与正规 Set 之间最大的区别是对象的弱引用。此处有个例子说明了这种差异：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> set = <span class="hljs-keyword">new</span> <span class="hljs-params">WeakSet</span>(),
+    key = {};
+
+<span class="hljs-title">// 将对象加入 set</span>
+set.add(key);
+
+<span class="hljs-params">console</span>.log(set.has(key));      <span class="hljs-title">// true</span>
+
+<span class="hljs-title">// 移除对于键的最后一个强引用，同时从 Weak Set 中移除</span>
+key = <span class="hljs-params">null</span>;
+</code></pre>
+<p class="calibre6">当此代码被执行后， Weak Set 中的 <code class="pcalibre3 calibre11 pcalibre4">key</code> 引用就不能再访问了。核实这一点是不可能的，因为需要把对于该对象的一个引用传递给 <code class="pcalibre3 calibre11 pcalibre4">has()</code> 方法（而只要存在其他引用， Weak Set 内部的弱引用就不会消失）。这会使得难以对 Weak Set 的引用特征进行测试，但 JS 引擎已经正确地将引用移除了，这一点你可以信任。</p>
+<p class="calibre6">这些例子演示了 Weak Set 与正规 Set 的一些共有特征，但是它们还有一些关键的差异，即：</p>
+<ol class="calibre2">
+<li class="calibre10">对于 <code class="pcalibre3 calibre11 pcalibre4">WeakSet</code> 的实例，只要调用 <code class="pcalibre3 calibre11 pcalibre4">add()</code> 、 <code class="pcalibre3 calibre11 pcalibre4">has()</code> 或 <code class="pcalibre3 calibre11 pcalibre4">delete()</code> 方法时传入了非对象的参数，就会抛出错误；</li>
+<li class="calibre10">Weak Set 不可迭代，因此不能被用在 <code class="pcalibre3 calibre11 pcalibre4">for-of</code> 循环中；</li>
+<li class="calibre10">Weak Set 无法暴露出任何迭代器（例如 <code class="pcalibre3 calibre11 pcalibre4">keys()</code> 与 <code class="pcalibre3 calibre11 pcalibre4">values()</code> 方法），因此没有任何编程手段可用于判断 Weak Set 的内容；</li>
+<li class="calibre10">Weak Set 没有 <code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 方法；</li>
+<li class="calibre10">Weak Set 没有 <code class="pcalibre3 calibre11 pcalibre4">size</code> 属性。</li>
+</ol>
+<p class="calibre6">Weak Set 看起来功能有限，而这对于正确管理内存而言是必要的。一般来说，若只想追踪对象的引用，应当使用 Weak Set 而不是正规 Set 。</p>
+<p class="calibre6">Set 给了你处理值列表的新方式，不过若需要给这些值添加额外信息，它就没用了。这就是 ES6 还添加了 Map 类型的原因。</p>
+<h3 id="es6-的-map" class="calibre15"><span id="maps-in-ecmascript-6" class="calibre13">ES6 的 Map</span></h3>
+<p class="calibre6">ES6 的 <code class="pcalibre3 calibre11 pcalibre4">Map</code> 类型是键值对的有序列表，而键和值都可以是任意类型。键的比较使用的是 <code class="pcalibre3 calibre11 pcalibre4">Object.is()</code> ，因此你能将 <code class="pcalibre3 calibre11 pcalibre4">5</code> 与 <code class="pcalibre3 calibre11 pcalibre4">"5"</code> 同时作为键，因为它们类型不同。这与使用对象属性作为键的方式（指的是用对象来模拟 Map ）截然不同，因为对象的属性会被强制转换为字符串。</p>
+<p class="calibre6">你可以调用 <code class="pcalibre3 calibre11 pcalibre4">set()</code> 方法并给它传递一个键与一个关联的值，来给 Map 添加项；此后使用键名来调用 <code class="pcalibre3 calibre11 pcalibre4">get()</code> 方法便能提取对应的值。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> map = <span class="hljs-keyword">new</span> <span class="hljs-params">Map</span>();
+map.set(<span class="hljs-string">"title"</span>, <span class="hljs-string">"Understanding ES6"</span>);
+map.set(<span class="hljs-string">"year"</span>, <span class="hljs-params">2016</span>);
+
+<span class="hljs-params">console</span>.log(map.get(<span class="hljs-string">"title"</span>));      <span class="hljs-title">// "Understanding ES6"</span>
+<span class="hljs-params">console</span>.log(map.get(<span class="hljs-string">"year"</span>));       <span class="hljs-title">// 2016</span>
+</code></pre>
+<p class="calibre6">此例存储了两个键值对。 <code class="pcalibre3 calibre11 pcalibre4">"title"</code> 键存储了一个字符串，而 <code class="pcalibre3 calibre11 pcalibre4">"year"</code> 键则存储了一个数值，此后调用 <code class="pcalibre3 calibre11 pcalibre4">get()</code> 方法提取出了二者的值。如果任意一个键不存在于 Map 中， 则 <code class="pcalibre3 calibre11 pcalibre4">get()</code> 方法就会返回特殊值 <code class="pcalibre3 calibre11 pcalibre4">undefined</code> 。</p>
+<p class="calibre6">你也可以将对象作为键，这也是从前使用对象属性来创建 Map 的变通方法所无法做到的。此处有个例子：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> map = <span class="hljs-keyword">new</span> <span class="hljs-params">Map</span>(),
+    key1 = {},
+    key2 = {};
+
+map.set(key1, <span class="hljs-params">5</span>);
+map.set(key2, <span class="hljs-params">42</span>);
+
+<span class="hljs-params">console</span>.log(map.get(key1));         <span class="hljs-title">// 5</span>
+<span class="hljs-params">console</span>.log(map.get(key2));         <span class="hljs-title">// 42</span>
+</code></pre>
+<p class="calibre6">此代码使用了对象 <code class="pcalibre3 calibre11 pcalibre4">key1</code> 与 <code class="pcalibre3 calibre11 pcalibre4">key2</code> 作为 Map 的键，并存储了两个不同的值。由于这些键不会被强制转换成其它形式，每个对象就都被认为是唯一的。这允许你给对象关联额外数据，而无须修改对象自身。</p>
+<h4 id="map-的方法" class="calibre15"><span id="map-methods" class="calibre13">Map 的方法</span></h4>
+<p class="calibre6">Map 与 Set 共享了几个方法，这是有意的，允许你使用相似的方式来与 Map 及 Set 进行交互。以下三个方法在 Map 与 Set 上都存在：</p>
+<ul class="calibre9">
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">has(key)</code> ：判断指定的键是否存在于 Map 中；</li>
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">delete(key)</code> ：移除 Map 中的键以及对应的值；</li>
+<li class="calibre10"><code class="pcalibre3 calibre11 pcalibre4">clear()</code> ：移除 Map 中所有的键与值。</li>
+</ul>
+<p class="calibre6">Map 同样拥有 <code class="pcalibre3 calibre11 pcalibre4">size</code> 属性，用于指明包含了多少个键值对。以下代码用不同方式使用了这三种方法以及 <code class="pcalibre3 calibre11 pcalibre4">size</code> 属性：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> map = <span class="hljs-keyword">new</span> <span class="hljs-params">Map</span>();
+map.set(<span class="hljs-string">"name"</span>, <span class="hljs-string">"Nicholas"</span>);
+map.set(<span class="hljs-string">"age"</span>, <span class="hljs-params">25</span>);
+
+<span class="hljs-params">console</span>.log(map.size);          <span class="hljs-title">// 2</span>
+
+<span class="hljs-params">console</span>.log(map.has(<span class="hljs-string">"name"</span>));   <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(map.get(<span class="hljs-string">"name"</span>));   <span class="hljs-title">// "Nicholas"</span>
+
+<span class="hljs-params">console</span>.log(map.has(<span class="hljs-string">"age"</span>));    <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(map.get(<span class="hljs-string">"age"</span>));    <span class="hljs-title">// 25</span>
+
+map.delete(<span class="hljs-string">"name"</span>);
+<span class="hljs-params">console</span>.log(map.has(<span class="hljs-string">"name"</span>));   <span class="hljs-title">// false</span>
+<span class="hljs-params">console</span>.log(map.get(<span class="hljs-string">"name"</span>));   <span class="hljs-title">// undefined</span>
+<span class="hljs-params">console</span>.log(map.size);          <span class="hljs-title">// 1</span>
+
+map.clear();
+<span class="hljs-params">console</span>.log(map.has(<span class="hljs-string">"name"</span>));   <span class="hljs-title">// false</span>
+<span class="hljs-params">console</span>.log(map.get(<span class="hljs-string">"name"</span>));   <span class="hljs-title">// undefined</span>
+<span class="hljs-params">console</span>.log(map.has(<span class="hljs-string">"age"</span>));    <span class="hljs-title">// false</span>
+<span class="hljs-params">console</span>.log(map.get(<span class="hljs-string">"age"</span>));    <span class="hljs-title">// undefined</span>
+<span class="hljs-params">console</span>.log(map.size);          <span class="hljs-title">// 0</span>
+</code></pre>
+<p class="calibre6">与用于 Set 时一样， <code class="pcalibre3 calibre11 pcalibre4">size</code> 属性总是包含了 Map 中键值对的数量。此例中的 <code class="pcalibre3 calibre11 pcalibre4">Map</code> 实例起初有 <code class="pcalibre3 calibre11 pcalibre4">"name"</code> 与 <code class="pcalibre3 calibre11 pcalibre4">"age"</code> 两个键，因此传递这两个键给 <code class="pcalibre3 calibre11 pcalibre4">has()</code> 方法都会返回 <code class="pcalibre3 calibre11 pcalibre4">true</code> 。在 <code class="pcalibre3 calibre11 pcalibre4">"name"</code> 键被使用 <code class="pcalibre3 calibre11 pcalibre4">delete()</code> 方法移除后， <code class="pcalibre3 calibre11 pcalibre4">has()</code> 方法在接收 <code class="pcalibre3 calibre11 pcalibre4">"name"</code> 的时候就会返回 <code class="pcalibre3 calibre11 pcalibre4">false</code> 了，并且 <code class="pcalibre3 calibre11 pcalibre4">size</code> 属性表明 Map 的项减少了一个。之后 <code class="pcalibre3 calibre11 pcalibre4">clear()</code> 方法移除了残存的键， <code class="pcalibre3 calibre11 pcalibre4">has()</code> 方法此时对这两个键都会返回 <code class="pcalibre3 calibre11 pcalibre4">false</code> ，而 <code class="pcalibre3 calibre11 pcalibre4">size</code> 属性则变成了 0 。</p>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">clear()</code> 方法是从 Map 中移除大量数据的快速方法，但同时也有一次性将大量数据添加到 Map 的方法：</p>
+<h4 id="map-的初始化" class="calibre15"><span id="map-initialization" class="calibre13">Map 的初始化</span></h4>
+<p class="calibre6">依然与 Set 类似，你能将数组传递给 <code class="pcalibre3 calibre11 pcalibre4">Map</code> 构造器，以便使用数据来初始化一个 Map 。该数组中的每一项也必须是数组，内部数组的首个项会作为键，第二项则为对应值。因此整个 Map 就被这些双项数组所填充。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> map = <span class="hljs-keyword">new</span> <span class="hljs-params">Map</span>([[<span class="hljs-string">"name"</span>, <span class="hljs-string">"Nicholas"</span>], [<span class="hljs-string">"age"</span>, <span class="hljs-params">25</span>]]);
+
+<span class="hljs-params">console</span>.log(map.has(<span class="hljs-string">"name"</span>));   <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(map.get(<span class="hljs-string">"name"</span>));   <span class="hljs-title">// "Nicholas"</span>
+<span class="hljs-params">console</span>.log(map.has(<span class="hljs-string">"age"</span>));    <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(map.get(<span class="hljs-string">"age"</span>));    <span class="hljs-title">// 25</span>
+<span class="hljs-params">console</span>.log(map.size);          <span class="hljs-title">// 2</span>
+</code></pre>
+<p class="calibre6">通过构造器中的初始化， <code class="pcalibre3 calibre11 pcalibre4">"name"</code> 与 <code class="pcalibre3 calibre11 pcalibre4">"age"</code> 这两个键就被添加到 <code class="pcalibre3 calibre11 pcalibre4">map</code> 变量中。虽然由数组构成的数组看起来有点奇怪，这对于准确表示键来说却是必要的：因为键允许是任意数据类型，将键存储在数组中，是确保它们在被添加到 Map 之前不会被强制转换为其他类型的唯一方法。</p>
+<h4 id="map-上的-foreach-方法" class="calibre15"><span id="the-foreach-method-on-maps" class="calibre13">Map 上的 forEach 方法</span></h4>
+<p class="calibre6">Map 的 <code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 方法类似于 Set 与数组的同名方法，它接受一个能接收三个参数的回调函数：</p>
+<ol class="calibre2">
+<li class="calibre10">Map 中下个位置的值；</li>
+<li class="calibre10">该值所对应的键；</li>
+<li class="calibre10">目标 Map 自身。</li>
+</ol>
+<p class="calibre6">回调函数的这些参数更紧密契合了数组 <code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 方法的行为，即：第一个参数是值、第二个参数则是键（数组中的键是数值索引）。此处有个示例：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> map = <span class="hljs-keyword">new</span> <span class="hljs-params">Map</span>([ [<span class="hljs-string">"name"</span>, <span class="hljs-string">"Nicholas"</span>], [<span class="hljs-string">"age"</span>, <span class="hljs-params">25</span>]]);
+
+map.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">value, key, ownerMap</span>) </span>{
+    <span class="hljs-params">console</span>.log(key + <span class="hljs-string">" "</span> + value);
+    <span class="hljs-params">console</span>.log(ownerMap === map);
+});
+</code></pre>
+<p class="calibre6"><code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 的回调函数输出了传给它的信息。其中 <code class="pcalibre3 calibre11 pcalibre4">value</code> 与 <code class="pcalibre3 calibre11 pcalibre4">key</code> 被直接输出， <code class="pcalibre3 calibre11 pcalibre4">ownerMap</code> 与 <code class="pcalibre3 calibre11 pcalibre4">map</code> 进行了比较，说明它们是相等的。这就输出了：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5">name Nicholas
+true
+age 25
+true
+</code></pre><p class="calibre6">传递给 <code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 的回调函数接收了每个键值对，按照键值对被添加到 Map 中的顺序。这种行为与在数组上调用 <code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 方法有所不同，后者的回调函数会按数值索引的顺序接收到每一个项。</p>
+<blockquote class="calibre20">
+<p class="calibre6">你也可以给 <code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 提供第二个参数来指定回调函数中的 <code class="pcalibre3 calibre11 pcalibre4">this</code> 值，其行为与 Set 版本的 <code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 一致。</p>
+</blockquote>
+<h4 id="weak-map" class="calibre15"><span id="weak-maps" class="calibre13">Weak Map</span></h4>
+<p class="calibre6">Weak Map 对 Map 而言，就像 Weak Set 对 Set 一样： Weak 版本都是存储对象弱引用的方式。在 <strong class="calibre8">Weak Map</strong> 中，所有的键都必须是对象（尝试使用非对象的键会抛出错误），而且这些对象都是弱引用，不会干扰垃圾回收。当 Weak Map 中的键在 Weak Map 之外不存在引用时，该键值对会被移除。</p>
+<p class="calibre6">Weak Map 的最佳用武之地，就是在浏览器中创建一个关联到特定 DOM 元素的对象。例如，某些用在网页上的 JS 库会维护一个自定义对象，用于引用该库所使用的每一个 DOM 元素，并且其映射关系会存储在内部的对象缓存中。</p>
+<p class="calibre6">该方法的困难之处在于：如何判断一个 DOM 元素已不复存在于网页中，以便该库能移除此元素的关联对象。若做不到，该库就会继续保持对 DOM 元素的一个无效引用，并造成内存泄漏。使用 Weak Map 来追踪 DOM 元素，依然允许将自定义对象关联到每个 DOM 元素，而在此对象所关联的 DOM 元素不复存在时，它就会在 Weak Map 中被自动销毁。</p>
+<blockquote class="calibre20">
+<p class="calibre6">必须注意的是， Weak Map 的键才是弱引用，而值不是。在 Weak Map 的值中存储对象会阻止垃圾回收，即使该对象的其他引用已全都被移除。</p>
+</blockquote>
+<h5 id="使用-weak-map" class="calibre18"><span id="using-weak-maps" class="calibre19">使用 Weak Map</span></h5>
+<p class="calibre6">ES6 的 <code class="pcalibre3 calibre11 pcalibre4">WeakMap</code> 类型是键值对的无序列表，其中键必须是非空的对象，值则允许是任意类型。 <code class="pcalibre3 calibre11 pcalibre4">WeakMap</code> 的界面与 <code class="pcalibre3 calibre11 pcalibre4">Map</code> 的非常相似，都使用 <code class="pcalibre3 calibre11 pcalibre4">set()</code> 与 <code class="pcalibre3 calibre11 pcalibre4">get()</code> 方法来分别添加与提取数据：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> map = <span class="hljs-keyword">new</span> <span class="hljs-params">WeakMap</span>(),
+    element = <span class="hljs-params">document</span>.querySelector(<span class="hljs-string">".element"</span>);
+
+map.set(element, <span class="hljs-string">"Original"</span>);
+
+<span class="hljs-keyword">let</span> value = map.get(element);
+<span class="hljs-params">console</span>.log(value);             <span class="hljs-title">// "Original"</span>
+
+<span class="hljs-title">// 移除元素</span>
+element.parentNode.removeChild(element);
+element = <span class="hljs-params">null</span>;
+
+<span class="hljs-title">// 该 Weak Map 在此处为空</span>
+</code></pre>
+<p class="calibre6">此例存储了一个键值对。 <code class="pcalibre3 calibre11 pcalibre4">element</code> 键是一个 DOM 元素，用于存储一个有关联的字符串值。将此 DOM 元素传递给 <code class="pcalibre3 calibre11 pcalibre4">get()</code> 方法，就能提取对应的值。随后将此 DOM 元素从页面文档中移除、并且将引用它的变量设置为 <code class="pcalibre3 calibre11 pcalibre4">null</code> ，则对应的数据也就会在 Weak Map 中被移除。</p>
+<p class="calibre6">类似于 Weak Set ，没有任何办法可以确认 Weak Map 是否为空，因为它没有 <code class="pcalibre3 calibre11 pcalibre4">size</code> 属性。在其他引用被移除后，由于对键的引用不再有残留，也就无法调用 <code class="pcalibre3 calibre11 pcalibre4">get()</code> 方法来提取对应的值。 Weak Map 已经切断了对于该值的访问，其所占的内存在垃圾回收器运行时便会被释放。</p>
+<h5 id="weak-map-的初始化" class="calibre18"><span id="weak-map-initialization" class="calibre19">Weak Map 的初始化</span></h5>
+<p class="calibre6">为了初始化 Weak Map ，需要把一个由数组构成的数组传递给 <code class="pcalibre3 calibre11 pcalibre4">WeakMap</code> 构造器。就像正规 Map 构造器那样，每个内部数组都应当有两个项，第一项是作为键的非空的对象，第二项则是对应的值（任意类型）。例如：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> key1 = {},
+    key2 = {},
+    map = <span class="hljs-keyword">new</span> <span class="hljs-params">WeakMap</span>([[key1, <span class="hljs-string">"Hello"</span>], [key2, <span class="hljs-params">42</span>]]);
+
+<span class="hljs-params">console</span>.log(map.has(key1));     <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(map.get(key1));     <span class="hljs-title">// "Hello"</span>
+<span class="hljs-params">console</span>.log(map.has(key2));     <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(map.get(key2));     <span class="hljs-title">// 42</span>
+</code></pre>
+<p class="calibre6">对象 <code class="pcalibre3 calibre11 pcalibre4">key1</code> 与 <code class="pcalibre3 calibre11 pcalibre4">key2</code> 被用作 Weak Map 的键,  <code class="pcalibre3 calibre11 pcalibre4">get()</code> 与 <code class="pcalibre3 calibre11 pcalibre4">has()</code> 方法则能访问它们。在传递给 <code class="pcalibre3 calibre11 pcalibre4">WeakMap</code> 构造器的参数中，若任意键值对使用了非对象的键，构造器就会抛出错误。</p>
+<h5 id="weak-map-的方法" class="calibre18"><span id="weak-map-methods" class="calibre19">Weak Map 的方法</span></h5>
+<p class="calibre6">Weak Map 只有两个附加方法能用来与键值对交互。 <code class="pcalibre3 calibre11 pcalibre4">has()</code> 方法用于判断指定的键是否存在于 Map 中，而 <code class="pcalibre3 calibre11 pcalibre4">delete()</code> 方法则用于移除一个特定的键值对。 <code class="pcalibre3 calibre11 pcalibre4">clear()</code> 方法不存在，这是因为没必要对键进行枚举，并且枚举 Weak Map 也是不可能的，这与 Weak Set 相同。以下例子同时用到了 <code class="pcalibre3 calibre11 pcalibre4">has()</code> 与 <code class="pcalibre3 calibre11 pcalibre4">delete()</code> 方法：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> map = <span class="hljs-keyword">new</span> <span class="hljs-params">WeakMap</span>(),
+    element = <span class="hljs-params">document</span>.querySelector(<span class="hljs-string">".element"</span>);
+
+map.set(element, <span class="hljs-string">"Original"</span>);
+
+<span class="hljs-params">console</span>.log(map.has(element));   <span class="hljs-title">// true</span>
+<span class="hljs-params">console</span>.log(map.get(element));   <span class="hljs-title">// "Original"</span>
+
+map.delete(element);
+<span class="hljs-params">console</span>.log(map.has(element));   <span class="hljs-title">// false</span>
+<span class="hljs-params">console</span>.log(map.get(element));   <span class="hljs-title">// undefined</span>
+</code></pre>
+<p class="calibre6">此处一个 DOM 元素再次在 Weak Map 中被作为键来使用。对于查看一个引用是否正被用作 Weak Map 的键， <code class="pcalibre3 calibre11 pcalibre4">has()</code> 是非常有用的。但需要注意，必须要有对于该键的另一个非空引用，才能使用此方法。而使用 <code class="pcalibre3 calibre11 pcalibre4">delete()</code> 方法则会把键从 Weak Map 中强制移除，此后 <code class="pcalibre3 calibre11 pcalibre4">has()</code> 方法就会对该键返回 <code class="pcalibre3 calibre11 pcalibre4">false</code> ， <code class="pcalibre3 calibre11 pcalibre4">get()</code>方法则会返回 <code class="pcalibre3 calibre11 pcalibre4">undefined</code> 。</p>
+<h5 id="对象的私有数据" class="calibre18"><span id="private-object-data" class="calibre19">对象的私有数据</span></h5>
+<p class="calibre6">虽然大多数开发者认为 Weak Map 的主要用途是关联数据与 DOM 元素，但仍然还存在许多可能的用法（并且毫无疑问，仍有一些用法尚未被发现）。 Weak Map 的一个实际应用就是在对象实例中存储私有数据。在 ES6 中对象的所有属性都是公开的，因此若想让数据对于对象自身可访问、而在其他条件下不可访问，那么你就需要使用一些创造力。研究以下例子：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Person</span>(<span class="hljs-params">name</span>) </span>{
+    <span class="hljs-keyword">this</span>._name = name;
+}
+
+Person.prototype.getName = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>._name;
+};
+</code></pre>
+<p class="calibre6">此代码使用了下划线这种表示私有属性的公共约定，来表明一个成员应当被认为是私有的，不应从对象实例外进行修改，此处意图是：只允许用 <code class="pcalibre3 calibre11 pcalibre4">getName()</code> 来访问 <code class="pcalibre3 calibre11 pcalibre4">this._name</code> ，而不允许 <code class="pcalibre3 calibre11 pcalibre4">_name</code> 的值被修改。然而，毫无办法阻止任何人写入 <code class="pcalibre3 calibre11 pcalibre4">_name</code> 属性，所以它依然能够被有意或无意地改写。</p>
+<p class="calibre6">在 ES5 中能够创建几乎真正私有的数据，只要在创建对象时使用类似下面的模式：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">var</span> Person = (<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+
+    <span class="hljs-keyword">var</span> privateData = {},
+        privateId = <span class="hljs-params">0</span>;
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Person</span>(<span class="hljs-params">name</span>) </span>{
+        <span class="hljs-params">Object</span>.defineProperty(<span class="hljs-keyword">this</span>, <span class="hljs-string">"_id"</span>, { value: privateId++ });
+
+        privateData[<span class="hljs-keyword">this</span>._id] = {
+            name: name
+        };
+    }
+
+    Person.prototype.getName = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">return</span> privateData[<span class="hljs-keyword">this</span>._id].name;
+    };
+
+    <span class="hljs-keyword">return</span> Person;
+}());
+</code></pre>
+<p class="calibre6">此例用 IIFE 包裹了 <code class="pcalibre3 calibre11 pcalibre4">Person</code> 的定义，其中含有两个私有属性： <code class="pcalibre3 calibre11 pcalibre4">privateData</code> 与 <code class="pcalibre3 calibre11 pcalibre4">privateId</code> 。 <code class="pcalibre3 calibre11 pcalibre4">privateData</code> 对象存储了每个实例的私有信息，而 <code class="pcalibre3 calibre11 pcalibre4">privateId</code> 则被用于为每个实例产生一个唯一 ID 。 当 <code class="pcalibre3 calibre11 pcalibre4">Person</code> 构造器被调用时，一个不可枚举、不可配置、不可写入的 <code class="pcalibre3 calibre11 pcalibre4">_id</code> 属性就被添加了。</p>
+<p class="calibre6">接下来在 <code class="pcalibre3 calibre11 pcalibre4">privateData</code> 对象中建立了与实例 ID 对应的一个入口，其中存储着 <code class="pcalibre3 calibre11 pcalibre4">name</code> 的值。随后在 <code class="pcalibre3 calibre11 pcalibre4">getName()</code> 函数中，就能使用 <code class="pcalibre3 calibre11 pcalibre4">this._id</code> 作为 <code class="pcalibre3 calibre11 pcalibre4">privateData</code> 的键来提取该值。由于 <code class="pcalibre3 calibre11 pcalibre4">privateData</code> 无法从 IIFE 外部进行访问，实际的数据就是安全的，尽管 <code class="pcalibre3 calibre11 pcalibre4">this._id</code> 在 <code class="pcalibre3 calibre11 pcalibre4">privateData</code> 对象上依然是公开暴露的。</p>
+<p class="calibre6">此方式的最大问题在于 <code class="pcalibre3 calibre11 pcalibre4">privateData</code> 中的数据永不会消失，因为在对象实例被销毁时没有任何方法可以获知该数据， <code class="pcalibre3 calibre11 pcalibre4">privateData</code> 对象就将永远包含多余的数据。这个问题现在可以换用 Weak Map 来解决了，如下：</p>
+<pre class="calibre16"><code class="lang-javascript pcalibre6 pcalibre5"><span class="hljs-keyword">let</span> Person = (<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+
+    <span class="hljs-keyword">let</span> privateData = <span class="hljs-keyword">new</span> <span class="hljs-params">WeakMap</span>();
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Person</span>(<span class="hljs-params">name</span>) </span>{
+        privateData.set(<span class="hljs-keyword">this</span>, { name: name });
+    }
+
+    Person.prototype.getName = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">return</span> privateData.get(<span class="hljs-keyword">this</span>).name;
+    };
+
+    <span class="hljs-keyword">return</span> Person;
+}());
+</code></pre>
+<p class="calibre6">此版本的 <code class="pcalibre3 calibre11 pcalibre4">Person</code> 范例使用了 Weak Map 而不是对象来保存私有数据。由于 <code class="pcalibre3 calibre11 pcalibre4">Person</code> 对象的实例本身能被作为键来使用，于是也就无须再记录单独的 ID 。当 <code class="pcalibre3 calibre11 pcalibre4">Person</code> 构造器被调用时，将 <code class="pcalibre3 calibre11 pcalibre4">this</code> 作为键在 Weak Map 上建立了一个入口，而包含私有信息的对象成为了对应的值，其中只存放了 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性。通过将 <code class="pcalibre3 calibre11 pcalibre4">this</code> 传递给 <code class="pcalibre3 calibre11 pcalibre4">privateData.get()</code> 方法，以获取值对象并访问其 <code class="pcalibre3 calibre11 pcalibre4">name</code> 属性， <code class="pcalibre3 calibre11 pcalibre4">getName()</code> 函数便能提取私有信息。这种技术让私有信息能够保持私有状态，并且当与之关联的对象实例被销毁时，私有信息也会被同时销毁。</p>
+<h5 id="weak-map-的用法与局限性" class="calibre18"><span id="weak-map-uses-and-limitations" class="calibre19">Weak Map 的用法与局限性</span></h5>
+<p class="calibre6">当决定是要使用 Weak Map 还是使用正规 Map 时，首要考虑因素在于你是否只想使用对象类型的键。如果你打算这么做，那么最好的选择就是 Weak Map 。因为它能确保额外数据在不再可用后被销毁，从而能优化内存使用并规避内存泄漏。</p>
+<p class="calibre6">要记住 Weak Map 只为它们的内容提供了很小的可见度，因此你不能使用 <code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 方法、 <code class="pcalibre3 calibre11 pcalibre4">size</code> 属性或 <code class="pcalibre3 calibre11 pcalibre4">clear()</code> 方法来管理其中的项。如果你确实需要一些检测功能，那么正规 Map 会是更好的选择，只是一定要确保留意内存的使用。</p>
+<p class="calibre6">当然，若你想使用非对象的键，那么正规 Map 就是唯一选择。</p>
+<h3 id="总结" class="calibre15"><span id="summary" class="calibre13">总结</span></h3>
+<p class="calibre6">ES6 正式将 Set 与 Map 引入了 JS 。在此之前，开发者往往使用对象来模拟它们，但由于与对象属性有关的限制，这么做经常会遇到问题。</p>
+<p class="calibre6">Set 是无重复值的有序列表。根据 <code class="pcalibre3 calibre11 pcalibre4">Object.is()</code> 方法来判断其中的值不相等，以保证无重复。 Set 会自动移除重复的值，因此你可以使用它来过滤数组中的重复值并返回结果。 Set 并不是数组的子类型，所以你无法随机访问其中的值。但你可以使用 <code class="pcalibre3 calibre11 pcalibre4">has()</code> 方法来判断某个值是否存在于 Set 中，或通过 <code class="pcalibre3 calibre11 pcalibre4">size</code> 属性来查看其中有多少个值。 <code class="pcalibre3 calibre11 pcalibre4">Set</code> 类型还拥有 <code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 方法，用于处理每个值。</p>
+<p class="calibre6">Weak Set 是只能包含对象的特殊 Set 。其中的对象使用弱引用来存储，意味着当 Weak Set 中的项是某个对象的仅存引用时，它不会屏蔽垃圾回收。由于内存管理的复杂性， Weak Set 的内容不能被检查，因此最好将 Weak Set 仅用于追踪需要被归组在一起的对象。</p>
+<p class="calibre6">Map 是有序的键值对，其中的键允许是任何类型。与 Set 相似，通过调用 <code class="pcalibre3 calibre11 pcalibre4">Object.is()</code> 方法来判断重复的键，这意味着能将数值 <code class="pcalibre3 calibre11 pcalibre4">5</code> 与字符串 <code class="pcalibre3 calibre11 pcalibre4">"5"</code> 作为两个相对独立的键。使用 <code class="pcalibre3 calibre11 pcalibre4">set()</code> 方法能将任何类型的值关联到某个键上，并且该值此后能用 <code class="pcalibre3 calibre11 pcalibre4">get()</code> 方法提取出来。 Map 也拥有一个 <code class="pcalibre3 calibre11 pcalibre4">size</code> 属性与一个 <code class="pcalibre3 calibre11 pcalibre4">forEach()</code> 方法，让项目访问更容易。</p>
+<p class="calibre6">Weak Map 是只能包含对象类型的键的特殊 Map 。与 Weak Set 相似，键的对象引用是弱引用，因此当它是某个对象的仅存引用时，也不会屏蔽垃圾回收。当键被回收之后，所关联的值也同时从 Weak Map 中被移除。对于和对象相关联的附加信息来说，若要在访问它们的代码之外对其进行生命周期管理（也就是说，当在对象外部移除对象的引用时，要求其私有数据也能一并被销毁），则 Weak Map 在内存管理方面的特性让它们成为了唯一合适的选择。</p>
+
+        </div>
+    
+</div>
+
+        
+    
+
+
+</body></html>
